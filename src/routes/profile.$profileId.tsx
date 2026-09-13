@@ -161,19 +161,17 @@ function PublicProfilePage() {
         {/* HERO CARD: Profile Identity Deck */}
         <div className="relative overflow-hidden rounded-3xl border border-white/[0.08] bg-[#0c0e0c]/90 shadow-[0_20px_45px_rgba(0,0,0,0.5)] backdrop-blur-xl">
           {/* Banner */}
-          <div className="relative h-44 sm:h-56 w-full overflow-hidden bg-gradient-to-r from-[#0d1408] via-[#121c08] to-[#080d05] border-b border-white/[0.06]">
-            {bannerUrl ? (
-              <img
-                src={bannerUrl}
-                alt="Profile Banner"
-                className="size-full object-cover opacity-80"
-              />
-            ) : (
-              <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(204,255,0,0.15),rgba(255,255,255,0))]">
-                <div className="absolute inset-0 bg-[linear-gradient(to_right,#1f2d1215_1px,transparent_1px),linear-gradient(to_bottom,#1f2d1215_1px,transparent_1px)] bg-[size:2rem_2rem]" />
-              </div>
-            )}
-            <div className="absolute top-4 right-4 rounded-full border border-white/10 bg-black/60 px-3 py-1 font-mono text-[10px] text-[#8a8a8a] backdrop-blur-md">
+          <div className="relative h-44 sm:h-56 w-full overflow-hidden bg-[#080808] border-b border-white/[0.06] group/banner">
+            <img
+              src={bannerUrl || "/Observer.jpg"}
+              alt="Profile Banner"
+              className="absolute inset-0 size-full object-cover object-center opacity-90 transition-transform duration-700 group-hover/banner:scale-105"
+            />
+            {/* Subtle Darkening & Glow Overlay to keep badges and avatar seamless */}
+            <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-black/20 to-[#0c0e0c]/95 pointer-events-none" />
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(204,255,0,0.18)_0%,transparent_70%)] pointer-events-none" />
+
+            <div className="absolute top-4 right-4 z-10 rounded-full border border-white/10 bg-black/60 px-3 py-1 font-mono text-[10px] text-[#8a8a8a] backdrop-blur-md">
               UID: #{publicData.profileId.slice(0, 8)}
             </div>
           </div>
@@ -431,7 +429,7 @@ function PublicProfilePage() {
           solvedCases: stats.solvedCasesCount,
           totalCases: stats.totalCasesCount,
           avatarUrl: imageUrl,
-          bannerUrl,
+          bannerUrl: bannerUrl || "/Observer.jpg",
         }}
       />
     </AppChrome>

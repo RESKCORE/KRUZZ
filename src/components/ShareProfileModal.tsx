@@ -151,6 +151,7 @@ function drawFullCredentialBadge(
   qrCanvas: HTMLCanvasElement,
   avatarImg: HTMLImageElement | null,
   logoImg: HTMLImageElement | null,
+  bannerImg: HTMLImageElement | null,
 ) {
   const W = 800;
   const H = 1050;
@@ -184,6 +185,22 @@ function drawFullCredentialBadge(
   ctx.fillStyle = "#0a0e0a";
   roundRect(ctx, pad, pad, cardW, cardH, 28);
   ctx.fill();
+
+  // Top Banner Cover inside Card Panel
+  if (bannerImg) {
+    ctx.save();
+    roundRect(ctx, pad, pad, cardW, 190, 28);
+    ctx.clip();
+    drawCover(ctx, bannerImg, pad, pad, cardW, 190);
+    // Darkening and glow overlay
+    const bGrad = ctx.createLinearGradient(pad, pad, pad, pad + 190);
+    bGrad.addColorStop(0, "rgba(5, 7, 5, 0.45)");
+    bGrad.addColorStop(0.6, "rgba(10, 14, 10, 0.7)");
+    bGrad.addColorStop(1, "rgba(10, 14, 10, 0.98)");
+    ctx.fillStyle = bGrad;
+    ctx.fillRect(pad, pad, cardW, 190);
+    ctx.restore();
+  }
 
   ctx.strokeStyle = "rgba(204, 255, 0, 0.22)";
   ctx.lineWidth = 1.5;
@@ -431,9 +448,10 @@ export function ShareProfileModal({ isOpen, onClose, user }: ShareProfileModalPr
 
     async function build() {
       try {
-        const [avatarImg, logoImg] = await Promise.all([
+        const [avatarImg, logoImg, bannerImg] = await Promise.all([
           loadImage(user.avatarUrl),
           loadImage("/logo.png"),
+          loadImage(user.bannerUrl || "/Observer.jpg"),
         ]);
         if (cancelled) return;
 
@@ -449,7 +467,7 @@ export function ShareProfileModal({ isOpen, onClose, user }: ShareProfileModalPr
         badgeCanvas.height = 1050;
         const bCtx = badgeCanvas.getContext("2d");
         if (bCtx) {
-          drawFullCredentialBadge(bCtx, user, qrCanvas, avatarImg, logoImg);
+          drawFullCredentialBadge(bCtx, user, qrCanvas, avatarImg, logoImg, bannerImg);
           setBadgeImageUrl(badgeCanvas.toDataURL("image/png"));
         }
       } catch (err) {
@@ -512,44 +530,60 @@ export function ShareProfileModal({ isOpen, onClose, user }: ShareProfileModalPr
         </DialogHeader>
 
         {/* Dynamic Cyber QR Credential Card Preview */}
-        <div className="relative mt-3 overflow-hidden rounded-2xl border border-[#ccff00]/20 bg-[#060906] p-5 shadow-2xl">
+        <div className="relative mt-3 overflow-hidden rounded-2xl border border-[#ccff00]/20 bg-[#060906] shadow-2xl">
           {/* Subtle lime glow in background */}
           <div className="pointer-events-none absolute -top-16 left-1/2 -translate-x-1/2 size-44 rounded-full bg-[#ccff00]/10 blur-3xl" />
 
-          {/* Card Top: Identity */}
-          <div className="relative z-10 flex items-center justify-between gap-3 border-b border-white/[0.06] pb-3.5">
-            <div className="flex items-center gap-3">
-              {/* Avatar with glowing ring */}
-              <div className="relative size-11 shrink-0 rounded-full border-2 border-[#ccff00] p-0.5 shadow-[0_0_12px_rgba(204,255,0,0.3)]">
-                {user.avatarUrl ? (
-                  <img
-                    src={user.avatarUrl}
-                    alt={user.name}
-                    className="size-full rounded-full object-cover"
-                  />
-                ) : (
-                  <div className="flex size-full items-center justify-center rounded-full bg-[#141b14] font-mono text-xs font-bold text-[#ccff00]">
-                    {(user.name || "K").charAt(0).toUpperCase()}
-                  </div>
-                )}
-              </div>
+          {/* Top Banner Cover Header */}
+          <div className="relative h-20 w-full overflow-hidden border-b border-white/[0.08] bg-[#080808]">
+            <img
+              src={user.bannerUrl || "/Observer.jpg"}
+              alt="Profile Banner"
+              className="size-full object-cover opacity-85"
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-black/35 via-black/25 to-[#060906]/95 pointer-events-none" />
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(204,255,0,0.15)_0%,transparent_70%)] pointer-events-none" />
 
-              <div>
-                <div className="flex items-center gap-1.5">
-                  <h4 className="text-sm font-bold text-[#f5f5f5] leading-tight line-clamp-1">
-                    {user.name}
-                  </h4>
-                  <ShieldCheck className="size-3.5 text-[#ccff00] shrink-0" />
-                </div>
-                <p className="font-mono text-[11px] text-[#8a8a8a]">@{user.handle}</p>
-              </div>
+            <div className="absolute top-2.5 right-3 z-10 rounded-full bg-black/60 backdrop-blur-md border border-white/10 px-2.5 py-0.5 font-mono text-[9px] text-[#8a8a8a]">
+              UID: #{user.profileId ? user.profileId.slice(0, 8) : user.handle.slice(0, 8)}
             </div>
-
-            {/* Rank Pill */}
-            <span className="rounded-full bg-[#162409] border border-[#ccff00]/30 px-2.5 py-1 font-mono text-[10px] font-bold text-[#ccff00] shrink-0">
-              {user.rank || "OBSERVER"}
-            </span>
           </div>
+
+          <div className="p-5 pt-0">
+            {/* Card Top: Identity */}
+            <div className="relative z-10 flex items-center justify-between gap-3 border-b border-white/[0.06] pb-3 -mt-6">
+              <div className="flex items-center gap-3">
+                {/* Avatar with glowing ring */}
+                <div className="relative size-12 shrink-0 rounded-full border-2 border-[#ccff00] p-0.5 shadow-[0_0_12px_rgba(204,255,0,0.3)] bg-[#090c09]">
+                  {user.avatarUrl ? (
+                    <img
+                      src={user.avatarUrl}
+                      alt={user.name}
+                      className="size-full rounded-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex size-full items-center justify-center rounded-full bg-[#141b14] font-mono text-xs font-bold text-[#ccff00]">
+                      {(user.name || "K").charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                </div>
+
+                <div className="pt-4">
+                  <div className="flex items-center gap-1.5">
+                    <h4 className="text-sm font-bold text-[#f5f5f5] leading-tight line-clamp-1">
+                      {user.name}
+                    </h4>
+                    <ShieldCheck className="size-3.5 text-[#ccff00] shrink-0" />
+                  </div>
+                  <p className="font-mono text-[11px] text-[#8a8a8a]">@{user.handle}</p>
+                </div>
+              </div>
+
+              {/* Rank Pill */}
+              <span className="mt-4 rounded-full bg-[#162409] border border-[#ccff00]/30 px-2.5 py-1 font-mono text-[10px] font-bold text-[#ccff00] shrink-0">
+                {user.rank || "OBSERVER"}
+              </span>
+            </div>
 
           {/* Card Center: QR Code with Target Brackets */}
           <div className="relative z-10 my-4 flex flex-col items-center justify-center">
@@ -608,6 +642,7 @@ export function ShareProfileModal({ isOpen, onClose, user }: ShareProfileModalPr
             </button>
           </div>
         </div>
+      </div>
 
         {/* Modal Action Buttons */}
         <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
