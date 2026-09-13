@@ -38,7 +38,8 @@ export const Route = createFileRoute("/profile/$profileId")({
 });
 
 function PublicProfilePage() {
-  const { profileId } = Route.useParams();
+  const { profileId: rawProfileId } = Route.useParams();
+  const profileId = decodeURIComponent(rawProfileId);
   const { user: currentUser, isAuthenticated } = useAccount();
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isCopied, setIsCopied] = useState(false);

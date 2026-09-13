@@ -124,7 +124,8 @@ export function AppChrome({ children }: AppChromeProps) {
     pathname.startsWith("/dashboard") ||
     pathname.startsWith("/cases/") || // dossiers gated; /cases catalog stays public
     pathname.startsWith("/store") ||
-    pathname.startsWith("/profile");
+    pathname === "/profile" ||
+    pathname === "/profile/";
 
   const navItems = isAuthenticated ? MEMBER_NAV_ITEMS : GUEST_NAV_ITEMS;
 
