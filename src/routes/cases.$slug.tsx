@@ -9,6 +9,9 @@ import {
   MIN_REFLECTION_CHARS,
   MIN_REFLECTION_WORDS,
   type CaseStudy,
+  type Exercise,
+  type PracticeLevel,
+  type TechNote,
 } from "@/data/schema";
 import { CodeArena } from "@/components/CodeArena";
 import { CodeEditor } from "@/components/CodeEditor";
@@ -170,6 +173,32 @@ function CaseStudyPage() {
   const sample = study.implementation?.samples?.[lang] ?? study.implementation?.samples?.[0];
   const diagram = study.architecture?.levels?.[level] ?? study.architecture?.levels?.[0];
   const primer = study.primers?.[0];
+
+  const practiceList: Exercise[] = Array.isArray(study.practice)
+    ? study.practice
+    : Array.isArray((study.practice as any)?.tasks)
+      ? (study.practice as any).tasks.map((t: string, idx: number) => ({
+          level: (["Understand", "Modify", "Build", "Think"][idx % 4] as PracticeLevel),
+          title: `Challenge ${idx + 1}`,
+          brief: t,
+        }))
+      : [];
+
+  const reflectionList: string[] = Array.isArray(study.reflection)
+    ? study.reflection
+    : typeof (study.reflection as any)?.takeaway === "string"
+      ? [(study.reflection as any).takeaway, (study.reflection as any).nextSteps].filter(Boolean)
+      : [];
+
+  const techNotesList: TechNote[] = Array.isArray(study.techNotes)
+    ? study.techNotes
+    : (study.techNotes as any)?.notice
+      ? [{ name: "System Note", kind: "Architecture", note: (study.techNotes as any).notice }]
+      : [];
+
+  const engineeringConceptsList: string[] = Array.isArray(study.engineeringConcepts)
+    ? study.engineeringConcepts
+    : [];
 
   if (locked) {
     if (study.tier === "premium") {
@@ -333,7 +362,7 @@ function CaseStudyPage() {
                 Prerequisites
               </p>
               <ul className="space-y-1.5">
-                {study.prerequisites.map((p) => (
+                {(study.prerequisites ?? []).map((p) => (
                   <li key={p} className="text-[11px] leading-relaxed text-[#8a8a8a]">
                     · {p}
                   </li>
@@ -352,20 +381,20 @@ function CaseStudyPage() {
                 <>
                   <H2>The situation</H2>
                   <p className="mt-3 max-w-[62ch] text-pretty text-sm leading-relaxed text-ink2">
-                    {study.discover.situation}
+                    {study.discover?.situation || (study.discover as any)?.task}
                   </p>
-                  <ArrowChain steps={study.discover.humanFlow} />
+                  <ArrowChain steps={study.discover?.humanFlow ?? []} />
                   <div className="mt-5 rounded-2xl bg-rose/40 p-5 ring-1 ring-primary/15">
                     <p className="font-mono text-[10px] uppercase tracking-widest text-ink2">
                       The question
                     </p>
                     <p className="mt-2 text-pretty text-sm font-medium leading-relaxed">
-                      {study.discover.question}
+                      {study.discover?.question || (study.discover as any)?.action || "How does this system guarantee reliability and correctness?"}
                     </p>
                   </div>
                   <Kicker>Why the problem exists</Kicker>
                   <ul className="mt-3 space-y-2">
-                    {study.discover.whyItExists.map((r) => (
+                    {(study.discover?.whyItExists ?? []).map((r) => (
                       <li key={r} className="flex gap-3 text-sm text-ink2">
                         <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-primary" />
                         <span className="text-pretty leading-relaxed">{r}</span>
@@ -374,7 +403,7 @@ function CaseStudyPage() {
                   </ul>
                   <Kicker>What you will be able to do</Kicker>
                   <ul className="mt-3 space-y-2">
-                    {study.learningObjectives.map((o) => (
+                    {(study.learningObjectives ?? []).map((o) => (
                       <li
                         key={o}
                         className="rounded-lg bg-card/60 px-3 py-2 text-[13px] leading-relaxed text-ink2 ring-1 ring-line/70"
@@ -391,12 +420,12 @@ function CaseStudyPage() {
                 <>
                   <H2>How the system behaves</H2>
                   <p className="mt-3 max-w-[62ch] text-pretty text-sm leading-relaxed text-ink2">
-                    {study.understand.overview}
+                    {study.understand?.overview}
                   </p>
 
                   <Kicker>Each component: what, why, what it does</Kicker>
                   <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                    {study.understand.components.map((c) => (
+                    {(study.understand?.components ?? []).map((c) => (
                       <div key={c.name} className="rounded-2xl bg-card/60 p-4 ring-1 ring-line/70">
                         <p className="text-sm font-semibold tracking-tight">{c.name}</p>
                         <dl className="mt-2 space-y-1.5 text-[12px] leading-relaxed text-ink2">
@@ -417,16 +446,20 @@ function CaseStudyPage() {
                     ))}
                   </div>
 
-                  <Kicker>Analogy · {study.understand.analogy.title}</Kicker>
-                  <ArrowChain steps={study.understand.analogy.everyday} />
-                  <p className="mt-3 font-mono text-[10px] uppercase tracking-widest text-ink2">
-                    Mapped to the technical model
-                  </p>
-                  <ArrowChain steps={study.understand.analogy.technical} />
+                  {study.understand?.analogy && (
+                    <>
+                      <Kicker>Analogy · {study.understand.analogy.title}</Kicker>
+                      <ArrowChain steps={study.understand.analogy.everyday ?? []} />
+                      <p className="mt-3 font-mono text-[10px] uppercase tracking-widest text-ink2">
+                        Mapped to the technical model
+                      </p>
+                      <ArrowChain steps={study.understand.analogy.technical ?? []} />
+                    </>
+                  )}
 
                   <Kicker>The flow, step by step</Kicker>
                   <ol className="mt-3 space-y-2">
-                    {study.understand.flow.map((s, i) => (
+                    {(study.understand?.flow ?? []).map((s, i) => (
                       <li key={s}>
                         <div className="flex items-center gap-3 rounded-lg bg-card/60 px-3 py-2 ring-1 ring-line/70">
                           <span className="font-mono text-[10px] text-primary">
@@ -434,7 +467,7 @@ function CaseStudyPage() {
                           </span>
                           <span className="text-sm">{s}</span>
                         </div>
-                        {i < study.understand.flow.length - 1 && (
+                        {i < (study.understand?.flow?.length ?? 0) - 1 && (
                           <div className="ml-6 h-3 w-px bg-line" />
                         )}
                       </li>
@@ -536,10 +569,10 @@ function CaseStudyPage() {
                 <>
                   <H2>How the pieces connect</H2>
                   <p className="mt-3 max-w-[62ch] text-pretty text-sm leading-relaxed text-ink2">
-                    {study.architecture.caption}
+                    {study.architecture?.caption || (study.architecture as any)?.overview}
                   </p>
                   <div className="mt-4 flex flex-wrap gap-2">
-                    {study.architecture.levels.map((l, i) => (
+                    {(study.architecture?.levels ?? []).map((l, i) => (
                       <button
                         key={l.title}
                         type="button"
@@ -680,19 +713,19 @@ function CaseStudyPage() {
                     ))}
                   </ol>
 
-                  {study.implementation?.ladder && study.implementation.ladder.length > 0 && (
+                  {(study.implementation?.ladder ?? []).length > 0 && (
                     <>
                       <Kicker>The implementation ladder</Kicker>
                       <div className="mt-3 grid gap-2 sm:grid-cols-2">
-                        {study.implementation.ladder.map((l: any) => (
+                        {(study.implementation?.ladder ?? []).map((l: any) => (
                           <div
-                            key={l.level}
+                            key={l.level || l.step}
                             className="rounded-xl bg-card/60 p-3 ring-1 ring-line/70"
                           >
                             <p className="font-mono text-[10px] uppercase tracking-widest text-primary">
-                              {l.level} · {l.title}
+                              {l.level || `Step ${l.step}`} · {l.title || l.focus}
                             </p>
-                            <p className="mt-1 text-[12px] leading-relaxed text-ink2">{l.detail}</p>
+                            <p className="mt-1 text-[12px] leading-relaxed text-ink2">{l.detail || l.buildsOn}</p>
                           </div>
                         ))}
                       </div>
@@ -782,9 +815,9 @@ function CaseStudyPage() {
                 <>
                   <H2>Understand, modify, build, think</H2>
                   <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                    {(study.practice ?? []).map((ch, i) => (
+                    {practiceList.map((ch, i) => (
                       <div
-                        key={ch.title}
+                        key={ch.title || i}
                         className="rounded-2xl bg-card/60 p-4 ring-1 ring-line/70"
                       >
                         <div className="flex items-center justify-between">
@@ -800,7 +833,7 @@ function CaseStudyPage() {
                           {ch.brief}
                         </p>
                         <p className="mt-2 font-mono text-[10px] uppercase tracking-widest text-ink2">
-                          {PRACTICE_PURPOSE[ch.level]}
+                          {PRACTICE_PURPOSE[ch.level] || "Hands-on engineering application"}
                         </p>
                       </div>
                     ))}
@@ -825,9 +858,9 @@ function CaseStudyPage() {
                 <>
                   <H2>Now explain it yourself</H2>
                   <ul className="mt-4 space-y-2">
-                    {(study.reflection ?? []).map((q) => (
+                    {reflectionList.map((q, idx) => (
                       <li
-                        key={q}
+                        key={q || idx}
                         className="rounded-lg bg-sky/40 px-3 py-2 text-pretty text-sm leading-relaxed ring-1 ring-primary/10"
                       >
                         {q}
@@ -1181,20 +1214,26 @@ function CaseStudyPage() {
                   {/* TAB 2: Architectural Principles */}
                   {companionTab === "principles" && (
                     <div className="space-y-3">
-                      {study.techNotes.map((t) => (
-                        <div
-                          key={t.name}
-                          className="rounded-xl bg-white/[0.02] border border-white/[0.06] p-3.5 hover:border-white/15 transition-colors"
-                        >
-                          <div className="flex items-center justify-between">
-                            <span className="rounded-md bg-white/[0.04] border border-white/[0.08] px-2 py-0.5 font-mono text-[9px] uppercase tracking-wider text-[#8a8a8a]">
-                              {t.kind}
-                            </span>
+                      {techNotesList.length > 0 ? (
+                        techNotesList.map((t) => (
+                          <div
+                            key={t.name}
+                            className="rounded-xl bg-white/[0.02] border border-white/[0.06] p-3.5 hover:border-white/15 transition-colors"
+                          >
+                            <div className="flex items-center justify-between">
+                              <span className="rounded-md bg-white/[0.04] border border-white/[0.08] px-2 py-0.5 font-mono text-[9px] uppercase tracking-wider text-[#8a8a8a]">
+                                {t.kind}
+                              </span>
+                            </div>
+                            <p className="mt-1.5 text-xs font-bold text-[#f5f5f5]">{t.name}</p>
+                            <p className="mt-1 text-xs leading-relaxed text-[#8a8a8a]">{t.note}</p>
                           </div>
-                          <p className="mt-1.5 text-xs font-bold text-[#f5f5f5]">{t.name}</p>
-                          <p className="mt-1 text-xs leading-relaxed text-[#8a8a8a]">{t.note}</p>
-                        </div>
-                      ))}
+                        ))
+                      ) : (
+                        <p className="text-xs text-[#8a8a8a] py-4 text-center">
+                          No architectural notes for this case.
+                        </p>
+                      )}
                     </div>
                   )}
 
@@ -1205,7 +1244,7 @@ function CaseStudyPage() {
                         Key domain concepts mastered in this case:
                       </p>
                       <div className="flex flex-wrap gap-2">
-                        {study.engineeringConcepts.map((concept) => (
+                        {engineeringConceptsList.map((concept) => (
                           <span
                             key={concept}
                             className="rounded-lg bg-white/[0.03] border border-white/[0.08] px-2.5 py-1 font-mono text-xs text-[#f5f5f5] hover:border-[#ccff00]/40 hover:text-[#ccff00] transition-colors"

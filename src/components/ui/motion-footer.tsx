@@ -380,10 +380,10 @@ export function CinematicFooter() {
                 <MagneticButton
                   as={Link}
                   to="/cases/$slug"
-                  params={{ slug: "client-server-architecture" }}
+                  params={{ slug: "atm-machine" }}
                   className="footer-glass-pill px-6 py-3 rounded-full text-[#8a8a8a] font-medium text-xs md:text-sm hover:text-[#f5f5f5]"
                 >
-                  Case 01 · Client-Server
+                  Case 01 · ATM Machine
                 </MagneticButton>
                 <MagneticButton
                   as={Link}

@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useAccount, useWallet, useStreak } from "@/lib/account";
 import { caseAwardId, isCaseCompleted } from "@/lib/rc";
 import { useMutation, useQuery } from "convex/react";
@@ -53,6 +53,56 @@ export function UserProfileCard({ className = "" }: UserProfileCardProps) {
       Boolean(progressDoc?.passed && (progressDoc?.completedSections?.length ?? 0) >= 7)
     );
   }).length;
+
+  // Dynamically compute the active/recent case study to continue
+  const { recentCaseSlug, recentCaseTitle } = useMemo(() => {
+    const defaultSlug = caseStudies?.[0]?.slug ?? "atm-machine";
+    const defaultTitle = caseStudies?.[0]?.shortTitle ?? caseStudies?.[0]?.title ?? "ATM Machine";
+
+    if (!caseStudies || caseStudies.length === 0) {
+      return { recentCaseSlug: defaultSlug, recentCaseTitle: defaultTitle };
+    }
+
+    if (cloudProgress && Array.isArray(cloudProgress) && cloudProgress.length > 0) {
+      // Sort progress by updatedAt descending (most recent first)
+      const sorted = [...cloudProgress].sort((a, b) => (b.updatedAt ?? 0) - (a.updatedAt ?? 0));
+
+      // 1. Look for an in-progress case that is not yet completed
+      const inProgress = sorted.find((p) => {
+        const isComplete =
+          p.status === "completed" || Boolean(p.passed && (p.completedSections?.length ?? 0) >= 7);
+        return !isComplete && caseStudies.some((c) => c.slug === p.caseSlug);
+      });
+      if (inProgress) {
+        const study = caseStudies.find((c) => c.slug === inProgress.caseSlug);
+        return {
+          recentCaseSlug: inProgress.caseSlug,
+          recentCaseTitle: study?.shortTitle ?? study?.title ?? inProgress.caseSlug,
+        };
+      }
+
+      // 2. If all started cases are complete, find the next sequential case in curriculum
+      const latestCaseSlug = sorted[0]?.caseSlug;
+      const idx = caseStudies.findIndex((c) => c.slug === latestCaseSlug);
+      if (idx !== -1 && idx + 1 < caseStudies.length) {
+        const nextStudy = caseStudies[idx + 1];
+        return {
+          recentCaseSlug: nextStudy.slug,
+          recentCaseTitle: nextStudy.shortTitle ?? nextStudy.title ?? nextStudy.slug,
+        };
+      }
+
+      if (latestCaseSlug) {
+        const study = caseStudies.find((c) => c.slug === latestCaseSlug);
+        return {
+          recentCaseSlug: latestCaseSlug,
+          recentCaseTitle: study?.shortTitle ?? study?.title ?? latestCaseSlug,
+        };
+      }
+    }
+
+    return { recentCaseSlug: defaultSlug, recentCaseTitle: defaultTitle };
+  }, [caseStudies, cloudProgress]);
 
   const displayName =
     user?.fullName || profile?.name || (isAuthenticated ? "Engineer" : "Anonymous Investigator");
@@ -229,7 +279,7 @@ export function UserProfileCard({ className = "" }: UserProfileCardProps) {
             <div className="flex items-center justify-center gap-1 font-mono text-base font-bold text-[#f5f5f5]">
               <BookOpen className="size-3.5 text-[#ccff00]" />
               <span>
-                {clearedCasesCount}/{caseStudies.length}
+                {clearedCasesCount}/{caseStudies.length || 35}
               </span>
             </div>
             <p className="mt-1 font-mono text-[10px] text-[#8a8a8a] uppercase tracking-wider">
@@ -253,14 +303,18 @@ export function UserProfileCard({ className = "" }: UserProfileCardProps) {
       {/* 4. Bottom Action Slide-to-Continue Slider */}
       <div className="mt-4.5">
         <SlideToContinue
-          label={isAuthenticated ? "Slide to Continue" : "Slide to Sign In"}
+          label={
+            isAuthenticated
+              ? `Slide to Continue · ${recentCaseTitle.length > 20 ? recentCaseTitle.slice(0, 18) + "..." : recentCaseTitle}`
+              : "Slide to Sign In"
+          }
           successLabel={isAuthenticated ? "Entering Investigation..." : "Redirecting..."}
           icon={isAuthenticated ? undefined : <Lock className="size-4.5" />}
           onComplete={() => {
             if (isAuthenticated) {
               router.navigate({
                 to: "/cases/$slug",
-                params: { slug: "client-server-architecture" },
+                params: { slug: recentCaseSlug },
               });
             } else {
               router.navigate({ to: "/sign-in" });
