@@ -1,0 +1,400 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+/*
+ * KRUZZ design system — "Deep Obsidian & Electric Acid Lime".
+ * Deep matte carbon surfaces, subtle radial glossy spheres, and high-energy neon acid lime accents.
+ */
+
+@theme inline {
+  --radius-sm: 0.5rem;
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.25rem;
+  --radius-2xl: 1.5rem;
+  --radius-3xl: 2.25rem;
+
+  --font-sans: "Space Grotesk", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* Neumorphic Dark & Electric Acid Lime Palette */
+  --color-ink: var(--ink);
+  --color-ink2: var(--ink2);
+  --color-paper: var(--paper);
+  --color-line: var(--line);
+  --color-rose: var(--rose);
+  --color-mint: var(--mint);
+  --color-sky: var(--sky);
+  --color-butter: var(--butter);
+
+  /* Specific accents from inspiration */
+  --color-lime-glow: #d4ff00;
+  --color-lime-soft: #ccff00;
+  --color-recording: #ccff00;
+}
+
+:root {
+  --radius: 1rem;
+
+  /* Text & Surfaces */
+  --ink: #f5f5f5;
+  --ink2: #b8b8b8;
+  --paper: #0a0a0a;
+  --line: rgba(255, 255, 255, 0.08);
+
+  /* Neon Tonal Accents for Cards & Badges */
+  --rose: rgba(204, 255, 0, 0.14);
+  --mint: rgba(204, 255, 0, 0.16);
+  --sky: rgba(59, 130, 246, 0.14);
+  --butter: rgba(212, 255, 0, 0.16);
+
+  /* Semantic Core */
+  --background: #080808;
+  --foreground: #f5f5f5;
+  --card: #121212;
+  --card-foreground: #f5f5f5;
+  --popover: #121212;
+  --popover-foreground: #f5f5f5;
+  --primary: #ccff00;
+  --primary-foreground: #0a0a0a;
+  --secondary: #1e1e1e;
+  --secondary-foreground: #f5f5f5;
+  --muted: #161616;
+  --muted-foreground: #8a8a8a;
+  --accent: #ccff00;
+  --accent-foreground: #0a0a0a;
+  --destructive: #ff3344;
+  --destructive-foreground: #ffffff;
+  --border: rgba(255, 255, 255, 0.08);
+  --input: rgba(255, 255, 255, 0.12);
+  --ring: #ccff00;
+}
+
+@utility grid-bg {
+  background-color: #080808;
+  background-image:
+    radial-gradient(ellipse at 50% -10%, rgba(204, 255, 0, 0.12) 0%, transparent 60%),
+    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size:
+    100% 100%,
+    36px 36px,
+    36px 36px;
+}
+
+@utility glass-panel {
+  background: linear-gradient(180deg, #181818 0%, #0c0c0c 100%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 20px 40px rgba(0, 0, 0, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(16px);
+}
+
+@utility neu-btn {
+  background: radial-gradient(circle at 50% 0%, #303030 0%, #161616 100%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.18),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.5),
+    0 4px 12px rgba(0, 0, 0, 0.3);
+  transition: all 0.2s ease;
+}
+
+@utility recording-dot {
+  background-color: #ccff00;
+  box-shadow: 0 0 10px 2px rgba(204, 255, 0, 0.85);
+  animation: pulse-live 2s infinite;
+}
+
+@utility glow-lime {
+  box-shadow: 0 0 25px rgba(204, 255, 0, 0.4);
+}
+
+/* ========================================================================= */
+/* GLOBAL SCROLLBAR HIDING (Clean, native feel across all devices & browsers)  */
+/* ========================================================================= */
+*,
+*::before,
+*::after {
+  scrollbar-width: none !important; /* Firefox */
+  -ms-overflow-style: none !important; /* IE and Edge */
+}
+
+*::-webkit-scrollbar {
+  display: none !important; /* Chrome, Safari, Edge, Opera */
+  width: 0 !important;
+  height: 0 !important;
+}
+
+html,
+body {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+  overflow-x: hidden;
+}
+
+body::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+@keyframes pulse-live {
+  0% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(204, 255, 0, 0.8);
+  }
+  70% {
+    transform: scale(1);
+    box-shadow: 0 0 0 6px rgba(204, 255, 0, 0);
+  }
+  100% {
+    transform: scale(0.95);
+    box-shadow: 0 0 0 0 rgba(204, 255, 0, 0);
+  }
+}
+
+/* =========================================================================
+   CODE EDITOR — Deep Obsidian + Electric Acid Lime
+   ========================================================================= */
+
+.code-editor-root {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  border-radius: 1rem;
+  overflow: hidden;
+  border: 1px solid rgba(204, 255, 0, 0.18);
+  background: #080a08;
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.6),
+    0 8px 32px rgba(0, 0, 0, 0.55),
+    0 0 60px rgba(204, 255, 0, 0.04) inset;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+  margin-top: 0.5rem;
+}
+
+.code-editor-root:focus-within {
+  border-color: rgba(204, 255, 0, 0.55);
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.6),
+    0 8px 32px rgba(0, 0, 0, 0.55),
+    0 0 40px rgba(204, 255, 0, 0.12) inset,
+    0 0 0 3px rgba(204, 255, 0, 0.08);
+}
+
+/* ── Top bar (fake window controls) */
+.code-editor-root::before {
+  content: "";
+  display: block;
+  height: 36px;
+  background: linear-gradient(180deg, #111 0%, #0d0d0d 100%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  background-image:
+    radial-gradient(circle at 14px 18px, #ff5f57 0 5px, transparent 5px),
+    radial-gradient(circle at 30px 18px, #ffbd2e 0 5px, transparent 5px),
+    radial-gradient(circle at 46px 18px, #28c840 0 5px, transparent 5px);
+  flex-shrink: 0;
+}
+
+/* ── Gutter */
+.code-editor-gutter {
+  flex-shrink: 0;
+  width: 48px;
+  padding: 12px 0;
+  background: #080a08;
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  flex-direction: column;
+  user-select: none;
+  overflow: hidden;
+}
+
+.code-editor-lineno {
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 12px;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.2);
+  line-height: 22px;
+  transition: color 0.1s;
+}
+
+/* ── Editor body */
+.code-editor-body {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+/* ── Highlight + textarea shared layout */
+.code-editor-highlight,
+.code-editor-textarea {
+  position: absolute;
+  inset: 0;
+  padding: 12px 16px;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 13px;
+  line-height: 22px;
+  white-space: pre;
+  overflow: auto;
+  tab-size: 4;
+  word-break: normal;
+  overflow-wrap: normal;
+}
+
+/* ── Highlight layer */
+.code-editor-highlight {
+  pointer-events: none;
+  color: #c9d1d9;
+  /* hide scrollbars on the highlight mirror */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+/* ── Textarea (transparent — only caret/selection visible) */
+.code-editor-textarea {
+  color: transparent;
+  caret-color: #ccff00;
+  background: transparent;
+  border: none;
+  outline: none;
+  resize: none;
+  z-index: 1;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  width: 100%;
+  height: 100%;
+  min-height: 100%;
+}
+
+.code-editor-textarea::selection {
+  background: rgba(204, 255, 0, 0.18);
+  color: transparent;
+}
+
+.code-editor-textarea:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── Status bar */
+.code-editor-statusbar {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  padding: 4px 16px 4px 60px;
+  background: #0a0c0a;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.3);
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.code-editor-statusbar span:first-child {
+  color: rgba(204, 255, 0, 0.7);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/* ── Syntax token colors */
+.tok-kw {
+  color: #cc7ef0;
+  font-weight: 600;
+}
+.tok-str {
+  color: #a8d8a8;
+}
+.tok-comment {
+  color: rgba(255, 255, 255, 0.28);
+  font-style: italic;
+}
+.tok-num {
+  color: #ffb86c;
+}
+.tok-type {
+  color: #70d8d8;
+}
+.tok-fn {
+  color: #ccff00;
+}
+.tok-op {
+  color: #ff79c6;
+}
+.tok-decorator {
+  color: #ffb86c;
+  font-style: italic;
+}
+
+/* =========================================================================
+   EXPLANATION TEXTAREA — premium writing surface
+   ========================================================================= */
+
+.explanation-area {
+  width: 100%;
+  border-radius: 1rem;
+  background: linear-gradient(180deg, #0c0f0c 0%, #090b09 100%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 14px 16px;
+  font-family:
+    "Space Grotesk",
+    -apple-system,
+    sans-serif;
+  font-size: 13.5px;
+  line-height: 1.75;
+  color: #e8e8e8;
+  outline: none;
+  resize: vertical;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(204, 255, 0, 0.2) transparent;
+}
+
+.explanation-area::placeholder {
+  color: rgba(255, 255, 255, 0.22);
+  font-style: italic;
+}
+
+.explanation-area:focus {
+  border-color: rgba(204, 255, 0, 0.5);
+  box-shadow:
+    0 0 0 3px rgba(204, 255, 0, 0.07),
+    0 0 24px rgba(204, 255, 0, 0.08) inset;
+}
+
+.explanation-area:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
