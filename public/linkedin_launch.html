@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>KRUZZ LinkedIn Launch Graphic</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background: #030503;
+      color: #f5f5f5;
+      font-family: 'Inter', -apple-system, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+    
+    /* Control Toolbar */
+    .toolbar {
+      margin-bottom: 24px;
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    .btn {
+      background: linear-gradient(135deg, #d4ff00, #ccff00);
+      color: #080808;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      font-weight: 700;
+      padding: 12px 24px;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      box-shadow: 0 0 20px rgba(204, 255, 0, 0.4);
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 28px rgba(204, 255, 0, 0.6);
+    }
+
+    /* 1200x1200 LinkedIn Banner Container */
+    #banner-card {
+      width: 1200px;
+      height: 1200px;
+      background: #070a07;
+      border-radius: 36px;
+      position: relative;
+      overflow: hidden;
+      border: 2px solid rgba(204, 255, 0, 0.25);
+      box-shadow: 0 32px 80px rgba(0, 0, 0, 0.8), 0 0 40px rgba(204, 255, 0, 0.1);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 64px;
+    }
+
+    /* Ambient Glows */
+    .glow-top-left {
+      position: absolute;
+      top: -120px;
+      left: -120px;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(204, 255, 0, 0.16) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .glow-bottom-right {
+      position: absolute;
+      bottom: -100px;
+      right: -100px;
+      width: 550px;
+      height: 550px;
+      background: radial-gradient(circle, rgba(204, 255, 0, 0.12) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .grid-pattern {
+      position: absolute;
+      inset: 0;
+      background-image: radial-gradient(rgba(255, 255, 255, 0.04) 1.5px, transparent 1.5px);
+      background-size: 32px 32px;
+      pointer-events: none;
+    }
+
+    /* Header */
+    .header {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding-bottom: 32px;
+    }
+    .brand-box {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+    }
+    .brand-logo {
+      width: 58px;
+      height: 58px;
+      border-radius: 16px;
+      border: 2px solid #ccff00;
+      background: #0d120d;
+      padding: 4px;
+      object-fit: contain;
+      box-shadow: 0 0 16px rgba(204, 255, 0, 0.35);
+    }
+    .brand-name {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 32px;
+      font-weight: 900;
+      color: #f5f5f5;
+      letter-spacing: -0.5px;
+    }
+    .brand-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      font-weight: 700;
+      color: #8a8a8a;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
+    .live-badge {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: #142008;
+      border: 1.5px solid rgba(204, 255, 0, 0.5);
+      border-radius: 100px;
+      padding: 10px 22px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      font-weight: 800;
+      color: #ccff00;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      box-shadow: 0 0 16px rgba(204, 255, 0, 0.25);
+    }
+    .live-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #ccff00;
+      box-shadow: 0 0 10px #ccff00;
+      animation: pulse 1.8s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
+    }
+
+    /* Main Hero Split */
+    .hero-split {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 56px;
+      margin: 20px 0;
+    }
+
+    /* Left Copy */
+    .hero-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+    .kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+      font-weight: 700;
+      color: #ccff00;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+    .hero-title {
+      font-size: 52px;
+      font-weight: 900;
+      line-height: 1.12;
+      color: #f5f5f5;
+      letter-spacing: -1px;
+    }
+    .hero-title span {
+      background: linear-gradient(135deg, #d4ff00 20%, #8ef500 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .hero-desc {
+      font-size: 18px;
+      line-height: 1.55;
+      color: #b0b5b0;
+      max-width: 520px;
+    }
+
+    /* Right QR Cyber Panel */
+    .qr-showcase {
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      background: #0b100b;
+      border: 1.5px solid rgba(204, 255, 0, 0.3);
+      border-radius: 32px;
+      padding: 32px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7), 0 0 30px rgba(204, 255, 0, 0.12);
+      position: relative;
+    }
+    .qr-frame {
+      position: relative;
+      background: #ffffff;
+      padding: 16px;
+      border-radius: 24px;
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.6);
+    }
+    /* Cyber Corner Reticles */
+    .reticle {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      border-color: #ccff00;
+      border-style: solid;
+      pointer-events: none;
+    }
+    .reticle-tl { top: -6px; left: -6px; border-width: 3px 0 0 3px; }
+    .reticle-tr { top: -6px; right: -6px; border-width: 3px 3px 0 0; }
+    .reticle-bl { bottom: -6px; left: -6px; border-width: 0 0 3px 3px; }
+    .reticle-br { bottom: -6px; right: -6px; border-width: 0 3px 3px 0; }
+
+    #qr-canvas {
+      display: block;
+      width: 290px;
+      height: 290px;
+      border-radius: 12px;
+    }
+    .qr-badge {
+      margin-top: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #142008;
+      border: 1px solid rgba(204, 255, 0, 0.4);
+      padding: 8px 18px;
+      border-radius: 100px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 700;
+      color: #ccff00;
+      letter-spacing: 0.5px;
+    }
+    .qr-url {
+      margin-top: 10px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      font-weight: 600;
+      color: #8a8a8a;
+    }
+
+    /* 4 Feature Highlights Grid */
+    .features-grid {
+      position: relative;
+      z-index: 10;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-top: 8px;
+    }
+    .feature-card {
+      background: #0d120d;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 20px;
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+    .feature-icon {
+      font-size: 24px;
+      line-height: 1;
+      margin-bottom: 2px;
+    }
+    .feature-title {
+      font-size: 15px;
+      font-weight: 800;
+      color: #f5f5f5;
+      letter-spacing: -0.2px;
+    }
+    .feature-sub {
+      font-size: 12px;
+      line-height: 1.45;
+      color: #8a8a8a;
+    }
+
+    /* Footer */
+    .footer {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      padding-top: 28px;
+    }
+    .author-info {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .author-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      border: 2px solid #ccff00;
+      object-fit: cover;
+      box-shadow: 0 0 12px rgba(204, 255, 0, 0.35);
+    }
+    .author-text {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .author-name {
+      font-size: 15px;
+      font-weight: 700;
+      color: #f5f5f5;
+    }
+    .author-role {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: #8a8a8a;
+    }
+    .footer-pill {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 100px;
+      padding: 8px 18px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      font-weight: 600;
+      color: #b0b5b0;
+    }
+    .footer-pill span {
+      color: #ccff00;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="toolbar">
+    <button class="btn" onclick="downloadImage()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+      Download High-Res 1200x1200px PNG (For LinkedIn Post)
+    </button>
+  </div>
+
+  <div id="banner-card">
+    <div class="glow-top-left"></div>
+    <div class="glow-bottom-right"></div>
+    <div class="grid-pattern"></div>
+
+    <!-- Header -->
+    <div class="header">
+      <div class="brand-box">
+        <img src="/logo.png" alt="KRUZZ Logo" class="brand-logo" id="header-logo">
+        <div>
+          <h1 class="brand-name">KRUZZ</h1>
+          <p class="brand-tag">// SYSTEM ARCHITECTURE ARENA</p>
+        </div>
+      </div>
+      <div class="live-badge">
+        <span class="live-dot"></span>
+        <span>LIVE IN PRODUCTION · FREE FOR STUDENTS</span>
+      </div>
+    </div>
+
+    <!-- Hero Content & Scannable QR -->
+    <div class="hero-split">
+      <div class="hero-content">
+        <div class="kicker">
+          <span>⚡ OFFICIAL PLATFORM LAUNCH</span>
+        </div>
+        <h2 class="hero-title">
+          Master Software Systems <span>By Investigating Real Architectures.</span>
+        </h2>
+        <p class="hero-desc">
+          Stop memorizing static theory. Explore 35 interactive architectural case studies—from ATMs and Library Systems to Rate Limiters and Distributed Caches—with instant AI diagnostics and verified proof-of-work.
+        </p>
+      </div>
+
+      <!-- Scannable Cyber QR Card -->
+      <div class="qr-showcase">
+        <div class="qr-frame">
+          <div class="reticle reticle-tl"></div>
+          <div class="reticle reticle-tr"></div>
+          <div class="reticle reticle-bl"></div>
+          <div class="reticle reticle-br"></div>
+          <canvas id="qr-canvas" width="580" height="580"></canvas>
+        </div>
+        <div class="qr-badge">
+          <span>📱 Point Camera to Test Live</span>
+        </div>
+        <div class="qr-url">kruzz-three.vercel.app</div>
+      </div>
+    </div>
+
+    <!-- 4 Value Pillar Cards -->
+    <div class="features-grid">
+      <div class="feature-card">
+        <span class="feature-icon">🏛️</span>
+        <h3 class="feature-title">35 Architecture Cases</h3>
+        <p class="feature-sub">Deep-dive into real-world OOP, Web, and Distributed systems.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">⚙️</span>
+        <h3 class="feature-title">Interactive Visuals</h3>
+        <p class="feature-sub">Dynamic Mermaid diagrams, system flowcharts, and state machines.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">🤖</span>
+        <h3 class="feature-title">AI System Diagnostic</h3>
+        <p class="feature-sub">Instant automated evaluations with granular architectural feedback.</p>
+      </div>
+      <div class="feature-card">
+        <span class="feature-icon">🛡️</span>
+        <h3 class="feature-title">Verified Dossier</h3>
+        <p class="feature-sub">Earn Reasoning Credits, build daily streaks, and share custom QR badges.</p>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <div class="author-info">
+        <img src="/Observer.jpg" alt="Creator Avatar" class="author-avatar" id="footer-avatar">
+        <div class="author-text">
+          <p class="author-name">Reddy Santosh Kumar</p>
+          <p class="author-role">Founder & Creator · Built in Public for Engineers</p>
+        </div>
+      </div>
+      <div class="footer-pill">
+        Deployed on <span>Vercel</span> & <span>Convex</span> · Zero Sign-Up Required to Browse
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const DEPLOY_URL = "https://kruzz-three.vercel.app/";
+
+    // Embedded QR Generator (Version 4-H, 33x33)
+    function generateQRMatrix(text) {
+      const gfExp = new Array(512), gfLog = new Array(256);
+      let x = 1;
+      for (let i = 0; i < 255; i++) {
+        gfExp[i] = x; gfExp[i + 255] = x; gfLog[x] = i;
+        x = (x << 1) ^ (x & 0x80 ? 0x11D : 0);
+      }
+      function gfMul(a, b) { return (a === 0 || b === 0) ? 0 : gfExp[gfLog[a] + gfLog[b]]; }
+      function rsGenPoly(degree) {
+        let poly = [1];
+        for (let i = 0; i < degree; i++) {
+          let next = new Array(poly.length + 1).fill(0);
+          for (let j = 0; j < poly.length; j++) {
+            next[j] ^= gfMul(poly[j], gfExp[i]);
+            next[j + 1] ^= poly[j];
+          }
+          poly = next;
+        }
+        return poly;
+      }
+      function calcEC(dataBlock, ecLen) {
+        let gen = rsGenPoly(ecLen);
+        let res = new Array(ecLen).fill(0);
+        for (let i = 0; i < dataBlock.length; i++) {
+          let coef = dataBlock[i] ^ res[0];
+          res.shift(); res.push(0);
+          if (coef !== 0) {
+            for (let j = 0; j < ecLen; j++) res[j] ^= gfMul(gen[j], coef);
+          }
+        }
+        return res;
+      }
+      let bytes = [];
+      for (let i = 0; i < text.length; i++) bytes.push(text.charCodeAt(i));
+      let bb = [];
+      function pushBits(val, len) {
+        for (let i = len - 1; i >= 0; i--) bb.push((val >>> i) & 1);
+      }
+      pushBits(4, 4); pushBits(bytes.length, 8);
+      for (let i = 0; i < bytes.length; i++) pushBits(bytes[i], 8);
+      pushBits(0, 4);
+      while (bb.length % 8 !== 0) bb.push(0);
+      let data = [];
+      for (let i = 0; i < bb.length; i += 8) {
+        let b = 0;
+        for (let j = 0; j < 8; j++) b = (b << 1) | bb[i + j];
+        data.push(b);
+      }
+      let padBytes = [0xEC, 0x11], padIdx = 0;
+      while (data.length < 36) { data.push(padBytes[padIdx % 2]); padIdx++; }
+      let b1Data = data.slice(0, 18), b2Data = data.slice(18, 36);
+      let b1EC = calcEC(b1Data, 22), b2EC = calcEC(b2Data, 22);
+      let codewords = [];
+      for (let i = 0; i < 18; i++) { codewords.push(b1Data[i]); codewords.push(b2Data[i]); }
+      for (let i = 0; i < 22; i++) { codewords.push(b1EC[i]); codewords.push(b2EC[i]); }
+
+      const size = 33;
+      let modules = Array.from({length: size}, () => new Array(size).fill(false));
+      let isFunc = Array.from({length: size}, () => new Array(size).fill(false));
+      function setFunc(x, y, val) { modules[y][x] = val; isFunc[y][x] = true; }
+      function drawFinder(x, y) {
+        for (let dy = -3; dy <= 3; dy++) {
+          for (let dx = -3; dx <= 3; dx++) {
+            let dist = Math.max(Math.abs(dx), Math.abs(dy));
+            let xx = x + dx, yy = y + dy;
+            if (xx >= 0 && xx < size && yy >= 0 && yy < size) setFunc(xx, yy, dist !== 2);
+          }
+        }
+      }
+      drawFinder(3, 3); drawFinder(size - 4, 3); drawFinder(3, size - 4);
+      for (let dy = -2; dy <= 2; dy++) {
+        for (let dx = -2; dx <= 2; dx++) {
+          setFunc(26 + dx, 26 + dy, Math.max(Math.abs(dx), Math.abs(dy)) !== 1);
+        }
+      }
+      for (let i = 0; i < size; i++) {
+        if (!isFunc[6][i]) setFunc(i, 6, i % 2 === 0);
+        if (!isFunc[i][6]) setFunc(6, i, i % 2 === 0);
+      }
+      setFunc(8, size - 8, true);
+      for (let i = 0; i < 8; i++) {
+        setFunc(8, i, false); setFunc(i, 8, false); setFunc(size - 1 - i, 8, false); setFunc(8, size - 1 - i, false);
+      }
+      setFunc(8, 8, false);
+      let bitIdx = 0;
+      for (let right = size - 1; right >= 1; right -= 2) {
+        if (right === 6) right = 5;
+        for (let vert = 0; vert < size; vert++) {
+          for (let j = 0; j < 2; j++) {
+            let x = right - j;
+            let upward = ((right + 1) & 2) === 0;
+            let y = upward ? size - 1 - vert : vert;
+            if (!isFunc[y][x]) {
+              let bit = false;
+              if (bitIdx < codewords.length * 8) {
+                bit = ((codewords[bitIdx >>> 3] >>> (7 - (bitIdx & 7))) & 1) !== 0;
+                bitIdx++;
+              }
+              if ((x + y) % 2 === 0) bit = !bit;
+              modules[y][x] = bit;
+            }
+          }
+        }
+      }
+      let formatBits = 0x085B;
+      for (let i = 0; i < 15; i++) {
+        let bit = ((formatBits >>> i) & 1) !== 0;
+        if (i < 6) setFunc(8, i, bit);
+        else if (i < 8) setFunc(8, i + 1, bit);
+        else setFunc(size - 15 + i, 8, bit);
+        if (i < 8) setFunc(size - 1 - i, 8, bit);
+        else setFunc(8, size - 15 + i, bit);
+      }
+      return { modules, size };
+    }
+
+    async function initQR() {
+      const canvas = document.getElementById('qr-canvas');
+      const ctx = canvas.getContext('2d');
+      const width = canvas.width;
+      const { modules, size } = generateQRMatrix(DEPLOY_URL);
+      const margin = 2;
+      const moduleCount = size + margin * 2;
+      const moduleSize = width / moduleCount;
+
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, width, width);
+      ctx.fillStyle = "#060906";
+
+      for (let r = 0; r < size; r++) {
+        for (let c = 0; c < size; c++) {
+          if (modules[r][c]) {
+            ctx.fillRect(
+              Math.floor((c + margin) * moduleSize),
+              Math.floor((r + margin) * moduleSize),
+              Math.ceil(moduleSize),
+              Math.ceil(moduleSize)
+            );
+          }
+        }
+      }
+
+      // Draw Center KRUZZ Logo
+      const logo = new Image();
+      logo.onload = () => {
+        const cx = width / 2;
+        const cy = width / 2;
+        const outerR = width * 0.12;
+        const innerR = width * 0.105;
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(cx, cy, outerR + 6, 0, Math.PI * 2);
+        ctx.fillStyle = '#ffffff';
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(cx, cy, outerR, 0, Math.PI * 2);
+        ctx.fillStyle = '#0a0f0a';
+        ctx.fill();
+
+        ctx.strokeStyle = '#ccff00';
+        ctx.lineWidth = 5;
+        ctx.shadowColor = 'rgba(204, 255, 0, 0.6)';
+        ctx.shadowBlur = 12;
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+
+        ctx.beginPath();
+        ctx.arc(cx, cy, innerR, 0, Math.PI * 2);
+        ctx.clip();
+        ctx.drawImage(logo, cx - innerR, cy - innerR, innerR * 2, innerR * 2);
+        ctx.restore();
+      };
+      logo.src = "/logo.png";
+    }
+
+    function downloadImage() {
+      const a = document.createElement('a');
+      a.download = 'kruzz-linkedin-launch.png';
+      a.href = '/linkedin_launch_banner_verified_1789310551173.png';
+      a.click();
+    }
+
+    window.onload = initQR;
+  </script>
+</body>
+</html>
