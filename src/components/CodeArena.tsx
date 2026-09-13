@@ -10,7 +10,7 @@ import type { LabGrade } from "../../convex/ai";
 const MIN_WORDS = 20;
 const PASS_THRESHOLD = 80;
 
-const LANGUAGES = ["Python", "Java", "JavaScript"] as const;
+const LANGUAGES = ["Python", "Java", "C"] as const;
 type Lang = (typeof LANGUAGES)[number];
 
 /**
@@ -57,15 +57,24 @@ function starterFor(lang: Lang, lab: CodeLab): string {
     ].join("\n");
   }
 
-  // JavaScript fallback
-  const hintLines = hints.map((h, i) => `    // ${i + 1}. ${h}`).join("\n");
+  // C language template
+  const cSig =
+    (lab as any).cSignature ??
+    (lab.languages as any)?.c?.signature ??
+    `bool ${fn}(/* arguments */)`;
+  const hintLines = hints.map((h, i) => `// ${i + 1}. ${h}`).join("\n");
   return [
-    `// ${lab.signature}`,
-    `function ${fn}(...args) {`,
-    `    // Requirements:`,
-    hintLines || `    // (see the diagram above)`,
+    `#include <stdio.h>`,
+    `#include <stdbool.h>`,
+    `#include <string.h>`,
     ``,
-    `    // Write your solution here`,
+    `// Signature: ${cSig}`,
+    `// Requirements:`,
+    hintLines || `// (see the diagram above)`,
+    ``,
+    `// Write your solution here:`,
+    `${cSig} {`,
+    `    return true;`,
     `}`,
     ``,
   ].join("\n");
@@ -148,7 +157,7 @@ export function CodeArena({
   const authBlocked = !isAuthenticated && !earned;
 
   return (
-    <div className="glass-panel mt-6 rounded-3xl p-6 shadow-[0_20px_40px_rgba(0,0,0,0.45)]">
+    <div className="glass-panel mt-6 rounded-2xl sm:rounded-3xl p-3.5 sm:p-6 shadow-[0_20px_40px_rgba(0,0,0,0.45)] min-w-0">
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
@@ -167,7 +176,7 @@ export function CodeArena({
               : "bg-gradient-to-r from-[#d4ff00] via-[#ccff00] to-[#9df000] text-[#080808] shadow-[0_0_12px_rgba(204,255,0,0.4)]"
           }`}
         >
-          {earned ? `\u2713 +${RC_RULES.codeLab} RC earned` : `+${RC_RULES.codeLab} RC reward`}
+          {earned ? `✓ +${RC_RULES.codeLab} RC earned` : `+${RC_RULES.codeLab} RC reward`}
         </span>
       </div>
 
@@ -199,13 +208,13 @@ export function CodeArena({
       </div>
 
       {/* Language selector */}
-      <div className="mt-5 flex flex-wrap items-center justify-between gap-2">
+      <div className="mt-5 flex flex-wrap items-center justify-between gap-2.5">
         <p className="font-mono text-[11px] text-[#ccff00]/80">
           {language === "Java"
             ? (lab.javaSignature ?? lab.languages?.java?.signature ?? lab.signature)
-            : language === "Python"
-              ? (lab.pythonSignature ?? lab.languages?.python?.signature ?? lab.signature)
-              : lab.signature}
+            : language === "C"
+              ? ((lab as any).cSignature ?? (lab.languages as any)?.c?.signature ?? `bool ${lab.functionName}(...)`)
+              : (lab.pythonSignature ?? lab.languages?.python?.signature ?? lab.signature)}
         </p>
         <div className="flex gap-1 rounded-xl bg-black/40 p-1 border border-white/[0.06]">
           {LANGUAGES.map((l) => (
@@ -214,9 +223,9 @@ export function CodeArena({
               type="button"
               onClick={() => switchLanguage(l)}
               disabled={earned}
-              className={`rounded-lg px-3 py-1.5 font-mono text-[11px] font-bold transition-all ${
+              className={`rounded-lg px-3.5 py-1.5 font-mono text-[11px] font-bold transition-all cursor-pointer ${
                 language === l
-                  ? "bg-[#182608] text-[#ccff00] border border-[#ccff00]/40"
+                  ? "bg-[#182608] text-[#ccff00] border border-[#ccff00]/40 shadow-[0_0_8px_rgba(204,255,0,0.25)]"
                   : "text-[#8a8a8a] hover:text-[#f5f5f5]"
               } disabled:opacity-40`}
             >
@@ -227,7 +236,7 @@ export function CodeArena({
       </div>
 
       {/* Code Editor — starts blank (skeleton only, not the reference solution) */}
-      <CodeEditor value={code} onChange={setCode} language={language} disabled={earned} rows={14} />
+      <CodeEditor value={code} onChange={setCode} language={language} disabled={earned} rows={16} />
 
       {/* Action buttons */}
       <div className="mt-3 flex flex-wrap items-center gap-2.5">

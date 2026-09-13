@@ -342,7 +342,7 @@ function CaseStudyPage() {
             </aside>
 
             {/* MAIN CONTENT */}
-            <div className="p-6">
+            <div className="p-3.5 sm:p-5 lg:p-6 min-w-0">
               <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-primary">
                 {String(step + 1).padStart(2, "0")} — {SECTION_KICKERS[step]}
               </p>
@@ -701,22 +701,22 @@ function CaseStudyPage() {
 
                   {/* Language tabs */}
                   {study.implementation?.samples && study.implementation.samples.length > 0 && (
-                    <div className="mt-5 flex items-center gap-1 rounded-xl bg-black/40 p-1 border border-white/[0.06] w-fit">
+                    <div className="mt-5 flex flex-wrap items-center gap-1.5 rounded-xl bg-black/40 p-1.5 border border-white/[0.06] max-w-full">
                       {study.implementation.samples.map((s: any, i: number) => (
                         <button
                           key={s.language}
                           type="button"
                           onClick={() => setLang(i)}
-                          className={`rounded-lg px-3 py-1.5 font-mono text-[11px] font-bold transition-all ${
+                          className={`rounded-lg px-3.5 py-2 sm:py-1.5 font-mono text-[11px] font-bold transition-all cursor-pointer ${
                             i === lang
-                              ? "bg-[#182608] text-[#ccff00] border border-[#ccff00]/40"
+                              ? "bg-[#182608] text-[#ccff00] border border-[#ccff00]/40 shadow-[0_0_8px_rgba(204,255,0,0.25)]"
                               : "text-[#8a8a8a] hover:text-[#f5f5f5]"
                           }`}
                         >
                           {s.language.charAt(0).toUpperCase() + s.language.slice(1)}
                         </button>
                       ))}
-                      <span className="ml-3 font-mono text-[10px] text-[#5a5a5a]">
+                      <span className="ml-auto px-2 font-mono text-[10px] text-[#777]">
                         {sample?.filename}
                       </span>
                     </div>

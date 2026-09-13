@@ -169,8 +169,8 @@ export function CodeEditor({
   const lineCount = Math.max(lines.length, rows);
   const highlighted = highlight(value, language);
 
-  // line-height must match between textarea and highlight div
-  const LINE_H = 22; // px
+  // line-height must match between textarea, highlight div, and gutter line numbers
+  const LINE_H = 24; // px
   const bodyHeight = lineCount * LINE_H + 24; // 12px padding top+bottom
 
   return (
@@ -180,7 +180,7 @@ export function CodeEditor({
         {/* Gutter — line numbers */}
         <div className="code-editor-gutter" aria-hidden="true" style={{ height: bodyHeight }}>
           {Array.from({ length: lineCount }, (_, i) => (
-            <div key={i} className="code-editor-lineno">
+            <div key={i} className="code-editor-lineno" style={{ height: LINE_H, lineHeight: `${LINE_H}px` }}>
               {i + 1}
             </div>
           ))}

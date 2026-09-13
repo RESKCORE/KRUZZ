@@ -234,15 +234,15 @@ body::-webkit-scrollbar {
 }
 
 .code-editor-lineno {
-  height: 22px;
+  height: 24px;
   display: flex;
   align-items: center;
   justify-content: flex-end;
   padding-right: 12px;
   font-family: "JetBrains Mono", ui-monospace, monospace;
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.2);
-  line-height: 22px;
+  font-size: 11.5px;
+  color: rgba(255, 255, 255, 0.22);
+  line-height: 24px;
   transition: color 0.1s;
 }
 
@@ -261,13 +261,14 @@ body::-webkit-scrollbar {
   inset: 0;
   padding: 12px 16px;
   font-family: "JetBrains Mono", ui-monospace, monospace;
-  font-size: 13px;
-  line-height: 22px;
+  font-size: 13.5px;
+  line-height: 24px;
   white-space: pre;
   overflow: auto;
   tab-size: 4;
   word-break: normal;
   overflow-wrap: normal;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* ── Highlight layer */
@@ -301,7 +302,7 @@ body::-webkit-scrollbar {
 }
 
 .code-editor-textarea:disabled {
-  opacity: 0.5;
+  opacity: 0.65;
   cursor: not-allowed;
 }
 
@@ -310,14 +311,44 @@ body::-webkit-scrollbar {
   display: flex;
   gap: 16px;
   align-items: center;
-  padding: 4px 16px 4px 60px;
+  padding: 6px 16px 6px 60px;
   background: #0a0c0a;
   border-top: 1px solid rgba(255, 255, 255, 0.05);
   font-family: "JetBrains Mono", ui-monospace, monospace;
-  font-size: 10px;
-  color: rgba(255, 255, 255, 0.3);
+  font-size: 10.5px;
+  color: rgba(255, 255, 255, 0.35);
   user-select: none;
   flex-shrink: 0;
+}
+
+/* ── Mobile responsiveness for code editor ── */
+@media (max-width: 640px) {
+  .code-editor-root {
+    border-radius: 0.75rem;
+    margin-top: 0.35rem;
+  }
+  .code-editor-gutter {
+    width: 36px;
+    padding: 10px 0;
+  }
+  .code-editor-lineno {
+    height: 24px;
+    line-height: 24px;
+    padding-right: 6px;
+    font-size: 11px;
+  }
+  .code-editor-highlight,
+  .code-editor-textarea {
+    padding: 10px 12px;
+    font-size: 14.5px; /* Noticeably bigger and clearer on mobile viewports */
+    line-height: 24px;
+  }
+  .code-editor-statusbar {
+    padding: 6px 12px;
+    gap: 8px;
+    font-size: 9.5px;
+    flex-wrap: wrap;
+  }
 }
 
 .code-editor-statusbar span:first-child {

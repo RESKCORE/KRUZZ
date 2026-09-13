@@ -127,9 +127,12 @@ export type CodeLab = {
   javaStarterCode?: string;
   pythonSignature?: string;
   pythonStarterCode?: string;
+  cSignature?: string;
+  cStarterCode?: string;
   languages?: {
     python?: LanguageVariant;
     java?: LanguageVariant;
+    c?: LanguageVariant;
   };
   requiredConcepts?: string[];
   hints: string[];

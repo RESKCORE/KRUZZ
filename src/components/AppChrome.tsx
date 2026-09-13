@@ -1,11 +1,101 @@
-import { type ReactNode, useMemo } from "react";
+import { type ReactNode, useMemo, useState, useRef, useEffect } from "react";
 import { Link, useRouter, useRouterState } from "@tanstack/react-router";
 import { NotchNav, type NotchItemData } from "@/components/ui/adaptive-notch-navigation-bar";
 import { RCBadge, StreakBadge } from "@/components/RCWallet";
-import { SignedIn, SignedOut, UserButton } from "@clerk/clerk-react";
-import { BookOpen, Home, LayoutDashboard, ShoppingBag, Swords, User } from "lucide-react";
+import { SignedIn, SignedOut, useClerk, useUser } from "@clerk/clerk-react";
+import { BookOpen, Home, LayoutDashboard, ShoppingBag, Swords, User, Settings, LogOut, ChevronRight } from "lucide-react";
 import { useAccount } from "@/lib/account";
 import { AuthGate } from "@/components/AuthGate";
+
+function SettingsDropdown() {
+  const [open, setOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const { signOut } = useClerk();
+  const { user } = useUser();
+  const router = useRouter();
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setOpen(false);
+      }
+    }
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") setOpen(false);
+    }
+    if (open) {
+      document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener("keydown", handleKeyDown);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [open]);
+
+  const handleSignOut = async () => {
+    setOpen(false);
+    await signOut({ redirectUrl: "/" });
+    router.navigate({ to: "/" });
+  };
+
+  const displayName = user?.fullName || user?.username || "Learner";
+  const displayEmail = user?.primaryEmailAddress?.emailAddress || "";
+
+  return (
+    <div className="relative" ref={dropdownRef}>
+      <button
+        type="button"
+        onClick={() => setOpen((prev) => !prev)}
+        className={`flex size-8 items-center justify-center rounded-xl border transition-all duration-200 cursor-pointer ${
+          open
+            ? "border-[#ccff00]/60 bg-[#182608] text-[#ccff00] shadow-[0_0_12px_rgba(204,255,0,0.3)]"
+            : "border-white/[0.08] bg-white/[0.03] text-[#8a8a8a] hover:border-white/20 hover:text-[#f5f5f5] hover:bg-white/[0.06]"
+        }`}
+        aria-label="User Settings"
+        aria-expanded={open}
+      >
+        <Settings className="size-4 stroke-[2]" />
+      </button>
+
+      {open && (
+        <div className="absolute right-0 top-full mt-2 w-56 rounded-2xl border border-white/[0.1] bg-[#0d0f0d]/95 p-1.5 shadow-[0_16px_36px_rgba(0,0,0,0.7)] backdrop-blur-xl z-50 animate-in fade-in zoom-in-95 duration-150">
+          <div className="border-b border-white/[0.06] px-3 py-2.5">
+            <p className="truncate text-xs font-bold text-[#f5f5f5]">{displayName}</p>
+            {displayEmail && (
+              <p className="truncate font-mono text-[10px] text-[#8a8a8a]">{displayEmail}</p>
+            )}
+          </div>
+
+          <div className="py-1">
+            <Link
+              to="/profile"
+              onClick={() => setOpen(false)}
+              className="flex items-center justify-between rounded-xl px-3 py-2 text-xs font-medium text-[#b8b8b8] transition-colors hover:bg-white/[0.06] hover:text-[#f5f5f5]"
+            >
+              <span className="flex items-center gap-2">
+                <User className="size-3.5 text-[#ccff00]" />
+                Profile
+              </span>
+              <ChevronRight className="size-3 text-[#555]" />
+            </Link>
+          </div>
+
+          <div className="border-t border-white/[0.06] pt-1">
+            <button
+              type="button"
+              onClick={handleSignOut}
+              className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-xs font-medium text-[#ff5555] transition-colors hover:bg-[#201010] hover:text-[#ff7777] cursor-pointer"
+            >
+              <LogOut className="size-3.5" />
+              Sign Out
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 interface AppChromeProps {
   children: ReactNode;
@@ -101,16 +191,7 @@ export function AppChrome({ children }: AppChromeProps) {
       </SignedOut>
 
       <SignedIn>
-        <div className="flex items-center">
-          <UserButton
-            appearance={{
-              elements: {
-                userButtonAvatarBox:
-                  "size-7 ring-1.5 ring-[#ccff00]/60 shadow-[0_0_10px_rgba(204,255,0,0.35)]",
-              },
-            }}
-          />
-        </div>
+        <SettingsDropdown />
       </SignedIn>
     </div>
   );
