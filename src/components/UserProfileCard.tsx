@@ -350,6 +350,7 @@ export function UserProfileCard({ className = "" }: UserProfileCardProps) {
         isOpen={isShareModalOpen}
         onClose={() => setIsShareModalOpen(false)}
         user={{
+          profileId: (profile?._id as string) || (user?.id as string) || handle,
           name: displayName,
           handle,
           rank: rank.name,

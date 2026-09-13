@@ -225,3 +225,112 @@ export const setProfileMedia = mutation({
     return updates;
   },
 });
+
+export const getPublicProfile = query({
+  args: {
+    profileId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    if (!args.profileId) return null;
+
+    let user = null;
+
+    // 1. Try by Convex document _id
+    try {
+      user = await ctx.db.get(args.profileId as Id<"users">);
+    } catch {
+      // not a valid convex ID
+    }
+
+    // 2. Try by Clerk ID
+    if (!user) {
+      user = await ctx.db
+        .query("users")
+        .withIndex("by_clerk_id", (q) => q.eq("clerkId", args.profileId))
+        .unique();
+    }
+
+    // 3. Fallback: match by email prefix (handle) or name or tokenIdentifier
+    if (!user) {
+      const all = await ctx.db.query("users").collect();
+      const target = args.profileId.toLowerCase().replace(/^@/, "");
+      user =
+        all.find((u) => {
+          const emailPrefix = u.email ? (u.email.split("@")[0] ?? "").toLowerCase() : "";
+          const nameClean = u.name ? u.name.toLowerCase().replace(/\s+/g, "") : "";
+          const nameKebab = u.name ? u.name.toLowerCase().replace(/\s+/g, "-") : "";
+          return (
+            emailPrefix === target ||
+            nameClean === target ||
+            nameKebab === target ||
+            u.clerkId.toLowerCase() === target ||
+            u.tokenIdentifier.toLowerCase() === target
+          );
+        }) ?? null;
+    }
+
+    if (!user) return null;
+
+    // Streak
+    const streak = await ctx.db
+      .query("streaks")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .unique();
+
+    // Case progress
+    const progressList = await ctx.db
+      .query("caseProgress")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .collect();
+
+    // All case studies to enrich names
+    const allCases = await ctx.db.query("caseStudies").collect();
+
+    // Completed case studies
+    const completedStudies = progressList
+      .filter((p) => p.status === "completed" || Boolean(p.passed && (p.completedSections?.length ?? 0) >= 7))
+      .map((p) => {
+        const caseStudy = allCases.find((c) => c.slug === p.caseSlug);
+        return {
+          caseSlug: p.caseSlug,
+          title: caseStudy?.title ?? p.caseSlug,
+          shortTitle: caseStudy?.shortTitle ?? caseStudy?.title ?? p.caseSlug,
+          category: caseStudy?.category ?? "System Architecture",
+          difficulty: caseStudy?.difficulty ?? "Beginner",
+          completedAt: p.completedAt ?? p.updatedAt,
+          bestScore: p.bestScore,
+          passed: p.passed,
+        };
+      })
+      .sort((a, b) => (b.completedAt ?? 0) - (a.completedAt ?? 0));
+
+    // Handle
+    const emailPrefix = user.email ? user.email.split("@")[0] : "investigator";
+    const handle = emailPrefix;
+
+    return {
+      profileId: user._id,
+      clerkId: user.clerkId,
+      name: user.name || "Anonymous Investigator",
+      handle,
+      imageUrl: user.customImageUrl || user.imageUrl,
+      bannerUrl: user.bannerUrl,
+      points: user.points,
+      rank: user.rank,
+      createdAt: user.createdAt,
+      streak: {
+        current: streak?.current ?? 0,
+        longest: streak?.longest ?? 0,
+        lastActive: streak?.lastActive ?? "",
+      },
+      stats: {
+        solvedCasesCount: completedStudies.length,
+        totalCasesCount: allCases.length,
+        totalRC: user.points,
+        streakDays: streak?.current ?? 0,
+        longestStreakDays: streak?.longest ?? 0,
+      },
+      completedCases: completedStudies,
+    };
+  },
+});

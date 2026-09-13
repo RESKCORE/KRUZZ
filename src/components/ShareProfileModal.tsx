@@ -7,6 +7,7 @@ interface ShareProfileModalProps {
   isOpen: boolean;
   onClose: () => void;
   user: {
+    profileId?: string;
     name: string;
     handle: string;
     rank: string;
@@ -315,20 +316,22 @@ export function ShareProfileModal({ isOpen, onClose, user }: ShareProfileModalPr
   };
 
   const handleCopyLink = () => {
-    const url = `${window.location.origin}/profile`;
+    const slugOrId = user.profileId || user.handle;
+    const url = `${window.location.origin}/profile/${slugOrId}`;
     if (navigator.clipboard) {
       navigator.clipboard.writeText(url);
       setIsCopied(true);
-      toast.success("Profile link copied!");
+      toast.success("Public profile link copied!");
       setTimeout(() => setIsCopied(false), 2000);
     }
   };
 
   const handleShareTwitter = () => {
+    const slugOrId = user.profileId || user.handle;
     const text = encodeURIComponent(
-      `Solved ${user.solvedCases} cases on @KRUZZDev! “${flavor.quote}” — ${flavor.author}. Check my badge:`,
+      `Solved ${user.solvedCases} cases on @KRUZZDev! “${flavor.quote}” — ${flavor.author}. Check my public profile:`,
     );
-    const url = encodeURIComponent(`${window.location.origin}/profile`);
+    const url = encodeURIComponent(`${window.location.origin}/profile/${slugOrId}`);
     window.open(`https://twitter.com/intent/tweet?text=${text}&url=${url}`, "_blank");
   };
 

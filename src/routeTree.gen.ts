@@ -12,13 +12,14 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as MethodRouteImport } from './routes/method'
-import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as SignInRouteImport } from './routes/sign-in'
 import { Route as SignUpRouteImport } from './routes/sign-up'
 import { Route as SsoCallbackRouteImport } from './routes/sso-callback'
 import { Route as StoreRouteImport } from './routes/store'
 import { Route as CasesIndexRouteImport } from './routes/cases.index'
 import { Route as CasesSlugRouteImport } from './routes/cases.$slug'
+import { Route as ProfileIndexRouteImport } from './routes/profile.index'
+import { Route as ProfileProfileIdRouteImport } from './routes/profile.$profileId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -33,11 +34,6 @@ const DashboardRoute = DashboardRouteImport.update({
 const MethodRoute = MethodRouteImport.update({
   id: '/method',
   path: '/method',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ProfileRoute = ProfileRouteImport.update({
-  id: '/profile',
-  path: '/profile',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SignInRoute = SignInRouteImport.update({
@@ -70,43 +66,56 @@ const CasesSlugRoute = CasesSlugRouteImport.update({
   path: '/cases/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProfileIndexRoute = ProfileIndexRouteImport.update({
+  id: '/profile/',
+  path: '/profile/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfileProfileIdRoute = ProfileProfileIdRouteImport.update({
+  id: '/profile/$profileId',
+  path: '/profile/$profileId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
   '/method': typeof MethodRoute
-  '/profile': typeof ProfileRoute
   '/sign-in': typeof SignInRoute
   '/sign-up': typeof SignUpRoute
   '/sso-callback': typeof SsoCallbackRoute
   '/store': typeof StoreRoute
   '/cases/$slug': typeof CasesSlugRoute
+  '/profile/$profileId': typeof ProfileProfileIdRoute
   '/cases/': typeof CasesIndexRoute
+  '/profile/': typeof ProfileIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
   '/method': typeof MethodRoute
-  '/profile': typeof ProfileRoute
   '/sign-in': typeof SignInRoute
   '/sign-up': typeof SignUpRoute
   '/sso-callback': typeof SsoCallbackRoute
   '/store': typeof StoreRoute
   '/cases/$slug': typeof CasesSlugRoute
+  '/profile/$profileId': typeof ProfileProfileIdRoute
   '/cases': typeof CasesIndexRoute
+  '/profile': typeof ProfileIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
   '/method': typeof MethodRoute
-  '/profile': typeof ProfileRoute
   '/sign-in': typeof SignInRoute
   '/sign-up': typeof SignUpRoute
   '/sso-callback': typeof SsoCallbackRoute
   '/store': typeof StoreRoute
   '/cases/$slug': typeof CasesSlugRoute
+  '/profile/$profileId': typeof ProfileProfileIdRoute
   '/cases/': typeof CasesIndexRoute
+  '/profile/': typeof ProfileIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -114,50 +123,54 @@ export interface FileRouteTypes {
     | '/'
     | '/dashboard'
     | '/method'
-    | '/profile'
     | '/sign-in'
     | '/sign-up'
     | '/sso-callback'
     | '/store'
     | '/cases/$slug'
+    | '/profile/$profileId'
     | '/cases/'
+    | '/profile/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/dashboard'
     | '/method'
-    | '/profile'
     | '/sign-in'
     | '/sign-up'
     | '/sso-callback'
     | '/store'
     | '/cases/$slug'
+    | '/profile/$profileId'
     | '/cases'
+    | '/profile'
   id:
     | '__root__'
     | '/'
     | '/dashboard'
     | '/method'
-    | '/profile'
     | '/sign-in'
     | '/sign-up'
     | '/sso-callback'
     | '/store'
     | '/cases/$slug'
+    | '/profile/$profileId'
     | '/cases/'
+    | '/profile/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   DashboardRoute: typeof DashboardRoute
   MethodRoute: typeof MethodRoute
-  ProfileRoute: typeof ProfileRoute
   SignInRoute: typeof SignInRoute
   SignUpRoute: typeof SignUpRoute
   SsoCallbackRoute: typeof SsoCallbackRoute
   StoreRoute: typeof StoreRoute
   CasesSlugRoute: typeof CasesSlugRoute
+  ProfileProfileIdRoute: typeof ProfileProfileIdRoute
   CasesIndexRoute: typeof CasesIndexRoute
+  ProfileIndexRoute: typeof ProfileIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -181,13 +194,6 @@ declare module '@tanstack/react-router' {
       path: '/method'
       fullPath: '/method'
       preLoaderRoute: typeof MethodRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/profile': {
-      id: '/profile'
-      path: '/profile'
-      fullPath: '/profile'
-      preLoaderRoute: typeof ProfileRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/sign-in': {
@@ -232,6 +238,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CasesSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/profile/': {
+      id: '/profile/'
+      path: '/profile'
+      fullPath: '/profile/'
+      preLoaderRoute: typeof ProfileIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profile/$profileId': {
+      id: '/profile/$profileId'
+      path: '/profile/$profileId'
+      fullPath: '/profile/$profileId'
+      preLoaderRoute: typeof ProfileProfileIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -239,13 +259,14 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DashboardRoute: DashboardRoute,
   MethodRoute: MethodRoute,
-  ProfileRoute: ProfileRoute,
   SignInRoute: SignInRoute,
   SignUpRoute: SignUpRoute,
   SsoCallbackRoute: SsoCallbackRoute,
   StoreRoute: StoreRoute,
   CasesSlugRoute: CasesSlugRoute,
+  ProfileProfileIdRoute: ProfileProfileIdRoute,
   CasesIndexRoute: CasesIndexRoute,
+  ProfileIndexRoute: ProfileIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

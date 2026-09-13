@@ -1,0 +1,438 @@
+import { useState } from "react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { AppChrome } from "@/components/AppChrome";
+import { useQuery } from "convex/react";
+import { api } from "../../convex/_generated/api";
+import { useAccount } from "@/lib/account";
+import { ShareProfileModal } from "@/components/ShareProfileModal";
+import {
+  Award,
+  BookOpen,
+  CheckCircle2,
+  ChevronRight,
+  ExternalLink,
+  Flame,
+  Link as LinkIcon,
+  Lock,
+  Share2,
+  ShieldCheck,
+  Sparkles,
+  Trophy,
+  User,
+} from "lucide-react";
+import { toast } from "sonner";
+import { RANKS } from "@/lib/rc";
+
+export const Route = createFileRoute("/profile/$profileId")({
+  loader: ({ params }) => ({ profileId: params.profileId }),
+  head: () => ({
+    meta: [
+      { title: "Public Investigator Dossier — KRUZZ" },
+      {
+        name: "description",
+        content: "Verified software engineering portfolio, streak, and completed system architecture case studies on KRUZZ.",
+      },
+    ],
+  }),
+  component: PublicProfilePage,
+});
+
+function PublicProfilePage() {
+  const { profileId } = Route.useParams();
+  const { user: currentUser, isAuthenticated } = useAccount();
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [isCopied, setIsCopied] = useState(false);
+
+  // Fetch the public profile from Convex
+  const publicData = useQuery(api.users.getPublicProfile, { profileId });
+
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(window.location.href);
+    setIsCopied(true);
+    toast.success("Profile link copied to clipboard!");
+    setTimeout(() => setIsCopied(false), 2000);
+  };
+
+  if (publicData === undefined) {
+    return (
+      <AppChrome>
+        <div className="mx-auto max-w-4xl px-4 py-32 text-center">
+          <div className="inline-block size-7 animate-spin rounded-full border-2 border-[#ccff00] border-t-transparent mb-4" />
+          <p className="font-mono text-xs uppercase tracking-widest text-[#ccff00]">
+            Accessing Verified Investigator Dossier...
+          </p>
+        </div>
+      </AppChrome>
+    );
+  }
+
+  if (publicData === null) {
+    return (
+      <AppChrome>
+        <div className="mx-auto max-w-2xl px-4 py-28 text-center">
+          <div className="mx-auto mb-4 flex size-14 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.03]">
+            <User className="size-7 text-[#8a8a8a]" />
+          </div>
+          <h2 className="text-2xl font-bold text-[#f5f5f5]">Investigator Profile Not Found</h2>
+          <p className="mt-2 text-sm text-[#8a8a8a]">
+            The dossier for “{profileId}” does not exist or has been made private.
+          </p>
+          <div className="mt-6 flex justify-center gap-3">
+            <Link
+              to="/cases"
+              className="neu-btn rounded-xl px-5 py-2.5 font-mono text-xs font-semibold text-[#f5f5f5]"
+            >
+              Browse Case Studies
+            </Link>
+            <Link
+              to="/"
+              className="rounded-xl bg-[#ccff00] px-5 py-2.5 font-mono text-xs font-bold text-[#080808]"
+            >
+              Return Home
+            </Link>
+          </div>
+        </div>
+      </AppChrome>
+    );
+  }
+
+  const {
+    name,
+    handle,
+    imageUrl,
+    bannerUrl,
+    points,
+    rank,
+    streak,
+    stats,
+    completedCases,
+    createdAt,
+  } = publicData;
+
+  const isOwner = currentUser && (currentUser.id === publicData.clerkId || currentUser.username === handle);
+  const formattedJoinedDate = new Date(createdAt).toLocaleDateString("en-US", {
+    month: "short",
+    year: "numeric",
+  });
+
+  return (
+    <AppChrome>
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 flex flex-col gap-6">
+        {/* Top Kicker */}
+        <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/[0.08] pb-4">
+          <div className="flex items-center gap-2 font-mono text-xs text-[#ccff00]">
+            <span className="size-2 rounded-full bg-[#ccff00] animate-pulse" />
+            <span className="tracking-widest uppercase font-semibold">
+              PUBLIC DOSSIER · VERIFIED SYSTEM INVESTIGATOR
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handleCopyLink}
+              className="neu-btn flex items-center gap-1.5 rounded-xl px-3.5 py-1.5 font-mono text-xs text-[#f5f5f5] hover:border-white/20 transition-all cursor-pointer"
+            >
+              <LinkIcon className="size-3.5 text-[#ccff00]" />
+              <span>{isCopied ? "Copied!" : "Copy Link"}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setIsShareModalOpen(true)}
+              className="flex items-center gap-1.5 rounded-xl bg-[#ccff00] px-3.5 py-1.5 font-mono text-xs font-bold text-[#080808] hover:scale-105 active:scale-95 transition-all cursor-pointer shadow-[0_0_12px_rgba(204,255,0,0.3)]"
+            >
+              <Share2 className="size-3.5" />
+              <span>Share Badge</span>
+            </button>
+
+            {isOwner && (
+              <Link
+                to="/profile"
+                className="neu-btn flex items-center gap-1.5 rounded-xl px-3.5 py-1.5 font-mono text-xs font-semibold text-[#8a8a8a] hover:text-[#f5f5f5] transition-all"
+              >
+                <span>Edit Profile</span>
+              </Link>
+            )}
+          </div>
+        </div>
+
+        {/* HERO CARD: Profile Identity Deck */}
+        <div className="relative overflow-hidden rounded-3xl border border-white/[0.08] bg-[#0c0e0c]/90 shadow-[0_20px_45px_rgba(0,0,0,0.5)] backdrop-blur-xl">
+          {/* Banner */}
+          <div className="relative h-44 sm:h-56 w-full overflow-hidden bg-gradient-to-r from-[#0d1408] via-[#121c08] to-[#080d05] border-b border-white/[0.06]">
+            {bannerUrl ? (
+              <img
+                src={bannerUrl}
+                alt="Profile Banner"
+                className="size-full object-cover opacity-80"
+              />
+            ) : (
+              <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(204,255,0,0.15),rgba(255,255,255,0))]">
+                <div className="absolute inset-0 bg-[linear-gradient(to_right,#1f2d1215_1px,transparent_1px),linear-gradient(to_bottom,#1f2d1215_1px,transparent_1px)] bg-[size:2rem_2rem]" />
+              </div>
+            )}
+            <div className="absolute top-4 right-4 rounded-full border border-white/10 bg-black/60 px-3 py-1 font-mono text-[10px] text-[#8a8a8a] backdrop-blur-md">
+              UID: #{publicData.profileId.slice(0, 8)}
+            </div>
+          </div>
+
+          {/* Identity Body */}
+          <div className="relative px-6 pb-6 pt-0">
+            {/* Avatar Row */}
+            <div className="flex flex-wrap items-end justify-between gap-4 -mt-14 sm:-mt-16 mb-4">
+              <div className="relative">
+                <div className="size-24 sm:size-28 rounded-2xl border-2 border-[#ccff00] bg-black p-1 shadow-[0_0_20px_rgba(204,255,0,0.4)] overflow-hidden">
+                  {imageUrl ? (
+                    <img
+                      src={imageUrl}
+                      alt={name}
+                      className="size-full rounded-xl object-cover"
+                    />
+                  ) : (
+                    <div className="flex size-full items-center justify-center rounded-xl bg-gradient-to-br from-[#182608] to-[#080808] font-mono text-2xl font-bold text-[#ccff00]">
+                      {name.charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                </div>
+                <div className="absolute -bottom-1 -right-1 flex size-6 items-center justify-center rounded-full bg-[#ccff00] text-[#080808] shadow-md">
+                  <CheckCircle2 className="size-4 stroke-[2.5]" />
+                </div>
+              </div>
+
+              {/* Status Pills */}
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="rounded-xl border border-[#ccff00]/40 bg-[#182608] px-3.5 py-1.5 font-mono text-xs font-bold text-[#ccff00] shadow-[0_0_10px_rgba(204,255,0,0.2)] flex items-center gap-1.5">
+                  <ShieldCheck className="size-3.5" />
+                  {rank}
+                </span>
+                <span className="rounded-xl border border-white/10 bg-white/[0.04] px-3 py-1.5 font-mono text-xs text-[#8a8a8a]">
+                  Member since {formattedJoinedDate}
+                </span>
+              </div>
+            </div>
+
+            {/* Name & Handle */}
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#f5f5f5]">
+                {name}
+              </h1>
+              <p className="font-mono text-xs text-[#8a8a8a] mt-0.5">@{handle}</p>
+            </div>
+
+            {/* Stats Triple Bar */}
+            <div className="mt-6 grid grid-cols-3 divide-x divide-white/[0.08] rounded-2xl border border-white/[0.08] bg-black/40 py-3 text-center">
+              <div>
+                <p className="font-mono text-lg sm:text-xl font-black text-[#ccff00]">{points}</p>
+                <p className="font-mono text-[10px] uppercase tracking-wider text-[#8a8a8a] mt-0.5">
+                  RC Balance
+                </p>
+              </div>
+              <div>
+                <p className="font-mono text-lg sm:text-xl font-black text-[#f5f5f5]">
+                  {stats.solvedCasesCount} / {stats.totalCasesCount}
+                </p>
+                <p className="font-mono text-[10px] uppercase tracking-wider text-[#8a8a8a] mt-0.5">
+                  Cases Solved
+                </p>
+              </div>
+              <div>
+                <div className="flex items-center justify-center gap-1 font-mono text-lg sm:text-xl font-black text-[#f5f5f5]">
+                  <Flame className="size-4 text-[#ccff00] fill-[#ccff00]/30" />
+                  <span>{streak.current}d</span>
+                </div>
+                <p className="font-mono text-[10px] uppercase tracking-wider text-[#8a8a8a] mt-0.5">
+                  Day Streak
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* 2-COLUMN MAIN SECTION: Solved Cases (Left) & Consistency & Motivation (Right) */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+          {/* LEFT 2 COLUMNS (66%): Solved Case Studies Portfolio */}
+          <div className="lg:col-span-2 flex flex-col gap-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <BookOpen className="size-4.5 text-[#ccff00]" />
+                <h2 className="text-lg font-bold text-[#f5f5f5]">Completed Case Studies</h2>
+              </div>
+              <span className="font-mono text-xs text-[#8a8a8a]">
+                {completedCases.length} Investigations Solved
+              </span>
+            </div>
+
+            {completedCases.length > 0 ? (
+              <div className="grid grid-cols-1 gap-3">
+                {completedCases.map((c, i) => (
+                  <div
+                    key={c.caseSlug}
+                    className="group rounded-2xl border border-white/[0.08] bg-[#0a0c0a]/90 p-4 transition-all hover:border-[#ccff00]/40 hover:bg-[#0f140a] hover:shadow-[0_8px_24px_rgba(0,0,0,0.4)]"
+                  >
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <div className="flex items-center gap-2">
+                        <span className="flex size-6 items-center justify-center rounded-lg bg-[#182608] font-mono text-xs font-bold text-[#ccff00]">
+                          {String(i + 1).padStart(2, "0")}
+                        </span>
+                        <span className="font-mono text-[10px] uppercase tracking-wider text-[#8a8a8a]">
+                          {c.category}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <span className="rounded-md border border-white/[0.08] bg-white/[0.02] px-2 py-0.5 font-mono text-[10px] text-[#8a8a8a]">
+                          {c.difficulty}
+                        </span>
+                        {c.bestScore !== undefined && (
+                          <span className="rounded-md border border-[#ccff00]/30 bg-[#182608] px-2 py-0.5 font-mono text-[10px] font-bold text-[#ccff00]">
+                            Score: {c.bestScore}/100
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    <h3 className="mt-2 text-sm sm:text-base font-bold text-[#f5f5f5] group-hover:text-[#ccff00] transition-colors">
+                      {c.title}
+                    </h3>
+
+                    <div className="mt-3 flex items-center justify-between border-t border-white/[0.06] pt-2.5">
+                      <span className="font-mono text-[10px] text-[#8a8a8a]">
+                        Solved on {new Date(c.completedAt).toLocaleDateString()}
+                      </span>
+
+                      <Link
+                        to="/cases/$slug"
+                        params={{ slug: c.caseSlug }}
+                        className="flex items-center gap-1 font-mono text-xs font-semibold text-[#ccff00] hover:underline"
+                      >
+                        <span>Inspect Case</span>
+                        <ChevronRight className="size-3.5" />
+                      </Link>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="rounded-3xl border border-white/[0.08] bg-[#0c0e0c]/80 p-8 text-center">
+                <BookOpen className="mx-auto size-8 text-[#555] mb-2" />
+                <p className="text-sm font-semibold text-[#f5f5f5]">No Case Studies Completed Yet</p>
+                <p className="mt-1 text-xs text-[#8a8a8a]">
+                  This investigator is currently reviewing architectural dossiers.
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* RIGHT 1 COLUMN (33%): Rank Ladder & Visitor Conversion CTA */}
+          <div className="flex flex-col gap-6">
+            {/* Rank Ladder Card */}
+            <div className="glass-panel rounded-3xl p-5 border border-white/[0.08]">
+              <div className="flex items-center gap-2 mb-3">
+                <Trophy className="size-4 text-[#ccff00]" />
+                <h3 className="text-sm font-bold text-[#f5f5f5]">System Thinking Standing</h3>
+              </div>
+
+              <div className="space-y-2">
+                {RANKS.map((r) => {
+                  const isCurrent = r.name === rank;
+                  const isPast = points >= r.at;
+                  return (
+                    <div
+                      key={r.name}
+                      className={`flex items-center justify-between rounded-xl p-2.5 transition-all ${
+                        isCurrent
+                          ? "border border-[#ccff00]/40 bg-[#182608] shadow-[0_0_10px_rgba(204,255,0,0.15)]"
+                          : isPast
+                            ? "border border-white/[0.06] bg-white/[0.02]"
+                            : "opacity-40 border border-transparent"
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={`size-2 rounded-full ${
+                            isCurrent ? "bg-[#ccff00] animate-pulse" : isPast ? "bg-[#8a8a8a]" : "bg-[#333]"
+                          }`}
+                        />
+                        <span className={`font-mono text-xs ${isCurrent ? "font-bold text-[#ccff00]" : "text-[#b8b8b8]"}`}>
+                          {r.name}
+                        </span>
+                      </div>
+                      <span className="font-mono text-[10px] text-[#8a8a8a]">{r.at} RC</span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Non-User Conversion Card: Join KRUZZ */}
+            {!isAuthenticated ? (
+              <div className="relative overflow-hidden rounded-3xl border border-[#ccff00]/30 bg-gradient-to-b from-[#141d0a] to-[#0a0f05] p-6 shadow-[0_16px_36px_rgba(204,255,0,0.1)]">
+                <div className="flex items-center gap-2 mb-2">
+                  <Sparkles className="size-4 text-[#ccff00]" />
+                  <span className="font-mono text-[10px] font-bold uppercase tracking-widest text-[#ccff00]">
+                    Become an Investigator
+                  </span>
+                </div>
+                <h3 className="text-base font-bold text-[#f5f5f5]">
+                  Master Real-World System Architecture
+                </h3>
+                <p className="mt-2 text-xs leading-relaxed text-[#b8b8b8]">
+                  Learn how real distributed systems, caches, DNS, and payment gateways work. Write code in Python, Java, and C.
+                </p>
+                <div className="mt-4 flex flex-col gap-2">
+                  <Link
+                    to="/sign-up"
+                    className="flex items-center justify-center gap-1.5 rounded-xl bg-[#ccff00] py-2.5 font-mono text-xs font-bold text-[#080808] hover:scale-102 active:scale-98 transition-all shadow-[0_0_15px_rgba(204,255,0,0.35)]"
+                  >
+                    <span>Create Free Account</span>
+                    <ChevronRight className="size-3.5" />
+                  </Link>
+                  <Link
+                    to="/cases"
+                    className="neu-btn flex items-center justify-center py-2 font-mono text-xs text-[#8a8a8a] hover:text-[#f5f5f5] transition-colors"
+                  >
+                    Browse 35 Case Studies
+                  </Link>
+                </div>
+              </div>
+            ) : (
+              <div className="rounded-3xl border border-white/[0.08] bg-[#0c0e0c] p-5 text-center">
+                <ShieldCheck className="mx-auto size-7 text-[#ccff00] mb-2" />
+                <h4 className="text-sm font-bold text-[#f5f5f5]">Active Investigator</h4>
+                <p className="mt-1 text-xs text-[#8a8a8a]">
+                  You are viewing {name}’s public dossier.
+                </p>
+                <Link
+                  to="/cases"
+                  className="mt-4 inline-flex items-center gap-1 font-mono text-xs font-bold text-[#ccff00] hover:underline"
+                >
+                  <span>Explore Cases in Arena</span>
+                  <ChevronRight className="size-3" />
+                </Link>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Share Modal */}
+      <ShareProfileModal
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+        user={{
+          profileId: publicData.profileId,
+          name,
+          handle: handle || "investigator",
+          rank,
+          points,
+          streak: streak.current,
+          solvedCases: stats.solvedCasesCount,
+          totalCases: stats.totalCasesCount,
+          avatarUrl: imageUrl,
+          bannerUrl,
+        }}
+      />
+    </AppChrome>
+  );
+}

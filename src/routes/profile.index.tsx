@@ -8,7 +8,7 @@ import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { BookOpen, ShieldCheck, Trophy } from "lucide-react";
 
-export const Route = createFileRoute("/profile")({
+export const Route = createFileRoute("/profile/")({
   head: () => ({
     meta: [
       { title: "Investigator Profile — KRUZZ" },
