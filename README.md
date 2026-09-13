@@ -1,6 +1,21 @@
-# KRUZZ — Real-World System Architecture Case Studies
+<p align="center">
+  <img src="public/logo.png" alt="KRUZZ Logo" width="160" style="border-radius: 24px;" />
+</p>
 
-**From a real-world problem to engineering understanding, visual architecture, implementation, and independent problem solving.**
+<h1 align="center">KRUZZ</h1>
+
+<p align="center">
+  <strong>Real-World System Architecture Case Studies</strong><br>
+  From a real-world problem to engineering understanding, visual architecture, implementation, and independent problem solving.
+</p>
+
+<p align="center">
+  <a href="#what-is-kruzz">Overview</a> •
+  <a href="#case-study-catalog">Case Studies</a> •
+  <a href="#the-eight-section-case-study-method">The 8-Section Method</a> •
+  <a href="#technical-stack">Tech Stack</a> •
+  <a href="#getting-started">Getting Started</a>
+</p>
 
 ---
 
@@ -167,28 +182,30 @@ If a case needs one of these concepts, it introduces the concept before relying 
 ## Project Structure
 
 ```
+convex/
+├── ai.ts                      # Multi-provider AI grading engine (Gemini, Groq, OpenRouter)
+├── caseStudies.ts             # Curriculum data & progression queries
+├── caseProgress.ts            # Section progression & lab tracking
+├── streaks.ts                 # Timezone-safe daily login streaks
+└── schema.ts                  # Convex database schema
+
 src/
 ├── components/
-│   ├── CodeArena.tsx          # Interactive coding challenges
-│   ├── MermaidDiagram.tsx     # Architecture visualization
-│   ├── RCWallet.tsx           # Virtual currency for unlocking cases
-│   ├── SiteChrome.tsx         # Layout and navigation
-│   └── StreakStrip.tsx        # Learning streak display
+│   ├── AppChrome.tsx          # Adaptive top navigation & user status
+│   ├── CodeArena.tsx          # Interactive coding workspace & AI grader
+│   ├── MermaidDiagram.tsx     # Progressive architecture visualization
+│   ├── RCWallet.tsx           # Reasoning Credits (RC) balance & rank
+│   └── StreakStrip.tsx        # Visual streak indicator
 ├── data/
-│   ├── cases/                 # Individual case study content
-│   │   ├── authentication.ts
-│   │   ├── client-server.ts
-│   │   ├── rate-limiting.ts
-│   │   ├── realtime-chat.ts
-│   │   └── url-shortener.ts
-│   ├── caseStudies.ts         # Case study registry
-│   └── schema.ts              # TypeScript types per SRS
-├── routes/
-│   ├── cases.$slug.tsx        # Case study workspace
-│   ├── cases.index.tsx        # Arena home
-│   └── ...
-└── lib/
-    └── runCode.ts             # Code execution engine
+│   └── schema.ts              # Canonical Case Study TypeScript schemas
+├── lib/
+│   ├── rc.ts                  # RC economy, ranks, and completion predicates
+│   └── utils.ts               # Tailwind class merge utility
+└── routes/
+    ├── cases.$slug.tsx        # 8-section case study workspace
+    ├── cases.index.tsx        # Case study catalog & unlock gate
+    ├── dashboard.tsx          # User progress dashboard
+    └── profile.tsx            # User profile, streak, & rank ladder
 ```
 
 ---
