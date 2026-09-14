@@ -450,7 +450,7 @@ System Design is the discipline of defining components, modules, interfaces, and
           <div>
             <div className="flex items-center gap-2">
               <span className="size-2 rounded-full recording-dot" />
-              <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#ccff00] font-bold">
+              <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-primary font-bold">
                 RC Exchange & Perks
               </p>
             </div>
@@ -464,9 +464,9 @@ System Design is the discipline of defining components, modules, interfaces, and
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2.5 rounded-2xl bg-[#141a05] border border-[#ccff00]/30 px-4 py-2.5 shadow-[0_0_15px_rgba(204,255,0,0.2)]">
+            <div className="flex items-center gap-2.5 rounded-2xl bg-[var(--theme-surface,#141a05)] border border-primary/30 px-4 py-2.5 shadow-[0_0_15px_var(--glow-color,rgba(204,255,0,0.2))]">
               <span className="font-mono text-xs text-[#8a8a8a]">Your Balance:</span>
-              <span className="font-mono text-base font-bold text-[#ccff00]">{points} RC</span>
+              <span className="font-mono text-base font-bold text-primary">{points} RC</span>
             </div>
           </div>
         </div>
