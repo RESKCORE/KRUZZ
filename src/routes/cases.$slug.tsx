@@ -1240,6 +1240,7 @@ function CaseStudyPage() {
                       lab={study.codeLab}
                       earned={labEarned}
                       caseSlug={study.slug}
+                      caseRc={caseRc}
                       isAuthenticated={isAuthenticated}
                       onSolved={() => {
                         // Server awards the lab + case-complete RC on pass.

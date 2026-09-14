@@ -8,7 +8,7 @@ export const RC_RULES = {
   medium: 30,
   advanced: 50,
   caseComplete: 20,
-  codeLab: 0,
+  codeLab: 20,
   section: 0,
   unlockFloor: 50,
 } as const;

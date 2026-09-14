@@ -84,12 +84,14 @@ export function CodeArena({
   lab,
   earned,
   caseSlug,
+  caseRc = RC_RULES.codeLab,
   isAuthenticated,
   onSolved,
 }: {
   lab: CodeLab;
   earned: boolean;
   caseSlug: string;
+  caseRc?: number;
   isAuthenticated: boolean;
   onSolved: () => void;
 }) {
@@ -147,8 +149,13 @@ export function CodeArena({
         onSolved();
       }
     } catch (e) {
-      const errorMsg = (e as Error).message || "AI grading failed. Please try again.";
-      setError(errorMsg);
+      const rawMsg = (e as Error).message || "AI grading failed. Please try again.";
+      const errorMsg = rawMsg
+        .replace(/\[CONVEX[^\]]*\]\s*/g, "")
+        .replace(/Server Error Uncaught Error:\s*/g, "")
+        .replace(/Called by client\s*/g, "")
+        .trim();
+      setError(errorMsg || "AI grading failed. Please try again.");
     } finally {
       setChecking(false);
     }
@@ -176,7 +183,7 @@ export function CodeArena({
               : "bg-gradient-to-r from-[#d4ff00] via-[#ccff00] to-[#9df000] text-[#080808] shadow-[0_0_12px_rgba(204,255,0,0.4)]"
           }`}
         >
-          {earned ? `✓ +${RC_RULES.codeLab} RC earned` : `+${RC_RULES.codeLab} RC reward`}
+          {earned ? `✓ +${caseRc} RC earned` : `+${caseRc} RC reward`}
         </span>
       </div>
 
@@ -290,7 +297,7 @@ export function CodeArena({
                   \u2713 {result.score}/100 — Passed
                 </span>
                 <span className="rounded-md bg-[#182608] border border-[#ccff00]/30 px-2 py-0.5 font-mono text-[10px] text-[#ccff00]">
-                  +{RC_RULES.codeLab} RC earned
+                  +{caseRc} RC earned
                 </span>
               </div>
               <p className="text-[13px] text-[#b8b8b8] leading-relaxed">{result.summary}</p>
@@ -434,7 +441,7 @@ export function CodeArena({
           )}
           {(earned || result?.passed) && (
             <span className="rounded-xl bg-[#182608] border border-[#ccff00]/40 px-3.5 py-2 font-mono text-xs font-bold text-[#ccff00]">
-              \u2713 Passed {result?.score ?? 100}/100 &middot; +{RC_RULES.codeLab} RC
+              ✓ Passed {result?.score ?? 100}/100 &middot; +{caseRc} RC
             </span>
           )}
         </div>

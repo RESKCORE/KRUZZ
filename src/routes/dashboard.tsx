@@ -41,7 +41,8 @@ function DashboardPage() {
   );
   const unlockedCases = useQuery(api.caseProgress.getUserUnlockedCases, {});
 
-  const caseStudies = (useQuery(api.caseStudies.list, {}) ?? []) as any[];
+  const rawCaseStudies = useQuery(api.caseStudies.list, {});
+  const caseStudies = useMemo(() => (rawCaseStudies ?? []) as any[], [rawCaseStudies]);
 
   const completedStudies = useMemo(() => {
     return caseStudies.filter((c) => {

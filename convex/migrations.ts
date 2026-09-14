@@ -1,4 +1,4 @@
-import { internalMutation, internalQuery, type MutationCtx } from "./_generated/server";
+import { internalMutation, internalQuery, mutation, type MutationCtx } from "./_generated/server";
 import { v } from "convex/values";
 import { generateUniquePublicProfileId } from "./users";
 import { completeCaseInternal } from "./caseProgress";
@@ -333,6 +333,27 @@ export const awardTodayCompletedCases = internalMutation({
       since: new Date(sinceTimestamp).toISOString(),
       awardedCount: awarded.length,
       awarded,
+    };
+  },
+});
+
+/**
+ * Reset all tripped provider circuits in the database.
+ */
+export const resetProviderCircuit = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const records = await ctx.db.query("providerHealth").collect();
+    for (const rec of records) {
+      await ctx.db.patch(rec._id, {
+        consecutiveFailures: 0,
+        circuitOpenUntil: 0,
+        updatedAt: Date.now(),
+      });
+    }
+    return {
+      status: "SUCCESS",
+      resetCount: records.length,
     };
   },
 });

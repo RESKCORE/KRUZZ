@@ -853,7 +853,7 @@ export const _recordProviderHealth = internalMutation({
 
     if (!args.success) {
       const newFailures = primary.consecutiveFailures + 1;
-      const circuitOpenUntil = newFailures >= 3 ? now + 5 * 60 * 1000 : 0; // 5 min cooldown
+      const circuitOpenUntil = newFailures >= 5 ? now + 30 * 1000 : 0; // 30s cooldown
       await ctx.db.patch(primary._id, {
         consecutiveFailures: newFailures,
         circuitOpenUntil:

@@ -20,16 +20,16 @@ type ProviderConfig = {
 
 const PROVIDERS: ProviderConfig[] = [
   {
-    name: "gemini",
-    keyEnv: "gemini",
-    url: "https://generativelanguage.googleapis.com/v1beta/models",
-    model: "gemini-3.6-flash",
-  },
-  {
     name: "groq",
     keyEnv: "groq",
     url: "https://api.groq.com/openai/v1/chat/completions",
     model: "openai/gpt-oss-20b",
+  },
+  {
+    name: "gemini",
+    keyEnv: "gemini",
+    url: "https://generativelanguage.googleapis.com/v1beta/models",
+    model: "gemini-3.6-flash",
   },
   {
     name: "openrouter",
@@ -111,7 +111,7 @@ async function callOpenAILike(
     model: cfg.model,
     messages,
     temperature: 0.2,
-    max_tokens: 1024,
+    max_tokens: 2048,
   };
   if (jsonMode) payload["response_format"] = { type: "json_object" };
 
@@ -130,7 +130,7 @@ async function callOpenAILike(
     method: "POST",
     headers,
     body: JSON.stringify(payload),
-    signal: AbortSignal.timeout(10000), // 10s request abort timeout
+    signal: AbortSignal.timeout(15000), // 15s request abort timeout
   });
 
   if (!res.ok) {
@@ -179,11 +179,11 @@ async function callGemini(
       ],
       generationConfig: {
         temperature: 0.2,
-        maxOutputTokens: 1024,
+        maxOutputTokens: 2048,
         responseMimeType: "application/json",
       },
     }),
-    signal: AbortSignal.timeout(10000), // 10s request abort timeout
+    signal: AbortSignal.timeout(20000), // 20s request abort timeout
   });
 
   if (!res.ok) {
