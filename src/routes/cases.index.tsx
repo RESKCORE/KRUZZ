@@ -1,7 +1,14 @@
 import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppChrome } from "@/components/AppChrome";
-import { isUnlocked, unlockThreshold, caseAwardId, labAwardId, isStudyComplete } from "@/lib/rc";
+import {
+  isUnlocked,
+  unlockThreshold,
+  caseAwardId,
+  labAwardId,
+  isStudyComplete,
+  getCaseStudyRc,
+} from "@/lib/rc";
 import { useWallet } from "@/lib/account";
 import { RCWalletPanel } from "@/components/RCWallet";
 import { useQuery } from "convex/react";
@@ -103,20 +110,20 @@ function Library() {
             </div>
             <ul className="mt-3.5 grid gap-2.5 text-xs leading-relaxed text-[#b8b8b8] sm:grid-cols-2">
               <li className="flex items-start gap-2">
-                <span className="text-[#ccff00] font-bold">+1 RC</span>
-                <span>Complete any reading section</span>
-              </li>
-              <li className="flex items-start gap-2">
                 <span className="text-[#ccff00] font-bold">+20 RC</span>
-                <span>Finish all eight sections of a case study</span>
+                <span>Beginner Case complete (100% path)</span>
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-[#ccff00] font-bold">+10 RC</span>
-                <span>Pass all CodeArena tests + write explanation</span>
+                <span className="text-[#ccff00] font-bold">+30 RC</span>
+                <span>Medium Case complete (100% path)</span>
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-[#ccff00] font-bold">Unlocking</span>
-                <span>Requires 50+ RC earned from foundational cases</span>
+                <span className="text-[#ccff00] font-bold">+50 RC</span>
+                <span>Advanced Case complete (100% path)</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-[#ccff00] font-bold">Path Rule</span>
+                <span>All 8 steps required (reading + lab + reflection)</span>
               </li>
             </ul>
           </div>
@@ -241,9 +248,13 @@ function Library() {
                     </span>
                   ))}
 
-                  {isCompleted && (
+                  {isCompleted ? (
                     <span className="rounded-lg bg-[#182608] border border-[#ccff00]/40 px-2 py-0.5 font-mono text-[10px] font-bold text-[#ccff00] ml-auto">
-                      ✓ +30 RC
+                      ✓ +{getCaseStudyRc(c.difficulty)} RC
+                    </span>
+                  ) : (
+                    <span className="rounded-lg bg-white/[0.04] border border-white/[0.08] px-2 py-0.5 font-mono text-[10px] font-bold text-[#ccff00] ml-auto">
+                      +{getCaseStudyRc(c.difficulty)} RC
                     </span>
                   )}
                 </div>

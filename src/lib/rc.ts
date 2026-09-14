@@ -4,11 +4,24 @@
  */
 
 export const RC_RULES = {
+  beginner: 20,
+  medium: 30,
+  advanced: 50,
   caseComplete: 20,
-  codeLab: 10,
-  section: 1,
+  codeLab: 0,
+  section: 0,
   unlockFloor: 50,
 } as const;
+
+/**
+ * Returns the completion RC yield for a given case study difficulty.
+ * RC is awarded strictly upon 100% path completion.
+ */
+export function getCaseStudyRc(difficulty?: string): number {
+  if (difficulty === "Advanced") return RC_RULES.advanced;
+  if (difficulty === "Intermediate" || difficulty === "Medium") return RC_RULES.medium;
+  return RC_RULES.beginner;
+}
 
 /** Award ID generators */
 export const sectionAwardId = (slug: string, index: number) => `case:${slug}:section:${index}`;

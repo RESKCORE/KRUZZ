@@ -10,6 +10,7 @@ import {
   isCaseCompleted,
   isLabCompleted,
   isStudyComplete,
+  getCaseStudyRc,
 } from "@/lib/rc";
 import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
@@ -165,7 +166,10 @@ function DashboardPage() {
                     </Link>
 
                     <span className="font-mono text-[11px] text-[#8a8a8a]">
-                      Potential Yield: <strong className="text-[#ccff00]">+35 RC</strong>
+                      Potential Yield:{" "}
+                      <strong className="text-[#ccff00]">
+                        +{getCaseStudyRc(nextCase.difficulty)} RC
+                      </strong>
                     </span>
                   </div>
                 </div>

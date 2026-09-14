@@ -4,10 +4,25 @@
  */
 
 export const REWARD_RULES = {
-  sectionComplete: 1,
-  labPass: 10,
-  caseComplete: 20,
+  sectionComplete: 0,
+  labPass: 0,
+  beginnerComplete: 20,
+  mediumComplete: 30,
+  advancedComplete: 50,
+  caseComplete: 20, // default fallback
 } as const;
+
+/**
+ * Returns the authoritative RC reward granted ONLY upon completing the entire 8-section path.
+ * - Beginner: 20 RC
+ * - Medium / Intermediate: 30 RC
+ * - Advanced: 50 RC
+ */
+export function getCaseCompletionReward(difficulty?: string): number {
+  if (difficulty === "Advanced") return REWARD_RULES.advancedComplete;
+  if (difficulty === "Intermediate" || difficulty === "Medium") return REWARD_RULES.mediumComplete;
+  return REWARD_RULES.beginnerComplete;
+}
 
 export const RANKS = [
   { at: 0, name: "Observer" },
@@ -27,9 +42,9 @@ export function rankForPoints(points: number): string {
 
 /**
  * Canonical 8-Section Curriculum Specification.
- * Sections 0-5 and 7 are reading sections that award 1 RC upon first view.
- * Section 6 is the Practice / Code Lab evaluated exclusively by the AI grading engine (awards 10 RC upon pass).
- * Section 6 CANNOT be self-credited by client calls to saveCaseProgress.
+ * Individual sections (0-7) do NOT award standalone RC.
+ * Full RC is awarded strictly upon 100% case study mastery
+ * (all sections viewed + practice lab passed + reflection submitted).
  */
 export const CANONICAL_SECTIONS = [
   {
@@ -37,7 +52,7 @@ export const CANONICAL_SECTIONS = [
     id: "discover",
     title: "Discover",
     type: "reading",
-    rewardPoints: 1,
+    rewardPoints: 0,
     required: true,
   },
   {
@@ -45,7 +60,7 @@ export const CANONICAL_SECTIONS = [
     id: "understand",
     title: "Understand",
     type: "reading",
-    rewardPoints: 1,
+    rewardPoints: 0,
     required: true,
   },
   {
@@ -53,7 +68,7 @@ export const CANONICAL_SECTIONS = [
     id: "concepts",
     title: "Concepts",
     type: "reading",
-    rewardPoints: 1,
+    rewardPoints: 0,
     required: true,
   },
   {
@@ -61,7 +76,7 @@ export const CANONICAL_SECTIONS = [
     id: "architecture",
     title: "Architecture",
     type: "reading",
-    rewardPoints: 1,
+    rewardPoints: 0,
     required: true,
   },
   {
@@ -69,7 +84,7 @@ export const CANONICAL_SECTIONS = [
     id: "decisions",
     title: "Decisions",
     type: "reading",
-    rewardPoints: 1,
+    rewardPoints: 0,
     required: true,
   },
   {
@@ -77,7 +92,7 @@ export const CANONICAL_SECTIONS = [
     id: "implementation",
     title: "Implementation",
     type: "reading",
-    rewardPoints: 1,
+    rewardPoints: 0,
     required: true,
   },
   {
@@ -85,7 +100,7 @@ export const CANONICAL_SECTIONS = [
     id: "practice",
     title: "Practice (Code Lab)",
     type: "lab",
-    rewardPoints: 10,
+    rewardPoints: 0,
     required: true,
   },
   {
@@ -93,7 +108,7 @@ export const CANONICAL_SECTIONS = [
     id: "reflection",
     title: "Reflection",
     type: "reading",
-    rewardPoints: 1,
+    rewardPoints: 0,
     required: true,
   },
 ] as const;

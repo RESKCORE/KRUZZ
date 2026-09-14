@@ -24,6 +24,7 @@ import {
   sectionAwardId,
   unlockThreshold,
   isStudyComplete,
+  getCaseStudyRc,
 } from "@/lib/rc";
 import { toast } from "sonner";
 import { useWallet } from "@/lib/account";
@@ -242,6 +243,7 @@ function CaseStudyPage() {
     ? unlockedCases.includes(study.slug)
     : study.rcCost <= 0;
   const locked = !isUnlockedByProgression && !isCompleted;
+  const caseRc = getCaseStudyRc(study.difficulty);
   const needed = unlockThreshold(study.rcCost);
 
   const progress = isCompleted ? 100 : Math.round((doneCount / SECTION_LABELS.length) * 100);
@@ -1017,7 +1019,7 @@ function CaseStudyPage() {
                             Investigation Mastered
                           </span>
                           <span className="rounded-md bg-[#182608] text-[#ccff00] font-mono text-[10px] px-2 py-0.5 font-bold border border-[#ccff00]/40">
-                            +30 RC Banked
+                            +{caseRc} RC Banked
                           </span>
                         </div>
                         <h3 className="text-lg font-bold text-[#f5f5f5] mt-0.5">
@@ -1040,7 +1042,7 @@ function CaseStudyPage() {
                 <div className="mt-8 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-mint/40 p-3 ring-1 ring-primary/15">
                   <p className="text-[12px] leading-relaxed text-ink2">
                     {labEarned
-                      ? `Practice complete — you passed the lab at 80%+ and earned RC.`
+                      ? `Practice complete — you passed the lab at 80%+! Proceed to reflection to complete the case study.`
                       : `This section unlocks only by passing the AI-judged code lab above at 80% or higher.`}
                   </p>
                   {labEarned && (
@@ -1082,16 +1084,10 @@ function CaseStudyPage() {
                         saveProgress({
                           caseSlug: study.slug,
                           completedSections: [step],
-                        })
-                          .then(() => {
-                            if (!has(sectionAwardId(study.slug, step))) {
-                              toast.success("+1 RC earned");
-                            }
-                          })
-                          .catch(() => {});
+                        }).catch(() => {});
                         if (step === 7 && labEarned && reflectionValid) {
                           markComplete({ caseSlug: study.slug })
-                            .then(() => toast.success("+20 RC — Case study complete!"))
+                            .then(() => toast.success(`+${caseRc} RC — Case study complete!`))
                             .catch((err: Error) => toast.error(err.message));
                         }
                       }
@@ -1108,7 +1104,7 @@ function CaseStudyPage() {
                           ? "Pass practice first"
                           : !reflectionValid
                             ? `Reflection: ${reflectionCharCount}/${MIN_REFLECTION_CHARS} chars`
-                            : "Complete Arena + Claim +20 RC"
+                            : `Complete Case + Claim +${caseRc} RC`
                       : sectionsDone[step]
                         ? "Viewed"
                         : "Mark section done"}
@@ -1152,31 +1148,36 @@ function CaseStudyPage() {
                       Case Yield Potential
                     </p>
                     <span className="font-mono text-xs font-bold text-[#ccff00]">
-                      +
-                      {(labEarned ? RC_RULES.codeLab : 0) +
-                        (caseRewarded ? RC_RULES.caseComplete : 0)}{" "}
-                      / {RC_RULES.codeLab + RC_RULES.caseComplete} RC
+                      +{caseRewarded ? caseRc : 0} / {caseRc} RC
                     </span>
                   </div>
 
                   <p className="mb-2 text-[11px] leading-relaxed text-[#8a8a8a]">
-                    RC is earned only by passing the AI-judged code lab (score &ge; 80%) in your
-                    chosen language.
+                    Full {caseRc} RC is awarded upon completing the entire 8-section path (reading,
+                    passing the code lab, and writing reflection).
                   </p>
 
                   <div className="space-y-1.5 font-mono text-[11px] text-[#8a8a8a]">
                     <div className="flex justify-between items-center py-0.5">
-                      <span>CodeArena Lab</span>
-                      <span className={labEarned ? "text-[#ccff00] font-bold" : "text-[#8a8a8a]"}>
-                        {labEarned ? `+${RC_RULES.codeLab} RC ✓` : "pending"}
+                      <span>Reading Steps (0-5, 7)</span>
+                      <span
+                        className={doneCount >= 7 ? "text-[#ccff00] font-bold" : "text-[#8a8a8a]"}
+                      >
+                        {doneCount >= 7 ? "✓ Viewed" : `${doneCount}/7 complete`}
                       </span>
                     </div>
                     <div className="flex justify-between items-center py-0.5">
-                      <span>Case Complete</span>
+                      <span>Practice (CodeArena)</span>
+                      <span className={labEarned ? "text-[#ccff00] font-bold" : "text-[#8a8a8a]"}>
+                        {labEarned ? "✓ Passed" : "pending"}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center py-0.5">
+                      <span>Full Case Complete</span>
                       <span
                         className={caseRewarded ? "text-[#ccff00] font-bold" : "text-[#8a8a8a]"}
                       >
-                        {caseRewarded ? `+${RC_RULES.caseComplete} RC ✓` : "locked"}
+                        {caseRewarded ? `+${caseRc} RC ✓` : `+${caseRc} RC`}
                       </span>
                     </div>
                   </div>
@@ -1184,7 +1185,7 @@ function CaseStudyPage() {
                   {caseRewarded && (
                     <div className="mt-3 rounded-xl bg-[#182608] border border-[#ccff00]/30 px-3 py-2 font-mono text-xs font-bold text-[#ccff00] flex items-center gap-1.5">
                       <span>✓</span>
-                      <span>Lab passed · RC banked</span>
+                      <span>Case mastered · {caseRc} RC banked</span>
                     </div>
                   )}
                 </div>

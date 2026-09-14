@@ -104,9 +104,11 @@ function redeemStoreItem(db, identity, itemId) {
 }
 
 test("Reward Rule 1: Canonical reward point values are strictly server-owned", () => {
-  assert.equal(REWARD_RULES.sectionComplete, 1);
-  assert.equal(REWARD_RULES.labPass, 10);
-  assert.equal(REWARD_RULES.caseComplete, 20);
+  assert.equal(REWARD_RULES.sectionComplete, 0);
+  assert.equal(REWARD_RULES.labPass, 0);
+  assert.equal(REWARD_RULES.beginnerComplete, 20);
+  assert.equal(REWARD_RULES.mediumComplete, 30);
+  assert.equal(REWARD_RULES.advancedComplete, 50);
 });
 
 test("Reward Rule 2: Unauthenticated store redemption is strictly rejected", () => {
@@ -125,23 +127,23 @@ test("Reward Rule 3: Replaying identical awardId is idempotent and adds 0 extra 
   const first = awardPointsInternal(
     db,
     user,
-    "case:client-server:section:1",
-    REWARD_RULES.sectionComplete,
+    "case:client-server:complete",
+    REWARD_RULES.beginnerComplete,
   );
   assert.equal(first, true);
   user = db.getUser(userId);
-  assert.equal(user.points, 1);
+  assert.equal(user.points, 20);
 
   // Duplicate award call (replay)
   const second = awardPointsInternal(
     db,
     user,
-    "case:client-server:section:1",
-    REWARD_RULES.sectionComplete,
+    "case:client-server:complete",
+    REWARD_RULES.beginnerComplete,
   );
   assert.equal(second, false);
   user = db.getUser(userId);
-  assert.equal(user.points, 1); // Unchanged!
+  assert.equal(user.points, 20); // Unchanged!
 });
 
 test("Reward Rule 4: Store purchase validates catalog and rejects unknown items", () => {

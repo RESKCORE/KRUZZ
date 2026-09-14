@@ -20,6 +20,7 @@ import {
   estimateTokens,
   estimateCostUsd,
   calculateFullPromptTokens,
+  getCaseCompletionReward,
 } from "./rules";
 
 /**
@@ -204,8 +205,14 @@ export async function completeCaseInternal(
     updatedAt: now,
   });
 
-  // 2. Award completion bonus (idempotent, 20 RC)
-  await awardPointsInternal(ctx, user, `case:${caseSlug}:complete`, 20);
+  const study = await ctx.db
+    .query("caseStudies")
+    .withIndex("by_slug", (q) => q.eq("slug", caseSlug))
+    .unique();
+  const completionPoints = getCaseCompletionReward(study?.difficulty);
+
+  // 2. Award completion bonus (idempotent, 20/30/50 RC based on difficulty)
+  await awardPointsInternal(ctx, user, `case:${caseSlug}:complete`, completionPoints);
 
   // 3. Touch user's streak
   await touchStreakForUser(ctx, user._id);
@@ -330,12 +337,8 @@ export const saveCaseProgress = mutation({
       VALID_READING_SECTION_INDICES.has(s),
     );
 
-    const added = sanitizedIncoming.filter(
-      (s) => !(existingProgress?.completedSections ?? []).includes(s),
-    );
-    for (const sec of added) {
-      await awardPointsInternal(ctx, user, `case:${args.caseSlug}:section:${sec}`, 1);
-    }
+    // Individual reading sections track completion progress but do not award standalone points.
+    // Points are strictly awarded upon complete 8-section case mastery.
 
     if (existingProgress) {
       const updates: {
@@ -997,8 +1000,8 @@ export const _recordLabResult = internalMutation({
     const newPassed = Boolean(existingProgress?.passed || args.passed);
 
     if (args.passed) {
-      // Award 10 RC idempotently on verified pass
-      await awardPointsInternal(ctx, user, `case:${args.caseSlug}:lab`, 10);
+      // Record lab pass award with 0 points; full RC is awarded on 100% case completion
+      await awardPointsInternal(ctx, user, `case:${args.caseSlug}:lab`, 0);
     }
 
     // Append section 6 (Practice / Code Lab) if passed
