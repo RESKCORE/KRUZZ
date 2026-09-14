@@ -389,6 +389,71 @@ KRUZZ competes on depth and clarity of each learning journey, not the number of 
 
 ---
 
+## Production Deployment Guide
+
+KRUZZ is built on **TanStack Start** with a **Nitro** server engine and a **Convex** real-time serverless backend.
+
+### 1. Pre-Deployment Verification
+
+Before pushing to production, run the comprehensive verification pipeline:
+
+```bash
+npm run verify
+```
+
+This single gate validates:
+
+- `tsc --noEmit` (TypeScript types)
+- `eslint .` (Code quality & rules)
+- `prettier --check .` (Formatting)
+- `npm test` (All 90 end-to-end and unit test invariants)
+- `npm run build` (Client + SSR + Nitro production bundles)
+
+### 2. Backend Deployment (Convex)
+
+Deploy your Convex functions, schemas, and migrations to production:
+
+```bash
+npx convex deploy
+```
+
+Then configure your production environment variables in Convex:
+
+```bash
+# Clerk JWT configuration
+npx convex env set CLERK_JWT_ISSUER_DOMAIN https://<your-instance>.clerk.accounts.dev
+
+# AI Grading Providers (free tier keys)
+npx convex env set GEMINI_API_KEY <your-gemini-key>
+npx convex env set GROQ_API_KEY <your-groq-key>
+npx convex env set OPENROUTER_API_KEY <your-openrouter-key>
+```
+
+### 3. Frontend Deployment (Vercel / Netlify / Node.js)
+
+#### Option A: Vercel / Netlify
+
+1. Connect your GitHub repository to Vercel or Netlify.
+2. Set the build command to `npm run build` and output directory to `.output/public` (Nitro handles SSR functions automatically).
+3. Set the following environment variables in your hosting dashboard:
+   - `VITE_CONVEX_URL`: Your production Convex URL (e.g. `https://<your-deployment>.convex.cloud`)
+   - `VITE_CONVEX_SITE_URL`: Your production Convex site URL
+   - `VITE_CLERK_PUBLISHABLE_KEY`: Your Clerk production publishable key (`pk_live_...`)
+   - `CLERK_SECRET_KEY`: Your Clerk production secret key (`sk_live_...`)
+   - `CLERK_JWT_ISSUER_DOMAIN`: Your Clerk domain
+
+#### Option B: Self-Hosted Docker / Node.js Server
+
+After running `npm run build`, Nitro produces a self-contained server in `.output`:
+
+```bash
+node .output/server/index.mjs
+```
+
+The server will bind to `PORT` (default 3000) and `HOST` (`0.0.0.0`).
+
+---
+
 ## License
 
 Open source educational project.
