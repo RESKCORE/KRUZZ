@@ -10,11 +10,11 @@
 </p>
 
 <p align="center">
+  <a href="https://kruzz.indevs.in"><strong>🌐 Live App: kruzz.indevs.in</strong></a> •
   <a href="#what-is-kruzz">Overview</a> •
   <a href="#case-study-catalog">Case Studies</a> •
   <a href="#the-eight-section-case-study-method">The 8-Section Method</a> •
-  <a href="#technical-stack">Tech Stack</a> •
-  <a href="#getting-started">Getting Started</a>
+  <a href="#technical-stack">Tech Stack</a>
 </p>
 
 ---

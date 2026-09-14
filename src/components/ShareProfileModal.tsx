@@ -417,7 +417,7 @@ function drawFullCredentialBadge(
   const slugOrId = user.profileId || user.handle;
   ctx.fillStyle = MUTED;
   ctx.font = `bold 11px ${MONO}`;
-  ctx.fillText(`kruzz.app/profile/${slugOrId}`, pad + 36, footY);
+  ctx.fillText(`kruzz.indevs.in/profile/${slugOrId}`, pad + 36, footY);
 
   ctx.fillStyle = LIME;
   ctx.font = `bold 11px ${MONO}`;
@@ -438,7 +438,7 @@ export function ShareProfileModal({ isOpen, onClose, user }: ShareProfileModalPr
     if (typeof window !== "undefined") {
       return `${window.location.origin}/profile/${slugOrId}`;
     }
-    return `https://kruzz.app/profile/${slugOrId}`;
+    return `https://kruzz.indevs.in/profile/${slugOrId}`;
   }, [slugOrId]);
 
   useEffect(() => {

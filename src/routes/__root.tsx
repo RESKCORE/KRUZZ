@@ -96,10 +96,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       { name: "author", content: "KRUZZ" },
       { property: "og:site_name", content: "KRUZZ" },
+      { property: "og:url", content: "https://kruzz.indevs.in" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [
+      { rel: "canonical", href: "https://kruzz.indevs.in" },
       {
         rel: "stylesheet",
         href: appCss,

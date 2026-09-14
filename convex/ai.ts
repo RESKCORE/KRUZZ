@@ -120,7 +120,7 @@ async function callOpenAILike(
     Authorization: `Bearer ${key}`,
     ...(cfg.name === "openrouter"
       ? {
-          "HTTP-Referer": "https://kruzz.app",
+          "HTTP-Referer": "https://kruzz.indevs.in",
           "X-Title": "KRUZZ",
         }
       : {}),
