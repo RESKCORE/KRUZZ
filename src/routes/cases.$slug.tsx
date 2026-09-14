@@ -100,7 +100,7 @@ function CaseStudyPage() {
   const { slug } = Route.useLoaderData();
   const { points, has, awards, isAuthenticated } = useWallet();
   const study = useQuery(
-    api.caseStudies.getAuthenticatedCase,
+    api.caseStudies.getBySlug,
     isAuthenticated ? { slug } : "skip",
   ) as unknown as (CaseStudy & { isLocked?: boolean }) | undefined | null;
   const navigate = useNavigate();

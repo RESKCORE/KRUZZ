@@ -39,11 +39,9 @@ function Library() {
   );
   const unlockedCases = useQuery(api.caseProgress.getUserUnlockedCases, {});
 
-  const allDbCases = useQuery(api.caseStudies.listPublicTopics, {}) ?? [];
-  const dbCases = useQuery(
-    api.caseStudies.listPublicTopics,
-    active === "All" ? {} : { category: active },
-  );
+  const allDbCases = (useQuery(api.caseStudies.list, {}) ?? []) as any[];
+  const dbCases = (useQuery(api.caseStudies.list, active === "All" ? {} : { category: active }) ??
+    []) as any[];
 
   const categories = [
     "All",
@@ -234,7 +232,7 @@ function Library() {
                     {c.estimatedTime}
                   </span>
 
-                  {c.tech.map((t) => (
+                  {(c.tech ?? []).map((t: string) => (
                     <span
                       key={t}
                       className="rounded-lg bg-white/[0.04] border border-white/[0.08] px-2 py-0.5 font-mono text-[10px] text-[#f5f5f5]"
