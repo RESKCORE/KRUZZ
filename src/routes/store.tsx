@@ -48,11 +48,11 @@ const STORE_ITEMS: StoreItem[] = [
   },
   {
     id: "pdf-architecture-blueprints",
-    name: "System Architecture Cheat-Sheet Bundle",
+    name: "System Architecture Cheat-Sheet & Roadmap",
     category: "Download",
     cost: 50,
     description:
-      "High-resolution architectural flowcharts and trade-off matrices for all 5 systems.",
+      "Exhaustive 15-section system design engineering roadmap, mental models, invariant laws, and architectural cheat-sheets in Markdown.",
     icon: Download,
   },
   {
@@ -86,51 +86,58 @@ function StorePage() {
   const { points, redeemStoreItem, has, isAuthenticated } = useWallet();
   const { user, profile } = useAccount();
 
-  const handleDownloadCheatSheet = () => {
-    const content = `# KRUZZ — SYSTEM ARCHITECTURE CHEAT-SHEET BUNDLE
-Generated for: ${user?.fullName || profile?.name || "Investigator"}
-Verified at: kruzz.dev
+  const handleDownloadCheatSheet = async () => {
+    try {
+      let content = "";
+      try {
+        const res = await fetch("/SYSTEM_DESIGN_ROADMAP.md");
+        if (res.ok) {
+          content = await res.text();
+        }
+      } catch {
+        // Fallback to embedded summary if offline or fetch fails
+      }
 
----
+      const investigatorName = user?.fullName || profile?.name || "Systems Investigator";
 
-## 1. Client-Server Architecture (Case 01)
-- Core Protocol: HTTP/1.1 vs HTTP/2 vs HTTP/3 (QUIC)
-- Request-Response Cycle: DNS -> TCP Handshake (3-way) -> TLS 1.3 -> HTTP Request -> Socket -> Handler
-- Statelessness Trade-off: Scales horizontally without session affinity; requires external state store.
+      if (content) {
+        content = content.replace(
+          "**Target Audience:** Software Engineers, Backend Architects, and Systems Thinkers",
+          `**Investigator:** ${investigatorName}\n**Issued By:** KRUZZ Engineering Academy (kruzz.dev)\n**Target Audience:** Software Engineers, Backend Architects, and Systems Thinkers`,
+        );
+      } else {
+        content = `# KRUZZ — SYSTEM DESIGN ROADMAP & ARCHITECTURAL CHEAT-SHEET
+Investigator: ${investigatorName}
+Verified: https://kruzz.dev
 
-## 2. Authentication & Session Security (Case 04)
-- JWT Structure: Header.Payload.Signature (HMAC-SHA256 or RS256)
-- Password Hashing: bcrypt (adaptive cost factor, default 12 rounds)
-- Stateless Tokens vs Stateful Sessions:
-  * Tokens: No DB lookup on verify; cannot revoke instantly without blacklist (Redis TTL).
-  * Sessions: Instant revocation; requires centralized Redis session cluster.
+## 1. What is System Design?
+System Design is the discipline of defining components, modules, interfaces, and data architectures to meet scalability, reliability, and maintainability requirements under high load and failure modes.
 
-## 3. Distributed URL Shortener (Case 05)
-- ID Generation: Base62 encoding on 64-bit auto-increment or Snowflake ID (timestamp + node ID + sequence).
-- Capacity Math: 62^7 = ~3.5 trillion unique URLs with 7-character paths.
-- Caching Strategy: Redis LRU (80/20 rule: top 20% URLs drive 80% traffic).
-- Persistence: PostgreSQL / Cassandra with unique index on short_code.
+## 2. Invariant Theorems
+- CAP Theorem: In the presence of network partitions (P), choose Consistency (CP) or Availability (AP).
+- PACELC Theorem: If Partition (P), choose Availability (A) or Consistency (C); Else (E), choose Latency (L) or Consistency (C).
 
-## 4. Real-time Scaled Chat Architecture (Case 06)
-- Transport: WebSocket duplex stream (RFC 6455) with HTTP upgrade.
-- Horizontal Scaling: Stateless WebSocket gateways connected via Redis Pub/Sub backplane.
-- Fan-out Mechanics: Client -> Node Gateway A -> Redis channel -> Node Gateway B -> Target Client.
-
-## 5. Distributed API Rate Limiting (Case 08)
-- Algorithms:
-  * Token Bucket: Bursty traffic allowed, refills at steady rate.
-  * Leaky Bucket: Smooths output rate, drops overflow.
-  * Sliding Window Counter: High accuracy, prevents boundary spikes.
-- Redis Atomic Execution: Single EVAL script running ZREMRANGEBYSCORE and ZADD to prevent race conditions.
+## 3. Core Concepts Roadmap
+- L4 vs L7 Load Balancing & Consistent Hashing
+- Caching: Cache-Aside, Write-Through, Write-Back, Stampede Throttling
+- Storage: B+ Trees (Reads) vs LSM Trees (Writes)
+- Message Queues & Event Streaming: RabbitMQ vs Apache Kafka
+- Distributed Transactions: Sagas, Outbox Pattern, 2PC
+- Anti-Abuse: Sliding Window Counter Rate Limiting in Redis Lua
 `;
-    const blob = new Blob([content], { type: "text/markdown" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "kruzz-system-architecture-cheatsheet.md";
-    a.click();
-    URL.revokeObjectURL(url);
-    toast.success("System Architecture Cheat-Sheet Bundle downloaded!");
+      }
+
+      const blob = new Blob([content], { type: "text/markdown;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "kruzz-system-design-roadmap.md";
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success("System Architecture Roadmap downloaded!");
+    } catch {
+      toast.error("Failed to generate download. Please try again.");
+    }
   };
 
   const handleDownloadTheme = () => {

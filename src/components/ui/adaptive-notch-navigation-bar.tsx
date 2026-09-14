@@ -290,6 +290,7 @@ export interface NotchNavProps extends HTMLAttributes<HTMLDivElement> {
   showRightContent?: boolean;
   children?: ReactNode;
   onActiveChange?: (id: string) => void;
+  onHoverItem?: (id: string) => void;
 }
 
 export function NotchNav({
@@ -303,6 +304,7 @@ export function NotchNav({
   showRightContent = true,
   children,
   onActiveChange,
+  onHoverItem,
   className,
   ...props
 }: NotchNavProps) {
@@ -426,6 +428,7 @@ export function NotchNav({
                   disabled={item.disabled}
                   isActive={item.id === activeId}
                   onSelect={handleSelect}
+                  onMouseEnter={() => onHoverItem?.(item.id)}
                 />
               ))}
             </div>

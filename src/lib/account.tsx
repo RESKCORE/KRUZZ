@@ -13,6 +13,29 @@ export function useAccount() {
   const storeUser = useMutation(api.users.storeUser);
   const cloudUser = useQuery(api.users.getCurrentUser);
 
+  const hasStoredSession =
+    typeof window !== "undefined" && window.localStorage.getItem("kruzz_has_session") === "1";
+
+  // When Clerk is loaded, authoritative state is isSignedIn || isAuthenticated.
+  // While Clerk is hydrating, use cached session hint to prevent navbar flicker.
+  const isAuthed = isLoaded
+    ? Boolean(isSignedIn || isAuthenticated)
+    : Boolean(hasStoredSession || isSignedIn || isAuthenticated);
+
+  useEffect(() => {
+    if (isLoaded) {
+      try {
+        if (isSignedIn) {
+          window.localStorage.setItem("kruzz_has_session", "1");
+        } else {
+          window.localStorage.removeItem("kruzz_has_session");
+        }
+      } catch {
+        // localStorage might be disabled or restricted
+      }
+    }
+  }, [isLoaded, isSignedIn]);
+
   useEffect(() => {
     if (isSignedIn && isAuthenticated) {
       const tz =
@@ -25,7 +48,7 @@ export function useAccount() {
     user: user ?? null,
     profile: cloudUser ?? null,
     isLoading: !isLoaded || isConvexLoading,
-    isAuthenticated: Boolean(isSignedIn && isAuthenticated),
+    isAuthenticated: isAuthed,
   };
 }
 

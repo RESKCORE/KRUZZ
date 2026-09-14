@@ -45,6 +45,13 @@ function SettingsDropdown() {
 
   const handleSignOut = async () => {
     setOpen(false);
+    try {
+      if (typeof window !== "undefined") {
+        window.localStorage.removeItem("kruzz_has_session");
+      }
+    } catch {
+      // ignore
+    }
     await signOut({ redirectUrl: "/" });
     router.navigate({ to: "/" });
   };
@@ -120,7 +127,6 @@ const MEMBER_NAV_ITEMS: NotchItemData[] = [
 
 const GUEST_NAV_ITEMS: NotchItemData[] = [
   { id: "home", label: "Home", icon: Home },
-  { id: "arena", label: "Arena Centre", icon: Swords },
   { id: "method", label: "Methodology", icon: BookOpen },
 ];
 
@@ -171,6 +177,29 @@ export function AppChrome({ children }: AppChromeProps) {
     }
   };
 
+  const handleHoverItem = (id: string) => {
+    switch (id) {
+      case "home":
+        router.preloadRoute({ to: "/" });
+        break;
+      case "dashboard":
+        router.preloadRoute({ to: "/dashboard" });
+        break;
+      case "arena":
+        router.preloadRoute({ to: "/cases" });
+        break;
+      case "store":
+        router.preloadRoute({ to: "/store" });
+        break;
+      case "profile":
+        router.preloadRoute({ to: "/profile" });
+        break;
+      case "method":
+        router.preloadRoute({ to: "/method" });
+        break;
+    }
+  };
+
   const LogoSlot = (
     <Link
       to={isAuthenticated ? "/dashboard" : "/"}
@@ -217,6 +246,7 @@ export function AppChrome({ children }: AppChromeProps) {
       showLogo={true}
       showRightContent={true}
       onActiveChange={handleActiveChange}
+      onHoverItem={handleHoverItem}
     >
       <div className="w-full flex-1 min-h-full">
         {isMemberRoute && !isAuthenticated ? (

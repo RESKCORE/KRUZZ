@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect, useRouter } from "@tanstack/react-router";
 import { AppChrome } from "@/components/AppChrome";
 import { CinematicFooter } from "@/components/ui/motion-footer";
 import { HeroArchitectureVisual } from "@/components/HeroArchitectureVisual";
@@ -14,6 +14,11 @@ const DESCRIPTION =
   "Read and reconstruct real software systems through progressive investigations: tracing architectural trade-offs, state flows, and production code.";
 
 export const Route = createFileRoute("/")({
+  beforeLoad: () => {
+    if (typeof window !== "undefined" && window.localStorage.getItem("kruzz_has_session") === "1") {
+      throw redirect({ to: "/dashboard" });
+    }
+  },
   head: () => ({
     meta: [
       { title: TITLE },
@@ -79,7 +84,7 @@ function Landing() {
 
   useEffect(() => {
     if (isAuthenticated) {
-      router.navigate({ to: "/dashboard" });
+      router.navigate({ to: "/dashboard", replace: true });
     }
   }, [isAuthenticated, router]);
 
@@ -88,6 +93,19 @@ function Landing() {
   const featuredCases = (["Beginner", "Medium", "Advanced"] as const)
     .map((difficulty) => caseStudies.find((c) => homeDifficulty(c) === difficulty))
     .filter((c): c is (typeof caseStudies)[number] => Boolean(c));
+
+  if (isAuthenticated) {
+    return (
+      <AppChrome>
+        <div className="grid-bg min-h-screen flex flex-col items-center justify-center gap-4 text-[#f5f5f5]">
+          <div className="size-8 animate-spin rounded-full border-2 border-[#ccff00] border-t-transparent shadow-[0_0_20px_rgba(204,255,0,0.3)]" />
+          <p className="font-mono text-xs uppercase tracking-widest text-[#ccff00] font-bold">
+            Entering Command Center...
+          </p>
+        </div>
+      </AppChrome>
+    );
+  }
 
   return (
     <AppChrome>

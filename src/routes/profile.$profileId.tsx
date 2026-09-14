@@ -87,10 +87,10 @@ function PublicProfilePage() {
               Browse Case Studies
             </Link>
             <Link
-              to="/"
+              to={isAuthenticated ? "/dashboard" : "/"}
               className="rounded-xl bg-[#ccff00] px-5 py-2.5 font-mono text-xs font-bold text-[#080808]"
             >
-              Return Home
+              {isAuthenticated ? "Return to Dashboard" : "Return Home"}
             </Link>
           </div>
         </div>

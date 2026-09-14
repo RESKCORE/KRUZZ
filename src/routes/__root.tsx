@@ -22,12 +22,18 @@ function NotFoundComponent() {
         <p className="mt-2 text-sm text-muted-foreground">
           The page you're looking for doesn't exist or has been moved.
         </p>
-        <div className="mt-6">
+        <div className="mt-6 flex justify-center gap-3">
+          <Link
+            to="/dashboard"
+            className="inline-flex items-center justify-center rounded-xl bg-[#ccff00] px-4 py-2 font-mono text-xs font-bold text-[#080808] shadow-[0_0_12px_rgba(204,255,0,0.3)] transition-all hover:scale-105"
+          >
+            Dashboard
+          </Link>
           <Link
             to="/"
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+            className="inline-flex items-center justify-center rounded-xl border border-white/10 bg-white/5 px-4 py-2 font-mono text-xs font-medium text-[#8a8a8a] transition-all hover:bg-white/10 hover:text-white"
           >
-            Go home
+            Home
           </Link>
         </div>
       </div>
@@ -58,12 +64,18 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
           >
             Try again
           </button>
-          <a
-            href="/"
-            className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
+          <Link
+            to="/dashboard"
+            className="inline-flex items-center justify-center rounded-xl bg-[#ccff00] px-4 py-2 font-mono text-xs font-bold text-[#080808] shadow-[0_0_12px_rgba(204,255,0,0.3)] transition-all hover:scale-105"
           >
-            Go home
-          </a>
+            Dashboard
+          </Link>
+          <Link
+            to="/"
+            className="inline-flex items-center justify-center rounded-xl border border-white/10 bg-white/5 px-4 py-2 font-mono text-xs font-medium text-[#8a8a8a] transition-all hover:bg-white/10 hover:text-white"
+          >
+            Home
+          </Link>
         </div>
       </div>
     </div>
