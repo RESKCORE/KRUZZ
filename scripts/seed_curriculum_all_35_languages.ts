@@ -13,7 +13,8 @@ const client = new ConvexHttpClient(CONVEX_URL);
 // Fallback C signatures for the 25 existing cases where not already specified in translations
 const C_CODELAB_SIGNATURES: Record<string, { cSignature: string; cStarterCode: string }> = {
   "atm-machine": {
-    cSignature: "bool process_atm_withdrawal(int balance, const char *pin, const char *entered_pin, int amount, int *new_balance, char *message)",
+    cSignature:
+      "bool process_atm_withdrawal(int balance, const char *pin, const char *entered_pin, int amount, int *new_balance, char *message)",
     cStarterCode: `// ATM Withdrawal Guard in C
 #include <stdio.h>
 #include <stdbool.h>
@@ -42,7 +43,8 @@ bool process_atm_withdrawal(int balance, const char *pin, const char *entered_pi
 `,
   },
   "library-management": {
-    cSignature: "bool process_checkout(bool book_is_borrowed, int member_borrowed_count, int max_limit, char *message)",
+    cSignature:
+      "bool process_checkout(bool book_is_borrowed, int member_borrowed_count, int max_limit, char *message)",
     cStarterCode: `// Library Checkout Guard in C
 #include <stdio.h>
 #include <stdbool.h>
@@ -63,7 +65,8 @@ bool process_checkout(bool book_is_borrowed, int member_borrowed_count, int max_
 `,
   },
   "banking-system-transfers": {
-    cSignature: "bool execute_transfer(int sender_balance, int receiver_balance, int amount, int *new_sender_bal, int *new_recv_bal, char *status)",
+    cSignature:
+      "bool execute_transfer(int sender_balance, int receiver_balance, int amount, int *new_sender_bal, int *new_recv_bal, char *status)",
     cStarterCode: `// Banking Transfer in C
 #include <stdio.h>
 #include <stdbool.h>
@@ -98,7 +101,8 @@ int calculate_parking_fee(int entry_hour, int exit_hour, int hourly_rate) {
 `,
   },
   "vending-machine-states": {
-    cSignature: "bool process_vending_purchase(const char *state, int balance, int item_price, int *change, char *next_state)",
+    cSignature:
+      "bool process_vending_purchase(const char *state, int balance, int item_price, int *change, char *next_state)",
     cStarterCode: `// Vending Machine State Transition in C
 #include <stdio.h>
 #include <stdbool.h>
@@ -194,7 +198,8 @@ int get_image_with_cdn(const char *filename, bool in_edge, char *asset_data) {
 `,
   },
   "search-autocomplete": {
-    cSignature: "int get_autocomplete_suggestions(const char *query, const char **candidates, int count, char **results)",
+    cSignature:
+      "int get_autocomplete_suggestions(const char *query, const char **candidates, int count, char **results)",
     cStarterCode: `// Autocomplete Prefix Filter in C
 #include <stdio.h>
 #include <string.h>
@@ -212,7 +217,8 @@ int get_autocomplete_suggestions(const char *query, const char **candidates, int
 `,
   },
   "authentication-workings": {
-    cSignature: "bool verify_identity(const char *username, const char *password, const char *db_hash)",
+    cSignature:
+      "bool verify_identity(const char *username, const char *password, const char *db_hash)",
     cStarterCode: `// Identity Verification in C
 #include <stdio.h>
 #include <stdbool.h>
@@ -236,7 +242,8 @@ void hash_password(const char *password, const char *salt, char *out_hash) {
 `,
   },
   "api-key-auth": {
-    cSignature: "bool validate_api_request(const char *api_key, const char *secret_token, const char *valid_hash)",
+    cSignature:
+      "bool validate_api_request(const char *api_key, const char *secret_token, const char *valid_hash)",
     cStarterCode: `// API Key Validator in C
 #include <stdio.h>
 #include <stdbool.h>
@@ -405,7 +412,8 @@ int elect_leader(const int *votes, int vote_count, int total_nodes) {
 `,
   },
   "quorum-reads-writes": {
-    cSignature: "int read_value(const int *versions, const int *values, int count, int read_quorum)",
+    cSignature:
+      "int read_value(const int *versions, const int *values, int count, int read_quorum)",
     cStarterCode: `// Quorum Consensus Read in C
 #include <stdio.h>
 
@@ -439,7 +447,7 @@ async function main() {
     const cCodeLabFallback = C_CODELAB_SIGNATURES[slug];
 
     let modified = false;
-    let samples = study.implementation?.samples ? [...study.implementation.samples] : [];
+    const samples = study.implementation?.samples ? [...study.implementation.samples] : [];
 
     // Check Java sample
     if (additions?.java) {
@@ -501,7 +509,7 @@ async function main() {
 
     if (modified) {
       console.log(
-        `Updating [${study.index}] ${study.slug} -> samples: [${samples.map((s: any) => s.language).join(", ")}]...`
+        `Updating [${study.index}] ${study.slug} -> samples: [${samples.map((s: any) => s.language).join(", ")}]...`,
       );
       await client.mutation(api.caseStudies.upsert, { caseStudy: study });
     }
@@ -511,7 +519,7 @@ async function main() {
   console.log(`\nInserting/Updating 10 Missing Cases...`);
   for (const missingCase of MISSING_10_CASES) {
     console.log(
-      `Upserting [${missingCase.index}] ${missingCase.slug} -> samples: [${missingCase.implementation.samples.map((s: any) => s.language).join(", ")}]...`
+      `Upserting [${missingCase.index}] ${missingCase.slug} -> samples: [${missingCase.implementation.samples.map((s: any) => s.language).join(", ")}]...`,
     );
     await client.mutation(api.caseStudies.upsert, { caseStudy: missingCase });
   }
@@ -532,7 +540,7 @@ async function main() {
     const ok = hasPython && hasJava && hasC && hasCSig;
     if (!ok) {
       console.error(
-        `FAIL: [${s.index}] ${s.slug} -> python:${hasPython}, java:${hasJava}, c:${hasC}, cSig:${hasCSig}`
+        `FAIL: [${s.index}] ${s.slug} -> python:${hasPython}, java:${hasJava}, c:${hasC}, cSig:${hasCSig}`,
       );
       allValid = false;
     } else {
@@ -541,7 +549,9 @@ async function main() {
   }
 
   if (allStudies.length === 35 && allValid) {
-    console.log("\nSUCCESS: All 35 Case Studies are populated with complete Python, Java, and C implementations!");
+    console.log(
+      "\nSUCCESS: All 35 Case Studies are populated with complete Python, Java, and C implementations!",
+    );
   } else {
     console.error(`\nWARNING: Expected 35 cases with all languages, found ${allStudies.length}`);
     process.exit(1);

@@ -213,7 +213,9 @@ export function CodeArena({
           {language === "Java"
             ? (lab.javaSignature ?? lab.languages?.java?.signature ?? lab.signature)
             : language === "C"
-              ? ((lab as any).cSignature ?? (lab.languages as any)?.c?.signature ?? `bool ${lab.functionName}(...)`)
+              ? ((lab as any).cSignature ??
+                (lab.languages as any)?.c?.signature ??
+                `bool ${lab.functionName}(...)`)
               : (lab.pythonSignature ?? lab.languages?.python?.signature ?? lab.signature)}
         </p>
         <div className="flex gap-1 rounded-xl bg-black/40 p-1 border border-white/[0.06]">
@@ -436,6 +438,14 @@ export function CodeArena({
             </span>
           )}
         </div>
+
+        <p className="mt-3 font-mono text-[10px] text-[#8a8a8a] flex items-center gap-1.5">
+          <span className="text-[#ccff00]">ℹ</span>
+          <span>
+            Code & explanations are evaluated transiently by AI models for real-time pedagogical
+            feedback. Source code is never retained or permanently stored.
+          </span>
+        </p>
       </div>
     </div>
   );

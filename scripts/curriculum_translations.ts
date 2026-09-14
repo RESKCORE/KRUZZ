@@ -25,7 +25,8 @@ export const CASE_TRANSLATIONS: Record<string, LanguageAdditions> = {
   // Case 01: ATM Machine (already has Python, Java, C - provide C codeLab signature)
   "atm-machine": {
     cCodeLab: {
-      cSignature: "bool process_atm_withdrawal(int balance, const char *pin, const char *entered_pin, int amount, int *new_balance, char *message)",
+      cSignature:
+        "bool process_atm_withdrawal(int balance, const char *pin, const char *entered_pin, int amount, int *new_balance, char *message)",
       cStarterCode: `// ATM Withdrawal Guard in C
 #include <stdio.h>
 #include <stdbool.h>
@@ -107,11 +108,13 @@ public class LibrarySystem {
         },
         {
           code: "if (book.isBorrowed || !canBorrow()) return false;",
-          explanation: "Rejects borrowing if the book is unavailable or member has reached their quota limit.",
+          explanation:
+            "Rejects borrowing if the book is unavailable or member has reached their quota limit.",
         },
         {
           code: "book.isBorrowed = true; borrowedBooks.add(book);",
-          explanation: "Updates both the book availability flag and the member's list of borrowed books.",
+          explanation:
+            "Updates both the book availability flag and the member's list of borrowed books.",
         },
       ],
     },
@@ -178,7 +181,8 @@ bool borrow_book(Member *m, Book *b) {
       ],
     },
     cCodeLab: {
-      cSignature: "bool process_checkout(bool book_is_borrowed, int member_borrowed_count, int max_limit, int *new_count, char *message)",
+      cSignature:
+        "bool process_checkout(bool book_is_borrowed, int member_borrowed_count, int max_limit, int *new_count, char *message)",
       cStarterCode: `// Library Checkout Rule Engine in C
 #include <stdio.h>
 #include <stdbool.h>
@@ -230,7 +234,8 @@ bool process_checkout(bool book_is_borrowed, int member_borrowed_count, int max_
       explanations: [
         {
           code: "if (amount <= 0 || this.balance < amount) return false;",
-          explanation: "Ensures amount is positive and sender has sufficient balance before initiating transfer.",
+          explanation:
+            "Ensures amount is positive and sender has sufficient balance before initiating transfer.",
         },
         {
           code: "this.balance -= amount; recipient.balance += amount;",
@@ -274,7 +279,8 @@ bool transfer_to(Account *sender, Account *recipient, int amount) {
       ],
     },
     cCodeLab: {
-      cSignature: "bool process_transfer(int sender_bal, int recipient_bal, int amount, int *new_sender_bal, int *new_rec_bal, char *message)",
+      cSignature:
+        "bool process_transfer(int sender_bal, int recipient_bal, int amount, int *new_sender_bal, int *new_rec_bal, char *message)",
       cStarterCode: `// Bank Transfer Guard in C
 #include <stdio.h>
 #include <stdbool.h>
@@ -468,11 +474,12 @@ int exit_lot(ParkingLot *lot, int slot_id, int hours) {
 }`,
       explanations: [
         {
-          code: "if (amount > 0) { balance += amount; state = \"PAID\"; }",
-          explanation: "Transitions state machine from IDLE to PAID when valid currency is inserted.",
+          code: 'if (amount > 0) { balance += amount; state = "PAID"; }',
+          explanation:
+            "Transitions state machine from IDLE to PAID when valid currency is inserted.",
         },
         {
-          code: "if (!\"PAID\".equals(state) || balance < price) return false;",
+          code: 'if (!"PAID".equals(state) || balance < price) return false;',
           explanation: "Guards item dispatch against unpaid or underpaid selections.",
         },
       ],
@@ -571,11 +578,11 @@ public class TheaterHall {
 }`,
       explanations: [
         {
-          code: "if (!\"AVAILABLE\".equals(seats.get(sid))) return false;",
+          code: 'if (!"AVAILABLE".equals(seats.get(sid))) return false;',
           explanation: "Prevents double-booking by only reserving available seats.",
         },
         {
-          code: "seats.put(sid, \"BOOKED\");",
+          code: 'seats.put(sid, "BOOKED");',
           explanation: "Confirms payment and locks seat permanently.",
         },
       ],
@@ -774,7 +781,7 @@ public class MiniServer {
 }`,
       explanations: [
         {
-          code: "if (!\"GET\".equalsIgnoreCase(method)) return new Response(405, ...);",
+          code: 'if (!"GET".equalsIgnoreCase(method)) return new Response(405, ...);',
           explanation: "Validates HTTP method protocol guard.",
         },
         {
@@ -826,7 +833,7 @@ int handle_request(const MiniServer *s, const char *method, const char *path, ch
 }`,
       explanations: [
         {
-          code: "if (strcmp(method, \"GET\") != 0) return 405;",
+          code: 'if (strcmp(method, "GET") != 0) return 405;',
           explanation: "Enforces HTTP method semantics.",
         },
         {
@@ -929,7 +936,7 @@ const char* resolve(DNSResolver *r, const char *domain) {
           explanation: "Scans local resolver cache first.",
         },
         {
-          code: "return \"NXDOMAIN\";",
+          code: 'return "NXDOMAIN";',
           explanation: "Returns standard DNS code when domain does not exist.",
         },
       ],
@@ -980,7 +987,7 @@ public class CDNSimulator {
 }`,
       explanations: [
         {
-          code: "if (edgeCache.containsKey(filename)) return new FetchResult(\"EDGE_CACHE\", ...);",
+          code: 'if (edgeCache.containsKey(filename)) return new FetchResult("EDGE_CACHE", ...);',
           explanation: "Returns cached asset in ~15ms from the closest edge point-of-presence.",
         },
         {
@@ -1078,7 +1085,8 @@ int get_autocomplete_suggestions(const char *query, const char *candidates[], in
       ],
     },
     cCodeLab: {
-      cSignature: "int search_prefix(const char *prefix, const char *words[], int count, char out[][32])",
+      cSignature:
+        "int search_prefix(const char *prefix, const char *words[], int count, char out[][32])",
       cStarterCode: `// Prefix matching in C
 #include <stdio.h>
 #include <string.h>
@@ -1126,7 +1134,8 @@ bool verify_identity(const char *user, const char *pass, const UserRecord db[], 
       ],
     },
     cCodeLab: {
-      cSignature: "bool verify_credentials(const char *user, const char *pass, const char *stored_pass, char *msg)",
+      cSignature:
+        "bool verify_credentials(const char *user, const char *pass, const char *stored_pass, char *msg)",
       cStarterCode: `// User credential check in C
 #include <stdio.h>
 #include <string.h>
@@ -1163,8 +1172,9 @@ void hash_password(const char *password, const char *salt, char *out_hash) {
 }`,
       explanations: [
         {
-          code: "sprintf(out_hash, \"hash://%s@%s\", rev_pw, rev_salt);",
-          explanation: "Combines unique salt with password transformation to resist rainbow table attacks.",
+          code: 'sprintf(out_hash, "hash://%s@%s", rev_pw, rev_salt);',
+          explanation:
+            "Combines unique salt with password transformation to resist rainbow table attacks.",
         },
       ],
     },
@@ -1230,7 +1240,8 @@ void generate_totp(const char *secret, uint64_t timestamp, int timestep, char *o
       explanations: [
         {
           code: "uint64_t counter = timestamp / timestep;",
-          explanation: "Derives monotonic time counter from epoch seconds and fixed 30-second window.",
+          explanation:
+            "Derives monotonic time counter from epoch seconds and fixed 30-second window.",
         },
       ],
     },
@@ -1420,7 +1431,8 @@ bool store_file(DedupIndex *idx, const char *file_hash, int size, bool *is_new) 
       explanations: [
         {
           code: "idx->entries[i].ref_count++; *is_new = false;",
-          explanation: "Deduplication hit: increments reference counter without allocating redundant block storage.",
+          explanation:
+            "Deduplication hit: increments reference counter without allocating redundant block storage.",
         },
       ],
     },
@@ -1452,7 +1464,7 @@ public class TwoPhaseCommitCoordinator {
 }`,
       explanations: [
         {
-          code: "for (String vote : votes) if (!\"READY\".equals(vote)) return \"ABORT\";",
+          code: 'for (String vote : votes) if (!"READY".equals(vote)) return "ABORT";',
           explanation: "Enforces unanimous consensus requirement across distributed databases.",
         },
       ],
@@ -1487,7 +1499,7 @@ const char* decide(const TwoPhaseCommitCoordinator *c) {
 }`,
       explanations: [
         {
-          code: "if (strcmp(c->votes[i], \"READY\") != 0) return \"ABORT\";",
+          code: 'if (strcmp(c->votes[i], "READY") != 0) return "ABORT";',
           explanation: "Any non-READY vote aborts the distributed transaction atomically.",
         },
       ],
@@ -1520,7 +1532,8 @@ public class PartitionedLog {
       explanations: [
         {
           code: "return total % numPartitions;",
-          explanation: "Deterministic hash routing ensuring events with matching keys preserve order.",
+          explanation:
+            "Deterministic hash routing ensuring events with matching keys preserve order.",
         },
         {
           code: "return log.size() - 1;",
@@ -1590,7 +1603,8 @@ public class ConsistentHashingRing {
         },
         {
           code: "return ringPositions.get(0);",
-          explanation: "Wraps around to the first node when key hash exceeds highest node position.",
+          explanation:
+            "Wraps around to the first node when key hash exceeds highest node position.",
         },
       ],
     },
@@ -1615,7 +1629,8 @@ int find_owner(const char *key, const int positions[], int count) {
       explanations: [
         {
           code: "if (positions[i] >= h) return positions[i];",
-          explanation: "Routes key to next available ring shard with minimal re-mapping on node changes.",
+          explanation:
+            "Routes key to next available ring shard with minimal re-mapping on node changes.",
         },
       ],
     },
@@ -1718,7 +1733,8 @@ public class QuorumResolver {
         },
         {
           code: "if (nodeValues.get(i).version > best.version) best = ...;",
-          explanation: "Picks the freshest value using monotonic version stamp across replica quorums.",
+          explanation:
+            "Picks the freshest value using monotonic version stamp across replica quorums.",
         },
       ],
     },

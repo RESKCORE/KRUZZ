@@ -1,8 +1,9 @@
 import { useEffect, useId, useRef, useState } from "react";
+import { sanitizeSvg } from "@/lib/utils";
 
 /**
  * Renders a Mermaid definition to inline SVG on the client.
- * Configured with the Dark Neumorphic & Electric Acid Lime palette.
+ * Configured with the Dark Neumorphic & Electric Acid Lime palette and strict sanitization.
  */
 export function MermaidDiagram({ chart }: { chart: string }) {
   const ref = useRef<HTMLDivElement | null>(null);
@@ -43,7 +44,8 @@ export function MermaidDiagram({ chart }: { chart: string }) {
           },
         });
         const { svg } = await mermaid.render(id, chart);
-        if (!cancelled && ref.current) ref.current.innerHTML = svg;
+        const sanitized = sanitizeSvg(svg);
+        if (!cancelled && ref.current) ref.current.innerHTML = sanitized;
       } catch {
         if (!cancelled) setFailed(true);
       }

@@ -39,8 +39,11 @@ function Library() {
   );
   const unlockedCases = useQuery(api.caseProgress.getUserUnlockedCases, {});
 
-  const allDbCases = useQuery(api.caseStudies.list, {}) ?? [];
-  const dbCases = useQuery(api.caseStudies.list, active === "All" ? {} : { category: active });
+  const allDbCases = useQuery(api.caseStudies.listPublicTopics, {}) ?? [];
+  const dbCases = useQuery(
+    api.caseStudies.listPublicTopics,
+    active === "All" ? {} : { category: active },
+  );
 
   const categories = [
     "All",
@@ -262,6 +265,19 @@ function Library() {
                 )}
               </>
             );
+
+            if (!isAuthenticated) {
+              return (
+                <Link
+                  key={c.slug}
+                  to="/sign-in"
+                  search={{ redirect: `/cases/${c.slug}` }}
+                  className="glass-panel group block rounded-3xl p-6 transition-all hover:border-[#ccff00]/40 hover:shadow-[0_20px_40px_rgba(204,255,0,0.12)] hover:-translate-y-1"
+                >
+                  {card}
+                </Link>
+              );
+            }
 
             if (isCompleted) {
               return (

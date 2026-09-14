@@ -1,8 +1,9 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useAuth } from "@clerk/clerk-react";
 import { AuthLayout } from "@/components/auth/AuthLayout";
 import { SignInForm } from "@/components/auth/SignInForm";
+import { sanitizeInternalRedirect } from "@/lib/utils";
 
 export const Route = createFileRoute("/sign-in")({
   head: () => ({
@@ -22,13 +23,21 @@ export const Route = createFileRoute("/sign-in")({
 function SignInPage() {
   const { isSignedIn, isLoaded } = useAuth();
   const navigate = useNavigate();
+  const [targetRedirect, setTargetRedirect] = useState<string>("/dashboard");
 
-  // Redirect to dashboard if already authenticated
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      setTargetRedirect(sanitizeInternalRedirect(params.get("redirect")));
+    }
+  }, []);
+
+  // Redirect if already authenticated
   useEffect(() => {
     if (isLoaded && isSignedIn) {
-      navigate({ to: "/dashboard" });
+      navigate({ to: targetRedirect as "/" });
     }
-  }, [isLoaded, isSignedIn, navigate]);
+  }, [isLoaded, isSignedIn, navigate, targetRedirect]);
 
   return (
     <AuthLayout
@@ -36,7 +45,7 @@ function SignInPage() {
       title="Welcome Back!"
       subtitle="Enter your investigator credentials below"
     >
-      <SignInForm />
+      <SignInForm redirect={targetRedirect} />
     </AuthLayout>
   );
 }

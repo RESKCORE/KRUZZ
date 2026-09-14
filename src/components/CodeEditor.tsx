@@ -1,4 +1,5 @@
 import { useRef, useEffect, useCallback, type KeyboardEvent } from "react";
+import { escapeHtml } from "@/lib/utils";
 
 type Lang = "Python" | "Java" | "JavaScript" | "C";
 
@@ -71,10 +72,6 @@ const PATTERNS: Record<Lang, { regex: RegExp; cls: string }[]> = {
     { regex: /\b([a-z_][a-zA-Z0-9_]*)\s*(?=\()/g, cls: "tok-fn" },
   ],
 };
-
-function escapeHtml(str: string): string {
-  return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-}
 
 function highlight(code: string, lang: Lang): string {
   const patterns = PATTERNS[lang];
@@ -180,7 +177,11 @@ export function CodeEditor({
         {/* Gutter — line numbers */}
         <div className="code-editor-gutter" aria-hidden="true" style={{ height: bodyHeight }}>
           {Array.from({ length: lineCount }, (_, i) => (
-            <div key={i} className="code-editor-lineno" style={{ height: LINE_H, lineHeight: `${LINE_H}px` }}>
+            <div
+              key={i}
+              className="code-editor-lineno"
+              style={{ height: LINE_H, lineHeight: `${LINE_H}px` }}
+            >
               {i + 1}
             </div>
           ))}

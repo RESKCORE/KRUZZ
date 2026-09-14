@@ -3,7 +3,17 @@ import { Link, useRouter, useRouterState } from "@tanstack/react-router";
 import { NotchNav, type NotchItemData } from "@/components/ui/adaptive-notch-navigation-bar";
 import { RCBadge, StreakBadge } from "@/components/RCWallet";
 import { SignedIn, SignedOut, useClerk, useUser } from "@clerk/clerk-react";
-import { BookOpen, Home, LayoutDashboard, ShoppingBag, Swords, User, Settings, LogOut, ChevronRight } from "lucide-react";
+import {
+  BookOpen,
+  Home,
+  LayoutDashboard,
+  ShoppingBag,
+  Swords,
+  User,
+  Settings,
+  LogOut,
+  ChevronRight,
+} from "lucide-react";
 import { useAccount } from "@/lib/account";
 import { AuthGate } from "@/components/AuthGate";
 

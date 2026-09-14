@@ -83,7 +83,7 @@ const STORE_ITEMS: StoreItem[] = [
 ];
 
 function StorePage() {
-  const { points, award, has } = useWallet();
+  const { points, redeemStoreItem, has, isAuthenticated } = useWallet();
   const { user, profile } = useAccount();
 
   const handleDownloadCheatSheet = () => {
@@ -288,7 +288,12 @@ Verified at: kruzz.dev
     toast.success("Systems Thinker Certificate of Reasoning downloaded!");
   };
 
-  const handleRedeem = (item: StoreItem) => {
+  const handleRedeem = async (item: StoreItem) => {
+    if (!isAuthenticated) {
+      toast.error("Please sign in to redeem items from the store.");
+      return;
+    }
+
     if (item.unlocked || has(`store:${item.id}`)) {
       if (item.id === "pdf-architecture-blueprints") {
         handleDownloadCheatSheet();
@@ -307,7 +312,12 @@ Verified at: kruzz.dev
       return;
     }
 
-    award(`store:${item.id}`, -item.cost);
+    const res = await redeemStoreItem(item.id);
+    if (!res.success) {
+      toast.error((res as any).error || "Failed to redeem item.");
+      return;
+    }
+
     toast.success(`Successfully unlocked ${item.name}!`);
 
     // Auto trigger deliverable upon purchase

@@ -30,7 +30,8 @@ export const Route = createFileRoute("/profile/$profileId")({
       { title: "Public Investigator Dossier — KRUZZ" },
       {
         name: "description",
-        content: "Verified software engineering portfolio, streak, and completed system architecture case studies on KRUZZ.",
+        content:
+          "Verified software engineering portfolio, streak, and completed system architecture case studies on KRUZZ.",
       },
     ],
   }),
@@ -40,12 +41,12 @@ export const Route = createFileRoute("/profile/$profileId")({
 function PublicProfilePage() {
   const { profileId: rawProfileId } = Route.useParams();
   const profileId = decodeURIComponent(rawProfileId);
-  const { user: currentUser, isAuthenticated } = useAccount();
+  const { user: currentUser, profile: userProfile, isAuthenticated } = useAccount();
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
 
-  // Fetch the public profile from Convex
-  const publicData = useQuery(api.users.getPublicProfile, { profileId });
+  // Fetch the public profile from Convex using the opaque publicProfileId
+  const publicData = useQuery(api.users.getPublicProfile, { publicProfileId: profileId });
 
   const handleCopyLink = () => {
     navigator.clipboard.writeText(window.location.href);
@@ -99,7 +100,6 @@ function PublicProfilePage() {
 
   const {
     name,
-    handle,
     imageUrl,
     bannerUrl,
     points,
@@ -108,9 +108,10 @@ function PublicProfilePage() {
     stats,
     completedCases,
     createdAt,
+    publicProfileId,
   } = publicData;
 
-  const isOwner = currentUser && (currentUser.id === publicData.clerkId || currentUser.username === handle);
+  const isOwner = Boolean(userProfile && userProfile.publicProfileId === publicProfileId);
   const formattedJoinedDate = new Date(createdAt).toLocaleDateString("en-US", {
     month: "short",
     year: "numeric",
@@ -172,7 +173,7 @@ function PublicProfilePage() {
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(204,255,0,0.18)_0%,transparent_70%)] pointer-events-none" />
 
             <div className="absolute top-4 right-4 z-10 rounded-full border border-white/10 bg-black/60 px-3 py-1 font-mono text-[10px] text-[#8a8a8a] backdrop-blur-md">
-              UID: #{publicData.profileId.slice(0, 8)}
+              UID: #{publicProfileId.slice(0, 12)}
             </div>
           </div>
 
@@ -183,11 +184,7 @@ function PublicProfilePage() {
               <div className="relative">
                 <div className="size-24 sm:size-28 rounded-2xl border-2 border-[#ccff00] bg-black p-1 shadow-[0_0_20px_rgba(204,255,0,0.4)] overflow-hidden">
                   {imageUrl ? (
-                    <img
-                      src={imageUrl}
-                      alt={name}
-                      className="size-full rounded-xl object-cover"
-                    />
+                    <img src={imageUrl} alt={name} className="size-full rounded-xl object-cover" />
                   ) : (
                     <div className="flex size-full items-center justify-center rounded-xl bg-gradient-to-br from-[#182608] to-[#080808] font-mono text-2xl font-bold text-[#ccff00]">
                       {name.charAt(0).toUpperCase()}
@@ -216,7 +213,7 @@ function PublicProfilePage() {
               <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#f5f5f5]">
                 {name}
               </h1>
-              <p className="font-mono text-xs text-[#8a8a8a] mt-0.5">@{handle}</p>
+              <p className="font-mono text-xs text-[#8a8a8a] mt-0.5">@{publicProfileId}</p>
             </div>
 
             {/* Stats Triple Bar */}
@@ -315,7 +312,9 @@ function PublicProfilePage() {
             ) : (
               <div className="rounded-3xl border border-white/[0.08] bg-[#0c0e0c]/80 p-8 text-center">
                 <BookOpen className="mx-auto size-8 text-[#555] mb-2" />
-                <p className="text-sm font-semibold text-[#f5f5f5]">No Case Studies Completed Yet</p>
+                <p className="text-sm font-semibold text-[#f5f5f5]">
+                  No Case Studies Completed Yet
+                </p>
                 <p className="mt-1 text-xs text-[#8a8a8a]">
                   This investigator is currently reviewing architectural dossiers.
                 </p>
@@ -350,10 +349,16 @@ function PublicProfilePage() {
                       <div className="flex items-center gap-2">
                         <span
                           className={`size-2 rounded-full ${
-                            isCurrent ? "bg-[#ccff00] animate-pulse" : isPast ? "bg-[#8a8a8a]" : "bg-[#333]"
+                            isCurrent
+                              ? "bg-[#ccff00] animate-pulse"
+                              : isPast
+                                ? "bg-[#8a8a8a]"
+                                : "bg-[#333]"
                           }`}
                         />
-                        <span className={`font-mono text-xs ${isCurrent ? "font-bold text-[#ccff00]" : "text-[#b8b8b8]"}`}>
+                        <span
+                          className={`font-mono text-xs ${isCurrent ? "font-bold text-[#ccff00]" : "text-[#b8b8b8]"}`}
+                        >
                           {r.name}
                         </span>
                       </div>
@@ -377,7 +382,8 @@ function PublicProfilePage() {
                   Master Real-World System Architecture
                 </h3>
                 <p className="mt-2 text-xs leading-relaxed text-[#b8b8b8]">
-                  Learn how real distributed systems, caches, DNS, and payment gateways work. Write code in Python, Java, and C.
+                  Learn how real distributed systems, caches, DNS, and payment gateways work. Write
+                  code in Python, Java, and C.
                 </p>
                 <div className="mt-4 flex flex-col gap-2">
                   <Link
@@ -420,9 +426,9 @@ function PublicProfilePage() {
         isOpen={isShareModalOpen}
         onClose={() => setIsShareModalOpen(false)}
         user={{
-          profileId: publicData.profileId,
+          profileId: publicProfileId,
           name,
-          handle: handle || "investigator",
+          handle: name || "Investigator",
           rank,
           points,
           streak: streak.current,

@@ -3,6 +3,10 @@
   "private": true,
   "sideEffects": false,
   "type": "module",
+  "engines": {
+    "node": ">=22.0.0",
+    "npm": ">=10.0.0"
+  },
   "scripts": {
     "dev": "vite dev",
     "build": "vite build",
@@ -10,7 +14,10 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "tsc --noEmit",
     "test": "node --test test/**/*.test.js",
+    "verify": "npm run typecheck && npm run lint && npm run format:check && npm test && npm run build",
     "generate:case": "bun scripts/generate_case.ts",
     "db:seed:advanced": "bun scripts/curriculum_batch_3.ts"
   },

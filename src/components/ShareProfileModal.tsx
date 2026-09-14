@@ -1,5 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { Download, Link as LinkIcon, Share2, Check, ShieldCheck, QrCode } from "lucide-react";
 import { toast } from "sonner";
 import QRCode from "qrcode";
@@ -109,7 +115,7 @@ async function generateBrandedQR(
   const cy = size / 2;
   // Radius ~20% of QR size ensures QR remains 100% scannable with Level H (30% tolerance)
   const outerR = size * 0.115;
-  const innerR = size * 0.10;
+  const innerR = size * 0.1;
 
   // Solid white backing disc so QR data does not bleed into the logo
   ctx.save();
@@ -353,13 +359,7 @@ function drawFullCredentialBadge(
   // Draw the QR Canvas
   const qrInnerPad = 26;
   const qrInnerSize = qrFrameSize - qrInnerPad * 2;
-  ctx.drawImage(
-    qrCanvas,
-    qrFrameX + qrInnerPad,
-    qrFrameY + qrInnerPad,
-    qrInnerSize,
-    qrInnerSize,
-  );
+  ctx.drawImage(qrCanvas, qrFrameX + qrInnerPad, qrFrameY + qrInnerPad, qrInnerSize, qrInnerSize);
 
   // Instruction Pill Below QR
   const scanLabel = "SCAN WITH PHONE CAMERA TO VIEW DOSSIER";
@@ -525,7 +525,8 @@ export function ShareProfileModal({ isOpen, onClose, user }: ShareProfileModalPr
             Share Your Investigator Profile
           </DialogTitle>
           <DialogDescription className="text-xs text-[#8a8a8a]">
-            Anyone who scans this QR code will directly open your public profile and case studies without signing in.
+            Anyone who scans this QR code will directly open your public profile and case studies
+            without signing in.
           </DialogDescription>
         </DialogHeader>
 
@@ -585,64 +586,64 @@ export function ShareProfileModal({ isOpen, onClose, user }: ShareProfileModalPr
               </span>
             </div>
 
-          {/* Card Center: QR Code with Target Brackets */}
-          <div className="relative z-10 my-4 flex flex-col items-center justify-center">
-            <div className="relative rounded-2xl bg-white p-3 shadow-[0_0_32px_rgba(0,0,0,0.6)] group">
-              {/* Corner Cyber Brackets */}
-              <div className="pointer-events-none absolute -top-1.5 -left-1.5 size-4 border-t-2 border-l-2 border-[#ccff00]" />
-              <div className="pointer-events-none absolute -top-1.5 -right-1.5 size-4 border-t-2 border-r-2 border-[#ccff00]" />
-              <div className="pointer-events-none absolute -bottom-1.5 -left-1.5 size-4 border-b-2 border-l-2 border-[#ccff00]" />
-              <div className="pointer-events-none absolute -bottom-1.5 -right-1.5 size-4 border-b-2 border-r-2 border-[#ccff00]" />
+            {/* Card Center: QR Code with Target Brackets */}
+            <div className="relative z-10 my-4 flex flex-col items-center justify-center">
+              <div className="relative rounded-2xl bg-white p-3 shadow-[0_0_32px_rgba(0,0,0,0.6)] group">
+                {/* Corner Cyber Brackets */}
+                <div className="pointer-events-none absolute -top-1.5 -left-1.5 size-4 border-t-2 border-l-2 border-[#ccff00]" />
+                <div className="pointer-events-none absolute -top-1.5 -right-1.5 size-4 border-t-2 border-r-2 border-[#ccff00]" />
+                <div className="pointer-events-none absolute -bottom-1.5 -left-1.5 size-4 border-b-2 border-l-2 border-[#ccff00]" />
+                <div className="pointer-events-none absolute -bottom-1.5 -right-1.5 size-4 border-b-2 border-r-2 border-[#ccff00]" />
 
-              {isGenerating ? (
-                <div className="flex size-48 items-center justify-center bg-[#f5f5f5]">
-                  <div className="size-6 animate-spin rounded-full border-2 border-[#ccff00] border-t-transparent" />
-                </div>
-              ) : qrDataUrl ? (
-                <img
-                  src={qrDataUrl}
-                  alt={`QR Code for @${user.handle}`}
-                  className="size-48 rounded-lg object-contain"
-                />
-              ) : (
-                <div className="flex size-48 items-center justify-center text-xs text-[#8a8a8a] font-mono">
-                  Failed to generate QR
-                </div>
-              )}
+                {isGenerating ? (
+                  <div className="flex size-48 items-center justify-center bg-[#f5f5f5]">
+                    <div className="size-6 animate-spin rounded-full border-2 border-[#ccff00] border-t-transparent" />
+                  </div>
+                ) : qrDataUrl ? (
+                  <img
+                    src={qrDataUrl}
+                    alt={`QR Code for @${user.handle}`}
+                    className="size-48 rounded-lg object-contain"
+                  />
+                ) : (
+                  <div className="flex size-48 items-center justify-center text-xs text-[#8a8a8a] font-mono">
+                    Failed to generate QR
+                  </div>
+                )}
+              </div>
+
+              {/* Scanner Helper Label */}
+              <div className="mt-3 flex items-center gap-1.5 rounded-full bg-[#0c120c] border border-white/[0.08] px-3 py-1 text-[10px] font-mono text-[#8a8a8a]">
+                <QrCode className="size-3 text-[#ccff00]" />
+                <span>Point camera to inspect dossier</span>
+              </div>
             </div>
 
-            {/* Scanner Helper Label */}
-            <div className="mt-3 flex items-center gap-1.5 rounded-full bg-[#0c120c] border border-white/[0.08] px-3 py-1 text-[10px] font-mono text-[#8a8a8a]">
-              <QrCode className="size-3 text-[#ccff00]" />
-              <span>Point camera to inspect dossier</span>
+            {/* Quick Target URL Bar with 1-click Copy */}
+            <div className="relative z-10 flex items-center justify-between gap-2 rounded-xl border border-white/[0.08] bg-[#0c120c] px-3 py-2">
+              <span className="truncate font-mono text-[11px] text-[#8a8a8a]">
+                {targetUrl.replace(/^https?:\/\//, "")}
+              </span>
+              <button
+                type="button"
+                onClick={handleCopyLink}
+                className="flex items-center gap-1 rounded-lg bg-white/[0.06] hover:bg-[#ccff00]/20 hover:text-[#ccff00] px-2 py-1 font-mono text-[10px] font-bold text-[#f5f5f5] transition-colors cursor-pointer shrink-0"
+              >
+                {isCopied ? (
+                  <>
+                    <Check className="size-3 text-[#ccff00]" />
+                    <span className="text-[#ccff00]">Copied</span>
+                  </>
+                ) : (
+                  <>
+                    <LinkIcon className="size-3 text-[#8a8a8a]" />
+                    <span>Copy</span>
+                  </>
+                )}
+              </button>
             </div>
-          </div>
-
-          {/* Quick Target URL Bar with 1-click Copy */}
-          <div className="relative z-10 flex items-center justify-between gap-2 rounded-xl border border-white/[0.08] bg-[#0c120c] px-3 py-2">
-            <span className="truncate font-mono text-[11px] text-[#8a8a8a]">
-              {targetUrl.replace(/^https?:\/\//, "")}
-            </span>
-            <button
-              type="button"
-              onClick={handleCopyLink}
-              className="flex items-center gap-1 rounded-lg bg-white/[0.06] hover:bg-[#ccff00]/20 hover:text-[#ccff00] px-2 py-1 font-mono text-[10px] font-bold text-[#f5f5f5] transition-colors cursor-pointer shrink-0"
-            >
-              {isCopied ? (
-                <>
-                  <Check className="size-3 text-[#ccff00]" />
-                  <span className="text-[#ccff00]">Copied</span>
-                </>
-              ) : (
-                <>
-                  <LinkIcon className="size-3 text-[#8a8a8a]" />
-                  <span>Copy</span>
-                </>
-              )}
-            </button>
           </div>
         </div>
-      </div>
 
         {/* Modal Action Buttons */}
         <div className="mt-4 flex flex-wrap items-center justify-between gap-2">

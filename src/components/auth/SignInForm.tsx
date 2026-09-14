@@ -17,7 +17,7 @@ const signInSchema = z.object({
 
 type SignInFormData = z.infer<typeof signInSchema>;
 
-export function SignInForm() {
+export function SignInForm({ redirect }: { redirect?: string } = {}) {
   const { signIn, setActive, isLoaded } = useSignIn();
   const navigate = useNavigate();
 
@@ -66,7 +66,7 @@ export function SignInForm() {
       if (result.status === "complete") {
         await setActive({ session: result.createdSessionId });
         toast.success("Welcome back to KRUZZ!");
-        navigate({ to: "/dashboard" });
+        navigate({ to: (redirect || "/dashboard") as "/" });
       } else {
         // Multi-factor or other requirements
         console.warn("Sign in incomplete:", result.status);

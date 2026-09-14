@@ -55,17 +55,63 @@ function availableProviders(): ProviderConfig[] {
 
 type ChatMessage = { role: "system" | "user"; content: string };
 
+const circuitBreakers: Record<ProviderName, { failures: number; trippedUntil: number }> = {
+  gemini: { failures: 0, trippedUntil: 0 },
+  groq: { failures: 0, trippedUntil: 0 },
+  openrouter: { failures: 0, trippedUntil: 0 },
+};
+
+export function isCircuitAvailable(name: ProviderName): boolean {
+  const cb = circuitBreakers[name];
+  if (!cb) return true;
+  return Date.now() >= cb.trippedUntil;
+}
+
+export function recordProviderSuccess(name: ProviderName): void {
+  const cb = circuitBreakers[name];
+  if (cb) {
+    cb.failures = 0;
+    cb.trippedUntil = 0;
+  }
+}
+
+export function recordProviderFailure(name: ProviderName): void {
+  const cb = circuitBreakers[name];
+  if (cb) {
+    cb.failures++;
+    if (cb.failures >= 3) {
+      cb.trippedUntil = Date.now() + 60_000; // Trip circuit for 60s
+    }
+  }
+}
+
+/**
+ * Normalizes and strips control characters from student input before prompt synthesis.
+ */
+/* eslint-disable no-control-regex */
+export function normalizeLabInput(
+  code: string,
+  explanation: string,
+): { cleanCode: string; cleanExplanation: string } {
+  const cleanCode = (code || "").replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, "").slice(0, 20000);
+  const cleanExplanation = (explanation || "")
+    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, "")
+    .slice(0, 5000);
+  return { cleanCode, cleanExplanation };
+}
+/* eslint-enable no-control-regex */
+
 async function callOpenAILike(
   cfg: ProviderConfig,
   messages: ChatMessage[],
   jsonMode: boolean,
-): Promise<string> {
+): Promise<{ text: string; promptTokens?: number; completionTokens?: number }> {
   const key = getProviderKey(cfg);
   const payload: Record<string, unknown> = {
     model: cfg.model,
     messages,
     temperature: 0.2,
-    max_tokens: 2048,
+    max_tokens: 1024,
   };
   if (jsonMode) payload["response_format"] = { type: "json_object" };
 
@@ -84,6 +130,7 @@ async function callOpenAILike(
     method: "POST",
     headers,
     body: JSON.stringify(payload),
+    signal: AbortSignal.timeout(10000), // 10s request abort timeout
   });
 
   if (!res.ok) {
@@ -93,13 +140,27 @@ async function callOpenAILike(
 
   const data = (await res.json()) as {
     choices?: { message?: { content?: string } }[];
+    usage?: { prompt_tokens?: number; completion_tokens?: number; total_tokens?: number };
   };
   const content = data.choices?.[0]?.message?.content;
   if (!content) throw new Error(`${cfg.name}: empty response`);
-  return content;
+  return {
+    text: content,
+    ...(data.usage?.prompt_tokens !== undefined ? { promptTokens: data.usage.prompt_tokens } : {}),
+    ...(data.usage?.completion_tokens !== undefined
+      ? { completionTokens: data.usage.completion_tokens }
+      : {}),
+  };
 }
 
-async function callGemini(cfg: ProviderConfig, messages: ChatMessage[]): Promise<string> {
+async function callGemini(
+  cfg: ProviderConfig,
+  messages: ChatMessage[],
+): Promise<{
+  text: string;
+  promptTokens?: number | undefined;
+  completionTokens?: number | undefined;
+}> {
   const key = getProviderKey(cfg);
   const url = `${cfg.url}/${cfg.model}:generateContent?key=${key}`;
 
@@ -118,10 +179,11 @@ async function callGemini(cfg: ProviderConfig, messages: ChatMessage[]): Promise
       ],
       generationConfig: {
         temperature: 0.2,
-        maxOutputTokens: 2048,
+        maxOutputTokens: 1024,
         responseMimeType: "application/json",
       },
     }),
+    signal: AbortSignal.timeout(10000), // 10s request abort timeout
   });
 
   if (!res.ok) {
@@ -131,31 +193,65 @@ async function callGemini(cfg: ProviderConfig, messages: ChatMessage[]): Promise
 
   const data = (await res.json()) as {
     candidates?: { content?: { parts?: { text?: string }[] } }[];
+    usageMetadata?: {
+      promptTokenCount?: number;
+      candidatesTokenCount?: number;
+      totalTokenCount?: number;
+    };
   };
   const text = data.candidates?.[0]?.content?.parts?.map((p) => p.text).join("") ?? "";
   if (!text) throw new Error("gemini: empty response");
-  return text;
+  return {
+    text,
+    ...(data.usageMetadata?.promptTokenCount !== undefined
+      ? { promptTokens: data.usageMetadata.promptTokenCount }
+      : {}),
+    ...(data.usageMetadata?.candidatesTokenCount !== undefined
+      ? { completionTokens: data.usageMetadata.candidatesTokenCount }
+      : {}),
+  };
 }
 
-/** Call the first available provider, falling back through the rest. */
+/**
+ * Call the first available provider, falling back at most once to prevent cascading cost spikes.
+ * Checks provider circuit breakers.
+ */
 async function tryProviders(
   messages: ChatMessage[],
   jsonMode: boolean,
-): Promise<{ text: string; provider: ProviderName }> {
+): Promise<{
+  text: string;
+  provider: ProviderName;
+  model: string;
+  promptTokens?: number | undefined;
+  completionTokens?: number | undefined;
+}> {
   let lastErr: unknown = null;
-  for (const cfg of availableProviders()) {
+  const eligible = availableProviders().filter((p) => isCircuitAvailable(p.name));
+
+  // Cap total provider attempts to 2 (primary + max 1 fallback)
+  const attemptsToTry = eligible.slice(0, 2);
+
+  for (const cfg of attemptsToTry) {
     try {
-      const text =
+      const res =
         cfg.name === "gemini"
           ? await callGemini(cfg, messages)
           : await callOpenAILike(cfg, messages, jsonMode);
-      return { text, provider: cfg.name };
+      recordProviderSuccess(cfg.name);
+      return {
+        text: res.text,
+        provider: cfg.name,
+        model: cfg.model,
+        ...(res.promptTokens !== undefined ? { promptTokens: res.promptTokens } : {}),
+        ...(res.completionTokens !== undefined ? { completionTokens: res.completionTokens } : {}),
+      };
     } catch (e) {
+      recordProviderFailure(cfg.name);
       lastErr = e;
-      // try next provider
     }
   }
-  throw lastErr ?? new Error("No AI provider configured");
+  throw lastErr ?? new Error("No AI provider currently available");
 }
 
 /**
@@ -174,9 +270,13 @@ export type LabGrade = {
     suggestion: string; // how to fix it
   }[];
   nextStep: string; // single actionable next step
+  provider?: string | undefined;
+  model?: string | undefined;
+  actualPromptTokens?: number | undefined;
+  actualOutputTokens?: number | undefined;
 };
 
-const SCORE_PROMPT = `You are a supportive, high-standards senior software engineering instructor grading a student's coding lab and conceptual explanation for a system architecture course.
+export const SCORE_PROMPT = `You are a supportive, high-standards senior software engineering instructor grading a student's coding lab and conceptual explanation for a system architecture course.
 
 CRITICAL REQUIREMENTS:
 1. The student MUST provide actual working code — not just comments, pseudocode, or placeholders.
@@ -220,14 +320,16 @@ export async function gradeLabAttempt(
   code: string,
   explanation: string,
 ): Promise<LabGrade> {
+  const { cleanCode, cleanExplanation } = normalizeLabInput(code, explanation);
+
   const userContent = [
     `Lab: ${labTitle}`,
     `Requirement: ${prompt}`,
     `Language chosen by student: ${language}`,
     ``,
-    `Student's code:\n\`\`\`${language}\n${code}\n\`\`\``,
+    `Student's code:\n\`\`\`${language}\n${cleanCode}\n\`\`\``,
     ``,
-    `Student's explanation:\n${explanation}`,
+    `Student's explanation:\n${cleanExplanation}`,
   ].join("\n");
 
   const messages: ChatMessage[] = [
@@ -235,75 +337,84 @@ export async function gradeLabAttempt(
     { role: "user", content: userContent },
   ];
 
-  const { text } = await tryProviders(messages, true);
+  const { text, provider, model, promptTokens, completionTokens } = await tryProviders(
+    messages,
+    true,
+  );
 
-  return parseLabGrade(text);
+  return {
+    ...parseLabGrade(text),
+    provider,
+    model,
+    ...(promptTokens !== undefined ? { actualPromptTokens: promptTokens } : {}),
+    ...(completionTokens !== undefined ? { actualOutputTokens: completionTokens } : {}),
+  };
 }
 
-function parseLabGrade(text: string): LabGrade {
-  try {
-    // Strip markdown fences / leading noise
-    const cleaned = text.replace(/```json|```/g, "").trim();
-    const start = cleaned.indexOf("{");
-    const end = cleaned.lastIndexOf("}");
-    if (start === -1 || end === -1) throw new Error("no object found");
-    const obj = JSON.parse(cleaned.slice(start, end + 1)) as {
-      score?: unknown;
-      summary?: unknown;
-      strengths?: unknown;
-      mistakes?: unknown;
-      nextStep?: unknown;
-    };
-
-    const score = clampScore(typeof obj.score === "number" ? obj.score : Number(obj.score));
-    const passed = score >= 80;
-    const summary =
-      typeof obj.summary === "string" ? obj.summary : passed ? "Good work." : "Keep going.";
-    const strengths = Array.isArray(obj.strengths)
-      ? obj.strengths.filter((s): s is string => typeof s === "string")
-      : [];
-    const mistakes = Array.isArray(obj.mistakes)
-      ? obj.mistakes
-          .filter(
-            (m): m is { area?: unknown; problem?: unknown; suggestion?: unknown } =>
-              m !== null && typeof m === "object",
-          )
-          .map((m) => ({
-            area: typeof m.area === "string" ? m.area : "General",
-            problem: typeof m.problem === "string" ? m.problem : "",
-            suggestion: typeof m.suggestion === "string" ? m.suggestion : "",
-          }))
-      : [];
-    const nextStep =
-      typeof obj.nextStep === "string"
-        ? obj.nextStep
-        : passed
-          ? "Proceed to Reflection."
-          : "Fix the issues above and resubmit.";
-
-    return { score, passed, summary, strengths, mistakes, nextStep };
-  } catch {
-    // Fallback: extract score from text and return minimal shape
-    const m = text.match(/(\d{1,3})/);
-    const score = clampScore(m ? Number(m[1]) : 0);
-    const passed = score >= 80;
-    return {
-      score,
-      passed,
-      summary: passed ? "Submission looks good." : "Some issues found — review and retry.",
-      strengths: passed ? ["Correct implementation"] : [],
-      mistakes: passed
-        ? []
-        : [
-            {
-              area: "General",
-              problem: "Unable to parse detailed feedback.",
-              suggestion: "Check your code logic and resubmit.",
-            },
-          ],
-      nextStep: passed ? "Proceed to Reflection." : "Fix the issues above and resubmit.",
-    };
+export function parseLabGrade(text: string): LabGrade {
+  // Strip markdown fences / leading noise
+  const cleaned = text.replace(/```json|```/g, "").trim();
+  const start = cleaned.indexOf("{");
+  const end = cleaned.lastIndexOf("}");
+  if (start === -1 || end === -1) {
+    throw new Error("Invalid AI model output: No JSON object found in response");
   }
+
+  let obj: {
+    score?: unknown;
+    summary?: unknown;
+    strengths?: unknown;
+    mistakes?: unknown;
+    nextStep?: unknown;
+  };
+
+  try {
+    obj = JSON.parse(cleaned.slice(start, end + 1));
+  } catch {
+    throw new Error("Invalid AI model output: Failed to parse JSON response");
+  }
+
+  if (typeof obj.score !== "number" || !Number.isFinite(obj.score)) {
+    throw new Error("Invalid AI model output: Missing or non-numeric score");
+  }
+
+  const score = clampScore(obj.score);
+  const passed = score >= 80;
+
+  if (typeof obj.summary !== "string" || obj.summary.trim().length === 0) {
+    throw new Error("Invalid AI model output: Missing or empty summary");
+  }
+  const summary = obj.summary.trim().slice(0, 500);
+
+  const strengths = Array.isArray(obj.strengths)
+    ? obj.strengths
+        .filter((s: unknown): s is string => typeof s === "string" && s.trim().length > 0)
+        .map((s) => s.trim().slice(0, 300))
+        .slice(0, 10)
+    : [];
+
+  const mistakes = Array.isArray(obj.mistakes)
+    ? obj.mistakes
+        .filter(
+          (m: unknown): m is { area?: unknown; problem?: unknown; suggestion?: unknown } =>
+            m !== null && typeof m === "object",
+        )
+        .map((m) => ({
+          area: typeof m.area === "string" ? m.area.trim().slice(0, 100) : "General",
+          problem: typeof m.problem === "string" ? m.problem.trim().slice(0, 300) : "",
+          suggestion: typeof m.suggestion === "string" ? m.suggestion.trim().slice(0, 300) : "",
+        }))
+        .slice(0, 10)
+    : [];
+
+  const nextStep =
+    typeof obj.nextStep === "string" && obj.nextStep.trim().length > 0
+      ? obj.nextStep.trim().slice(0, 300)
+      : passed
+        ? "Proceed to Reflection."
+        : "Fix the issues above and resubmit.";
+
+  return { score, passed, summary, strengths, mistakes, nextStep };
 }
 
 function clampScore(n: number): number {

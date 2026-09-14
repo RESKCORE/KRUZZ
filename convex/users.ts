@@ -1,15 +1,48 @@
-import { mutation, query, type MutationCtx } from "./_generated/server";
+import { internalMutation, mutation, query, type MutationCtx } from "./_generated/server";
 import { type Id } from "./_generated/dataModel";
 import { v } from "convex/values";
 import type { UserIdentity } from "convex/server";
 import { touchStreakForUser } from "./streaks";
+import {
+  rankForPoints,
+  validateImageSignatureBytes,
+  parseImageDimensionsAndValidate,
+  IMAGE_LIMITS,
+} from "./rules";
 
-export function rankForPoints(points: number): string {
-  if (points >= 5000) return "Systems Thinker";
-  if (points >= 2000) return "Engineer";
-  if (points >= 500) return "Investigator";
-  if (points >= 200) return "Apprentice";
-  return "Observer";
+export {
+  rankForPoints,
+  validateImageSignatureBytes,
+  parseImageDimensionsAndValidate,
+  IMAGE_LIMITS,
+};
+
+/**
+ * Generate a cryptographically secure, 128-bit entropy, opaque publicProfileId.
+ * Format: krz_<32 lowercase hex characters> (e.g. krz_8f1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d).
+ */
+export function generatePublicProfileId(): string {
+  const bytes = new Uint8Array(16); // 128 bits of cryptographic entropy
+  crypto.getRandomValues(bytes);
+  const hex = Array.from(bytes, (b) => b.toString(16).padStart(2, "0")).join("");
+  return `krz_${hex}`;
+}
+
+/**
+ * Ensures unique publicProfileId with collision check and retry loop.
+ */
+export async function generateUniquePublicProfileId(ctx: MutationCtx): Promise<string> {
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const candidate = generatePublicProfileId();
+    const existing = await ctx.db
+      .query("users")
+      .withIndex("by_public_profile_id", (q) => q.eq("publicProfileId", candidate))
+      .unique();
+    if (!existing) {
+      return candidate;
+    }
+  }
+  throw new Error("Failed to generate a unique public profile ID after 5 attempts");
 }
 
 export async function getOrCreateUser(ctx: MutationCtx, identity: UserIdentity) {
@@ -19,15 +52,23 @@ export async function getOrCreateUser(ctx: MutationCtx, identity: UserIdentity) 
     .unique();
 
   if (existingUser) {
+    if (!existingUser.publicProfileId) {
+      const publicProfileId = await generateUniquePublicProfileId(ctx);
+      await ctx.db.patch(existingUser._id, { publicProfileId });
+      return (await ctx.db.get(existingUser._id))!;
+    }
     return existingUser;
   }
+
+  const publicProfileId = await generateUniquePublicProfileId(ctx);
 
   const doc: {
     tokenIdentifier: string;
     clerkId: string;
     points: number;
     rank: string;
-    isPublic?: boolean;
+    isPublic: boolean;
+    publicProfileId: string;
     createdAt: number;
     name?: string;
     email?: string;
@@ -37,7 +78,8 @@ export async function getOrCreateUser(ctx: MutationCtx, identity: UserIdentity) 
     clerkId: identity.subject,
     points: 0,
     rank: "Observer",
-    isPublic: true,
+    isPublic: false,
+    publicProfileId,
     createdAt: Date.now(),
   };
 
@@ -77,6 +119,44 @@ export const getCurrentUser = query({
   },
 });
 
+export const getCurrentUserProfile = query({
+  args: {},
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return null;
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) => q.eq("tokenIdentifier", identity.tokenIdentifier))
+      .unique();
+
+    if (!user) return null;
+
+    const streak = await ctx.db
+      .query("streaks")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .unique();
+
+    return {
+      _id: user._id,
+      publicProfileId: user.publicProfileId,
+      name: user.name,
+      email: user.email,
+      imageUrl: user.customImageUrl || user.imageUrl,
+      bannerUrl: user.bannerUrl,
+      points: user.points,
+      rank: user.rank,
+      isPublic: user.isPublic ?? true,
+      createdAt: user.createdAt,
+      streak: {
+        current: streak?.current ?? 0,
+        longest: streak?.longest ?? 0,
+        lastActive: streak?.lastActive ?? "",
+      },
+    };
+  },
+});
+
 export const storeUser = mutation({
   args: {
     timezone: v.optional(v.string()),
@@ -99,10 +179,16 @@ export const storeUser = mutation({
     let userId: Id<"users">;
 
     if (existingUser !== null) {
-      const updates: { name?: string; email?: string; imageUrl?: string } = {};
+      const updates: {
+        name?: string;
+        email?: string;
+        imageUrl?: string;
+        publicProfileId?: string;
+      } = {};
       if (name && existingUser.name !== name) updates.name = name;
       if (email && existingUser.email !== email) updates.email = email;
       if (imageUrl && existingUser.imageUrl !== imageUrl) updates.imageUrl = imageUrl;
+      if (!existingUser.publicProfileId) updates.publicProfileId = generatePublicProfileId();
 
       if (Object.keys(updates).length > 0) {
         await ctx.db.patch(existingUser._id, updates);
@@ -113,83 +199,22 @@ export const storeUser = mutation({
       userId = created._id;
     }
 
-    // Automatically trigger daily login streak update on authenticated login
     await touchStreakForUser(ctx, userId, args.timezone);
 
     return userId;
   },
 });
 
-export const syncGuestData = mutation({
+export const updateProfilePrivacy = mutation({
   args: {
-    awards: v.record(v.string(), v.number()),
-    streak: v.object({
-      current: v.number(),
-      longest: v.number(),
-      lastActive: v.optional(v.string()),
-    }),
+    isPublic: v.boolean(),
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new Error("Must be signed in to sync guest data");
-    }
-
+    if (!identity) throw new Error("Must be signed in to update privacy settings");
     const user = await getOrCreateUser(ctx, identity);
-
-    let pointsToAdd = 0;
-    const now = Date.now();
-
-    for (const [awardId, points] of Object.entries(args.awards)) {
-      const existingAward = await ctx.db
-        .query("awards")
-        .withIndex("by_user_award", (q) => q.eq("userId", user._id).eq("awardId", awardId))
-        .unique();
-
-      if (!existingAward && points > 0) {
-        await ctx.db.insert("awards", {
-          userId: user._id,
-          awardId,
-          points,
-          awardedAt: now,
-        });
-        pointsToAdd += points;
-      }
-    }
-
-    if (pointsToAdd > 0) {
-      const newPoints = user.points + pointsToAdd;
-      await ctx.db.patch(user._id, {
-        points: newPoints,
-        rank: rankForPoints(newPoints),
-      });
-    }
-
-    const existingStreak = await ctx.db
-      .query("streaks")
-      .withIndex("by_user", (q) => q.eq("userId", user._id))
-      .unique();
-
-    if (existingStreak) {
-      const newCurrent = Math.max(existingStreak.current, args.streak.current);
-      const newLongest = Math.max(existingStreak.longest, args.streak.longest, newCurrent);
-      const newLastActive = args.streak.lastActive ?? existingStreak.lastActive;
-
-      await ctx.db.patch(existingStreak._id, {
-        current: newCurrent,
-        longest: newLongest,
-        lastActive: newLastActive,
-      });
-    } else {
-      await ctx.db.insert("streaks", {
-        userId: user._id,
-        current: args.streak.current,
-        longest: Math.max(args.streak.current, args.streak.longest),
-        lastActive: args.streak.lastActive ?? "",
-      });
-    }
-
-    return await ctx.db.get(user._id);
+    await ctx.db.patch(user._id, { isPublic: args.isPublic });
+    return { isPublic: args.isPublic };
   },
 });
 
@@ -202,6 +227,27 @@ export const generateProfileUploadUrl = mutation({
   },
 });
 
+export async function validateStorageImageMetadata(
+  ctx: MutationCtx,
+  storageId: Id<"_storage">,
+  maxBytes: number,
+  label: string,
+): Promise<void> {
+  const meta = await ctx.db.system.get(storageId);
+  if (!meta) {
+    throw new Error(`${label} object not found in storage`);
+  }
+  if (meta.size > maxBytes) {
+    throw new Error(`${label} exceeds ${Math.round(maxBytes / (1024 * 1024))}MB limit`);
+  }
+  const allowedTypes = ["image/jpeg", "image/png", "image/webp"];
+  if (!meta.contentType || !allowedTypes.includes(meta.contentType)) {
+    throw new Error(
+      `Invalid ${label.toLowerCase()} MIME type. Only JPEG, PNG, and WebP are allowed`,
+    );
+  }
+}
+
 export const setProfileMedia = mutation({
   args: {
     imageStorageId: v.optional(v.id("_storage")),
@@ -212,64 +258,124 @@ export const setProfileMedia = mutation({
     if (!identity) throw new Error("Must be signed in to update profile media");
     const user = await getOrCreateUser(ctx, identity);
 
-    const updates: { customImageUrl?: string; bannerUrl?: string } = {};
+    const maxAvatarSizeBytes = 2 * 1024 * 1024; // 2MB
+    const maxBannerSizeBytes = 5 * 1024 * 1024; // 5MB
+
+    const updates: {
+      customImageUrl?: string;
+      bannerUrl?: string;
+      imageStorageId?: Id<"_storage">;
+      bannerStorageId?: Id<"_storage">;
+    } = {};
+
     if (args.imageStorageId) {
+      await validateStorageImageMetadata(
+        ctx,
+        args.imageStorageId,
+        maxAvatarSizeBytes,
+        "Avatar image",
+      );
       const url = await ctx.storage.getUrl(args.imageStorageId);
-      if (url) updates.customImageUrl = url;
+      if (url) {
+        updates.customImageUrl = url;
+        updates.imageStorageId = args.imageStorageId;
+      }
     }
+
     if (args.bannerStorageId) {
+      await validateStorageImageMetadata(
+        ctx,
+        args.bannerStorageId,
+        maxBannerSizeBytes,
+        "Banner image",
+      );
       const url = await ctx.storage.getUrl(args.bannerStorageId);
-      if (url) updates.bannerUrl = url;
+      if (url) {
+        updates.bannerUrl = url;
+        updates.bannerStorageId = args.bannerStorageId;
+      }
     }
-    if (Object.keys(updates).length > 0) await ctx.db.patch(user._id, updates);
+
+    try {
+      if (Object.keys(updates).length > 0) {
+        await ctx.db.patch(user._id, updates);
+
+        // Clean up previous storage objects only after successful patch
+        if (
+          args.imageStorageId &&
+          user.imageStorageId &&
+          user.imageStorageId !== args.imageStorageId
+        ) {
+          try {
+            await ctx.storage.delete(user.imageStorageId);
+          } catch {
+            // Non-blocking cleanup
+          }
+        }
+
+        if (
+          args.bannerStorageId &&
+          user.bannerStorageId &&
+          user.bannerStorageId !== args.bannerStorageId
+        ) {
+          try {
+            await ctx.storage.delete(user.bannerStorageId);
+          } catch {
+            // Non-blocking cleanup
+          }
+        }
+      }
+    } catch (err) {
+      // If patch or processing fails, clean up newly uploaded objects to avoid orphan storage
+      if (args.imageStorageId) {
+        try {
+          await ctx.storage.delete(args.imageStorageId);
+        } catch {
+          // ignore
+        }
+      }
+      if (args.bannerStorageId) {
+        try {
+          await ctx.storage.delete(args.bannerStorageId);
+        } catch {
+          // ignore
+        }
+      }
+      throw err;
+    }
+
     return updates;
   },
 });
 
+const PUBLIC_PROFILE_ID_REGEX = /^krz_[a-f0-9]{32}$/;
+
+/**
+ * Public profile lookup.
+ * Resolves EXCLUSIVELY by the opaque `publicProfileId` (32 hex characters / 128-bit entropy).
+ * Does NOT accept document IDs, Clerk IDs, email prefixes, token identifiers, or names.
+ * Enforces isPublic === true. Scrubs all authentication and identity provider identifiers.
+ */
 export const getPublicProfile = query({
   args: {
-    profileId: v.string(),
+    publicProfileId: v.string(),
   },
   handler: async (ctx, args) => {
-    if (!args.profileId) return null;
-
-    let user = null;
-
-    // 1. Try by Convex document _id
-    try {
-      user = await ctx.db.get(args.profileId as Id<"users">);
-    } catch {
-      // not a valid convex ID
+    // Validate format strictly before query
+    if (!args.publicProfileId || !PUBLIC_PROFILE_ID_REGEX.test(args.publicProfileId)) {
+      return null;
     }
 
-    // 2. Try by Clerk ID
-    if (!user) {
-      user = await ctx.db
-        .query("users")
-        .withIndex("by_clerk_id", (q) => q.eq("clerkId", args.profileId))
-        .unique();
-    }
+    // Strict lookup: ONLY by opaque publicProfileId via index
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_public_profile_id", (q) => q.eq("publicProfileId", args.publicProfileId))
+      .unique();
 
-    // 3. Fallback: match by email prefix (handle) or name or tokenIdentifier
-    if (!user) {
-      const all = await ctx.db.query("users").collect();
-      const target = args.profileId.toLowerCase().replace(/^@/, "");
-      user =
-        all.find((u) => {
-          const emailPrefix = u.email ? (u.email.split("@")[0] ?? "").toLowerCase() : "";
-          const nameClean = u.name ? u.name.toLowerCase().replace(/\s+/g, "") : "";
-          const nameKebab = u.name ? u.name.toLowerCase().replace(/\s+/g, "-") : "";
-          return (
-            emailPrefix === target ||
-            nameClean === target ||
-            nameKebab === target ||
-            u.clerkId.toLowerCase() === target ||
-            u.tokenIdentifier.toLowerCase() === target
-          );
-        }) ?? null;
+    // Enforce privacy: anonymous public access strictly requires isPublic === true
+    if (!user || user.isPublic !== true) {
+      return null;
     }
-
-    if (!user) return null;
 
     // Streak
     const streak = await ctx.db
@@ -286,9 +392,12 @@ export const getPublicProfile = query({
     // All case studies to enrich names
     const allCases = await ctx.db.query("caseStudies").collect();
 
-    // Completed case studies
+    // Completed case studies (capped at 50)
     const completedStudies = progressList
-      .filter((p) => p.status === "completed" || Boolean(p.passed && (p.completedSections?.length ?? 0) >= 7))
+      .filter(
+        (p) =>
+          p.status === "completed" || Boolean(p.passed && (p.completedSections?.length ?? 0) >= 7),
+      )
       .map((p) => {
         const caseStudy = allCases.find((c) => c.slug === p.caseSlug);
         return {
@@ -302,17 +411,12 @@ export const getPublicProfile = query({
           passed: p.passed,
         };
       })
-      .sort((a, b) => (b.completedAt ?? 0) - (a.completedAt ?? 0));
-
-    // Handle
-    const emailPrefix = user.email ? user.email.split("@")[0] : "investigator";
-    const handle = emailPrefix;
+      .sort((a, b) => (b.completedAt ?? 0) - (a.completedAt ?? 0))
+      .slice(0, 50);
 
     return {
-      profileId: user._id,
-      clerkId: user.clerkId,
+      publicProfileId: user.publicProfileId!,
       name: user.name || "Anonymous Investigator",
-      handle,
       imageUrl: user.customImageUrl || user.imageUrl,
       bannerUrl: user.bannerUrl,
       points: user.points,
@@ -331,6 +435,53 @@ export const getPublicProfile = query({
         longestStreakDays: streak?.longest ?? 0,
       },
       completedCases: completedStudies,
+    };
+  },
+});
+
+/**
+ * Scans and cleans up orphaned storage objects unassociated with any active user profile.
+ * Targets files created >24h ago that are not referenced in imageStorageId or bannerStorageId.
+ * Logs aggregated counts without any PII.
+ */
+export const cleanupOrphanedStorage = internalMutation({
+  args: {
+    maxBatch: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const limit = args.maxBatch ?? 100;
+    const now = Date.now();
+    const olderThan = now - 24 * 3600 * 1000; // 24 hours retention for incomplete uploads
+
+    // Collect all referenced storage IDs across all users
+    const users = await ctx.db.query("users").collect();
+    const activeStorageIds = new Set<string>();
+    for (const u of users) {
+      if (u.imageStorageId) activeStorageIds.add(u.imageStorageId);
+      if (u.bannerStorageId) activeStorageIds.add(u.bannerStorageId);
+    }
+
+    // Query system storage records
+    const storageRecords = await ctx.db.system.query("_storage").take(limit);
+    let deletedCount = 0;
+    let scannedCount = 0;
+
+    for (const record of storageRecords) {
+      scannedCount++;
+      if (record._creationTime < olderThan && !activeStorageIds.has(record._id)) {
+        try {
+          await ctx.storage.delete(record._id);
+          deletedCount++;
+        } catch {
+          // ignore already deleted
+        }
+      }
+    }
+
+    return {
+      scanned: scannedCount,
+      deleted: deletedCount,
+      timestamp: now,
     };
   },
 });

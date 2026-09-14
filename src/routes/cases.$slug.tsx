@@ -29,7 +29,7 @@ import { toast } from "sonner";
 import { useWallet } from "@/lib/account";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
-import { CheckCircle2, Sparkles, Award } from "lucide-react";
+import { CheckCircle2, Sparkles, Award, Lock } from "lucide-react";
 
 export const Route = createFileRoute("/cases/$slug")({
   loader: ({ params }) => {
@@ -98,8 +98,11 @@ function ArrowChain({ steps }: { steps: string[] }) {
 
 function CaseStudyPage() {
   const { slug } = Route.useLoaderData();
-  const study = useQuery(api.caseStudies.getBySlug, { slug }) as unknown as
-    CaseStudy | undefined | null;
+  const { points, has, awards, isAuthenticated } = useWallet();
+  const study = useQuery(
+    api.caseStudies.getAuthenticatedCase,
+    isAuthenticated ? { slug } : "skip",
+  ) as unknown as (CaseStudy & { isLocked?: boolean }) | undefined | null;
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
   const [lang, setLang] = useState(0);
@@ -108,10 +111,9 @@ function CaseStudyPage() {
   const [reflection, setReflection] = useState("");
   const [companionTab, setCompanionTab] = useState<"primer" | "principles" | "concepts">("primer");
 
-  const { points, has, awards, isAuthenticated } = useWallet();
   const cloudProgress = useQuery(
     api.caseProgress.getCaseProgress,
-    isAuthenticated && study ? { caseSlug: study.slug } : "skip",
+    isAuthenticated && study && !study.isLocked ? { caseSlug: study.slug } : "skip",
   );
   const saveProgress = useMutation(api.caseProgress.saveCaseProgress);
   const markComplete = useMutation(api.caseProgress.markCaseComplete);
@@ -129,14 +131,43 @@ function CaseStudyPage() {
     }
   }, [cloudProgress, reflection]);
 
-  // Reflection validation — must meet MIN_REFLECTION_CHARS and MIN_REFLECTION_WORDS
-  const reflectionTrimmed = reflection.trim();
-  const reflectionCharCount = reflectionTrimmed.length;
-  const reflectionWordCount = reflectionTrimmed
-    ? reflectionTrimmed.split(/\s+/).filter(Boolean).length
-    : 0;
-  const reflectionValid =
-    reflectionCharCount >= MIN_REFLECTION_CHARS && reflectionWordCount >= MIN_REFLECTION_WORDS;
+  // If unauthenticated: render authentication requirement screen
+  if (!isAuthenticated) {
+    return (
+      <AppChrome>
+        <div className="mx-auto max-w-[720px] px-5 py-32 text-center">
+          <div className="mx-auto mb-6 flex size-16 items-center justify-center rounded-2xl border border-[#ccff00]/30 bg-[#141a05] text-[#ccff00] shadow-[0_0_25px_rgba(204,255,0,0.2)]">
+            <Lock className="size-8" />
+          </div>
+          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#ccff00] font-bold">
+            Authentication Required
+          </p>
+          <h1 className="mt-3 text-3xl font-extrabold text-[#f5f5f5] sm:text-4xl">
+            Sign in to Enter the Case Arena
+          </h1>
+          <p className="mt-4 text-sm leading-relaxed text-[#8a8a8a] max-w-[50ch] mx-auto">
+            KRUZZ system architecture investigations, engineering trade-off matrices, and
+            interactive AI coding labs require an active investigator session.
+          </p>
+          <div className="mt-8 flex justify-center gap-4">
+            <Link
+              to="/sign-in"
+              search={{ redirect: `/cases/${slug}` }}
+              className="rounded-xl bg-[#ccff00] px-6 py-3 font-mono text-xs font-black text-[#080808] shadow-[0_0_20px_rgba(204,255,0,0.4)] hover:scale-105 active:scale-95 transition-all"
+            >
+              Sign In to Proceed
+            </Link>
+            <Link
+              to="/cases"
+              className="neu-btn rounded-xl px-6 py-3 font-mono text-xs font-semibold text-[#f5f5f5]"
+            >
+              Browse Topic Catalog
+            </Link>
+          </div>
+        </div>
+      </AppChrome>
+    );
+  }
 
   if (study === undefined) {
     return (
@@ -154,6 +185,50 @@ function CaseStudyPage() {
   if (!study) {
     return <CaseNotFound />;
   }
+
+  // If authenticated but case is locked: render locked barrier projection
+  if (study.isLocked) {
+    return (
+      <AppChrome>
+        <div className="mx-auto max-w-[720px] px-5 py-28 text-center">
+          <div className="mx-auto mb-6 flex size-16 items-center justify-center rounded-2xl border border-[#f59e0b]/40 bg-[#1f1505] text-[#f59e0b] shadow-[0_0_25px_rgba(245,158,11,0.2)]">
+            <Lock className="size-8" />
+          </div>
+          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#f59e0b] font-bold">
+            Investigation Locked
+          </p>
+          <h1 className="mt-3 text-3xl font-extrabold text-[#f5f5f5] sm:text-4xl">{study.title}</h1>
+          <p className="mt-4 text-sm leading-relaxed text-[#b8b8b8] max-w-[55ch] mx-auto">
+            {study.summary}
+          </p>
+          <div className="mt-6 inline-flex flex-wrap items-center justify-center gap-2 rounded-xl bg-white/[0.03] border border-white/[0.08] px-4 py-2 font-mono text-xs text-[#8a8a8a]">
+            <span>
+              Tier: <strong className="text-[#f59e0b] uppercase">{study.tier}</strong>
+            </span>
+            <span>·</span>
+            <span>Prerequisite: Complete preceding system architecture case studies</span>
+          </div>
+          <div className="mt-8 flex justify-center gap-4">
+            <Link
+              to="/cases"
+              className="neu-btn rounded-xl px-6 py-3 font-mono text-xs font-semibold text-[#f5f5f5]"
+            >
+              Return to Case Deck
+            </Link>
+          </div>
+        </div>
+      </AppChrome>
+    );
+  }
+
+  // Reflection validation — must meet MIN_REFLECTION_CHARS and MIN_REFLECTION_WORDS
+  const reflectionTrimmed = reflection.trim();
+  const reflectionCharCount = reflectionTrimmed.length;
+  const reflectionWordCount = reflectionTrimmed
+    ? reflectionTrimmed.split(/\s+/).filter(Boolean).length
+    : 0;
+  const reflectionValid =
+    reflectionCharCount >= MIN_REFLECTION_CHARS && reflectionWordCount >= MIN_REFLECTION_WORDS;
 
   const viewedSections = cloudProgress?.completedSections ?? [];
   const caseRewarded = has(caseAwardId(study.slug));
@@ -178,7 +253,7 @@ function CaseStudyPage() {
     ? study.practice
     : Array.isArray((study.practice as any)?.tasks)
       ? (study.practice as any).tasks.map((t: string, idx: number) => ({
-          level: (["Understand", "Modify", "Build", "Think"][idx % 4] as PracticeLevel),
+          level: ["Understand", "Modify", "Build", "Think"][idx % 4] as PracticeLevel,
           title: `Challenge ${idx + 1}`,
           brief: t,
         }))
@@ -389,7 +464,9 @@ function CaseStudyPage() {
                       The question
                     </p>
                     <p className="mt-2 text-pretty text-sm font-medium leading-relaxed">
-                      {study.discover?.question || (study.discover as any)?.action || "How does this system guarantee reliability and correctness?"}
+                      {study.discover?.question ||
+                        (study.discover as any)?.action ||
+                        "How does this system guarantee reliability and correctness?"}
                     </p>
                   </div>
                   <Kicker>Why the problem exists</Kicker>
@@ -725,7 +802,9 @@ function CaseStudyPage() {
                             <p className="font-mono text-[10px] uppercase tracking-widest text-primary">
                               {l.level || `Step ${l.step}`} · {l.title || l.focus}
                             </p>
-                            <p className="mt-1 text-[12px] leading-relaxed text-ink2">{l.detail || l.buildsOn}</p>
+                            <p className="mt-1 text-[12px] leading-relaxed text-ink2">
+                              {l.detail || l.buildsOn}
+                            </p>
                           </div>
                         ))}
                       </div>

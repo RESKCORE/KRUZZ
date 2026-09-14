@@ -10,13 +10,17 @@ export default defineSchema({
     imageUrl: v.optional(v.string()),
     customImageUrl: v.optional(v.string()),
     bannerUrl: v.optional(v.string()),
+    imageStorageId: v.optional(v.id("_storage")),
+    bannerStorageId: v.optional(v.id("_storage")),
     points: v.number(),
     rank: v.string(),
     isPublic: v.optional(v.boolean()),
+    publicProfileId: v.optional(v.string()),
     createdAt: v.number(),
   })
     .index("by_token", ["tokenIdentifier"])
     .index("by_clerk_id", ["clerkId"])
+    .index("by_public_profile_id", ["publicProfileId"])
     .index("by_points", ["points"]),
 
   awards: defineTable({
@@ -45,6 +49,7 @@ export default defineSchema({
     passed: v.optional(v.boolean()),
     status: v.optional(v.string()), // "in_progress" | "completed"
     completedAt: v.optional(v.number()),
+    completedAgainstVersion: v.optional(v.string()),
     updatedAt: v.number(),
   })
     .index("by_user", ["userId"])
@@ -74,6 +79,8 @@ export default defineSchema({
     tier: v.string(),
     rcCost: v.number(),
     summary: v.string(),
+    contentVersion: v.optional(v.string()),
+    rubricVersion: v.optional(v.string()),
     learningObjectives: v.array(v.string()),
     prerequisites: v.array(v.string()),
     engineeringConcepts: v.array(v.string()),
@@ -100,4 +107,49 @@ export default defineSchema({
     .index("by_slug", ["slug"])
     .index("by_index", ["index"])
     .index("by_category", ["category"]),
+
+  labSubmissions: defineTable({
+    userId: v.id("users"),
+    caseSlug: v.string(),
+    labId: v.string(),
+    attemptId: v.string(),
+    reservationId: v.optional(v.string()),
+    idempotencyKey: v.string(),
+    language: v.optional(v.string()),
+    status: v.string(), // "reserved" | "processing" | "completed" | "learner_failed" | "provider_failed" | "expired"
+    score: v.optional(v.number()),
+    passed: v.optional(v.boolean()),
+    provider: v.optional(v.string()),
+    model: v.optional(v.string()),
+    rubricVersion: v.optional(v.string()),
+    promptVersion: v.optional(v.string()),
+    contentVersion: v.optional(v.string()),
+    payloadHash: v.optional(v.string()),
+    inputCodeBytes: v.optional(v.number()),
+    inputExplanationBytes: v.optional(v.number()),
+    estimatedInputTokens: v.optional(v.number()),
+    estimatedOutputTokens: v.optional(v.number()),
+    estimatedCostUsd: v.optional(v.number()),
+    latencyMs: v.optional(v.number()),
+    isEstimatedUsage: v.optional(v.boolean()),
+    errorCode: v.optional(v.string()),
+    createdAt: v.number(),
+    completedAt: v.optional(v.number()),
+  })
+    .index("by_user_case", ["userId", "caseSlug"])
+    .index("by_user_case_status", ["userId", "caseSlug", "status"])
+    .index("by_user_created", ["userId", "createdAt"])
+    .index("by_status_created", ["status", "createdAt"])
+    .index("by_idempotency", ["idempotencyKey"])
+    .index("by_attempt_id", ["attemptId"]),
+
+  providerHealth: defineTable({
+    provider: v.string(), // "groq" | "openrouter" | "gemini" | "default"
+    version: v.number(), // Monotonic sequence version
+    consecutiveFailures: v.number(),
+    circuitOpenUntil: v.number(),
+    lastFailureTime: v.optional(v.number()),
+    lastSuccessTime: v.optional(v.number()),
+    updatedAt: v.number(),
+  }).index("by_provider", ["provider"]),
 });

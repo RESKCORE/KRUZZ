@@ -41,7 +41,8 @@ export function UserProfileCard({ className = "" }: UserProfileCardProps) {
     isAuthenticated ? {} : "skip",
   );
 
-  const caseStudies = (useQuery(api.caseStudies.list, {}) ?? []) as any[];
+  const rawCaseStudies = useQuery(api.caseStudies.list, {});
+  const caseStudies = useMemo(() => (rawCaseStudies ?? []) as any[], [rawCaseStudies]);
 
   const clearedCasesCount = caseStudies.filter((c) => {
     const progressDoc = (
@@ -107,11 +108,7 @@ export function UserProfileCard({ className = "" }: UserProfileCardProps) {
   const displayName =
     user?.fullName || profile?.name || (isAuthenticated ? "Engineer" : "Anonymous Investigator");
 
-  const emailUsername = user?.primaryEmailAddress?.emailAddress
-    ? user.primaryEmailAddress.emailAddress.split("@")[0]
-    : undefined;
-
-  const handle = user?.username || emailUsername || "unclaimed_seat";
+  const handle = profile?.publicProfileId || "investigator";
   const avatarUrl = profile?.customImageUrl || user?.imageUrl || profile?.imageUrl;
   const bannerUrl = profile?.bannerUrl;
 
@@ -350,7 +347,7 @@ export function UserProfileCard({ className = "" }: UserProfileCardProps) {
         isOpen={isShareModalOpen}
         onClose={() => setIsShareModalOpen(false)}
         user={{
-          profileId: (profile?._id as string) || (user?.id as string) || handle,
+          profileId: profile?.publicProfileId || "",
           name: displayName,
           handle,
           rank: rank.name,
