@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useUser } from "@clerk/clerk-react";
 import { useConvexAuth, useMutation, useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
@@ -61,6 +61,15 @@ export function useWallet() {
   const cloudAwards = useQuery(api.awards.getUserAwards, isAuthenticated ? {} : "skip");
   const cloudUser = useQuery(api.users.getCurrentUser, isAuthenticated ? {} : "skip");
   const redeemStoreMutation = useMutation(api.awards.redeemStoreItem);
+  const reconcileAwards = useMutation(api.caseProgress.reconcileUserAwards);
+  const reconciledRef = useRef(false);
+
+  useEffect(() => {
+    if (isAuthenticated && !reconciledRef.current) {
+      reconciledRef.current = true;
+      reconcileAwards().catch(() => {});
+    }
+  }, [isAuthenticated, reconcileAwards]);
 
   const activeAwards: Record<string, number> = useMemo(
     () => (isAuthenticated ? (cloudAwards ?? {}) : {}),
@@ -89,13 +98,13 @@ export function useWallet() {
   // Check if award exists (supports both case: prefixed and unprefixed formats)
   const has = useCallback(
     (awardId: string) => {
-      if (activeAwards[awardId]) return true;
+      if (activeAwards[awardId] !== undefined) return true;
       if (awardId.startsWith("case:")) {
         const stripped = awardId.slice(5);
-        if (activeAwards[stripped]) return true;
+        if (activeAwards[stripped] !== undefined) return true;
       } else {
         const prefixed = `case:${awardId}`;
-        if (activeAwards[prefixed]) return true;
+        if (activeAwards[prefixed] !== undefined) return true;
       }
       return false;
     },

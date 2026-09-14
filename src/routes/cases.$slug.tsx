@@ -11,6 +11,7 @@ import {
   type CaseStudy,
   type Exercise,
   type PracticeLevel,
+  type Primer,
   type TechNote,
 } from "@/data/schema";
 import { CodeArena } from "@/components/CodeArena";
@@ -24,13 +25,23 @@ import {
   sectionAwardId,
   unlockThreshold,
   isStudyComplete,
+  isLabCompleted,
   getCaseStudyRc,
 } from "@/lib/rc";
 import { toast } from "sonner";
 import { useWallet } from "@/lib/account";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
-import { CheckCircle2, Sparkles, Award, Lock } from "lucide-react";
+import {
+  CheckCircle2,
+  Sparkles,
+  Award,
+  Lock,
+  BookOpen,
+  Lightbulb,
+  ChevronDown,
+  X,
+} from "lucide-react";
 
 export const Route = createFileRoute("/cases/$slug")({
   loader: ({ params }) => {
@@ -97,6 +108,309 @@ function ArrowChain({ steps }: { steps: string[] }) {
   );
 }
 
+function StepperList({
+  step,
+  setStep,
+  sectionsDone,
+  prerequisites,
+  onSelect,
+}: {
+  step: number;
+  setStep: (step: number) => void;
+  sectionsDone: boolean[];
+  prerequisites?: string[] | undefined;
+  onSelect?: (() => void) | undefined;
+}) {
+  return (
+    <>
+      <p className="mb-3 font-mono text-[10px] uppercase tracking-[0.18em] text-[#8a8a8a]">
+        Sections
+      </p>
+      <ol className="space-y-1.5">
+        {SECTION_LABELS.map((label, i) => {
+          const done = sectionsDone[i] ?? false;
+          const current = i === step;
+          return (
+            <li key={label}>
+              <button
+                type="button"
+                onClick={() => {
+                  setStep(i);
+                  onSelect?.();
+                }}
+                className={`flex w-full items-center gap-2 rounded-xl px-2.5 py-2 text-left transition-all ${
+                  current
+                    ? "bg-[#182608] text-[#ccff00] border border-[#ccff00]/40 shadow-[0_0_12px_rgba(204,255,0,0.25)]"
+                    : done
+                      ? "bg-[#182608]/70 text-[#ccff00] border border-[#ccff00]/25"
+                      : "text-[#8a8a8a] hover:bg-white/[0.04] hover:text-[#f5f5f5]"
+                }`}
+              >
+                <span
+                  className={`font-mono text-[10px] font-bold ${current ? "text-[#ccff00]" : ""}`}
+                >
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <span
+                  className={`text-xs ${
+                    current
+                      ? "font-bold text-[#ccff00]"
+                      : done
+                        ? "font-medium text-[#ccff00]"
+                        : "font-medium"
+                  }`}
+                >
+                  {label}
+                </span>
+                {current && <span className="ml-auto size-1.5 rounded-full recording-dot" />}
+                {done && !current && (
+                  <span className="ml-auto font-mono text-[10px] text-[#ccff00]">✓</span>
+                )}
+              </button>
+            </li>
+          );
+        })}
+      </ol>
+
+      {prerequisites && prerequisites.length > 0 && (
+        <>
+          <p className="mb-2 mt-6 font-mono text-[10px] uppercase tracking-[0.18em] text-[#8a8a8a]">
+            Prerequisites
+          </p>
+          <ul className="space-y-1.5">
+            {prerequisites.map((p) => (
+              <li key={p} className="text-[11px] leading-relaxed text-[#8a8a8a]">
+                · {p}
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+    </>
+  );
+}
+
+function CompanionHub({
+  companionTab,
+  setCompanionTab,
+  primer,
+  techNotesList,
+  engineeringConceptsList,
+  caseRewarded,
+  caseRc,
+  doneCount,
+  labEarned,
+}: {
+  companionTab: "primer" | "principles" | "concepts";
+  setCompanionTab: (tab: "primer" | "principles" | "concepts") => void;
+  primer?: Primer | undefined;
+  techNotesList: TechNote[];
+  engineeringConceptsList: string[];
+  caseRewarded: boolean;
+  caseRc: number;
+  doneCount: number;
+  labEarned: boolean;
+}) {
+  return (
+    <>
+      {/* 1. Wallet & Session Yield */}
+      <div className="rounded-2xl border border-white/[0.08] bg-[#121212]/90 p-4 shadow-sm">
+        <RCWalletPanel />
+
+        {/* RC Yield in this case */}
+        <div className="mt-4 pt-3.5 border-t border-white/[0.06]">
+          <div className="flex items-center justify-between mb-2">
+            <p className="font-mono text-[10px] uppercase tracking-widest text-[#8a8a8a]">
+              Case Yield Potential
+            </p>
+            <span className="font-mono text-xs font-bold text-[#ccff00]">
+              +{caseRewarded ? caseRc : 0} / {caseRc} RC
+            </span>
+          </div>
+
+          <p className="mb-2 text-[11px] leading-relaxed text-[#8a8a8a]">
+            Full {caseRc} RC is awarded upon completing the entire 8-section path (reading, passing
+            the code lab, and writing reflection).
+          </p>
+
+          <div className="space-y-1.5 font-mono text-[11px] text-[#8a8a8a]">
+            <div className="flex justify-between items-center py-0.5">
+              <span>Reading Steps (0-5, 7)</span>
+              <span className={doneCount >= 7 ? "text-[#ccff00] font-bold" : "text-[#8a8a8a]"}>
+                {doneCount >= 7 ? "✓ Viewed" : `${doneCount}/7 complete`}
+              </span>
+            </div>
+            <div className="flex justify-between items-center py-0.5">
+              <span>Practice (CodeArena)</span>
+              <span className={labEarned ? "text-[#ccff00] font-bold" : "text-[#8a8a8a]"}>
+                {labEarned ? "✓ Passed" : "pending"}
+              </span>
+            </div>
+            <div className="flex justify-between items-center py-0.5">
+              <span>Full Case Complete</span>
+              <span className={caseRewarded ? "text-[#ccff00] font-bold" : "text-[#8a8a8a]"}>
+                {caseRewarded ? `+${caseRc} RC ✓` : `+${caseRc} RC`}
+              </span>
+            </div>
+          </div>
+
+          {caseRewarded && (
+            <div className="mt-3 rounded-xl bg-[#182608] border border-[#ccff00]/30 px-3 py-2 font-mono text-xs font-bold text-[#ccff00] flex items-center gap-1.5">
+              <span>✓</span>
+              <span>Case mastered · {caseRc} RC banked</span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* 2. Modular Knowledge Hub (Tabs: Primer | Principles | Concepts) */}
+      <div className="rounded-2xl border border-white/[0.08] bg-[#121212]/90 p-4 shadow-sm space-y-4">
+        {/* Tab Header */}
+        <div className="flex items-center justify-between border-b border-white/[0.06] pb-3">
+          <span className="font-mono text-[10px] uppercase tracking-widest text-[#8a8a8a] font-bold">
+            Knowledge Companion
+          </span>
+        </div>
+
+        {/* Segmented Tab Switcher */}
+        <div className="grid grid-cols-3 gap-1 rounded-xl bg-black/40 p-1 border border-white/[0.06]">
+          <button
+            type="button"
+            onClick={() => setCompanionTab("primer")}
+            className={`rounded-lg py-1.5 text-center font-mono text-[11px] font-bold transition-all ${
+              companionTab === "primer"
+                ? "bg-[#182608] text-[#ccff00] border border-[#ccff00]/40"
+                : "text-[#8a8a8a] hover:text-[#f5f5f5]"
+            }`}
+          >
+            Primer
+          </button>
+          <button
+            type="button"
+            onClick={() => setCompanionTab("principles")}
+            className={`rounded-lg py-1.5 text-center font-mono text-[11px] font-bold transition-all ${
+              companionTab === "principles"
+                ? "bg-[#182608] text-[#ccff00] border border-[#ccff00]/40"
+                : "text-[#8a8a8a] hover:text-[#f5f5f5]"
+            }`}
+          >
+            Principles ({techNotesList.length})
+          </button>
+          <button
+            type="button"
+            onClick={() => setCompanionTab("concepts")}
+            className={`rounded-lg py-1.5 text-center font-mono text-[11px] font-bold transition-all ${
+              companionTab === "concepts"
+                ? "bg-[#182608] text-[#ccff00] border border-[#ccff00]/40"
+                : "text-[#8a8a8a] hover:text-[#f5f5f5]"
+            }`}
+          >
+            Concepts
+          </button>
+        </div>
+
+        {/* Tab Content */}
+        <div className="pt-1">
+          {/* TAB 1: Primer */}
+          {companionTab === "primer" && (
+            <div>
+              {primer ? (
+                <div className="space-y-3">
+                  <div>
+                    <div className="flex items-center gap-1.5 mb-1">
+                      <span className="size-1.5 rounded-full recording-dot" />
+                      <span className="font-mono text-[10px] text-[#ccff00] font-bold">
+                        {primer.minutes} MIN ARCHITECTURE PRIMER
+                      </span>
+                    </div>
+                    <h4 className="text-sm font-bold text-[#f5f5f5]">{primer.concept}</h4>
+                  </div>
+
+                  <p className="text-xs leading-relaxed text-[#b8b8b8]">{primer.definition}</p>
+
+                  <div className="rounded-xl bg-white/[0.02] border border-white/[0.06] p-3 text-xs leading-relaxed text-[#b8b8b8]">
+                    <p className="font-mono text-[10px] uppercase text-[#8a8a8a] mb-1 font-bold">
+                      Why it matters
+                    </p>
+                    <p>{primer.whyNeeded}</p>
+                  </div>
+
+                  <div className="rounded-xl bg-[#141a05] border border-[#ccff00]/25 p-3 text-xs leading-relaxed text-[#a3e635]">
+                    <span className="font-mono text-[10px] font-bold text-[#ccff00] block mb-1">
+                      Analogy
+                    </span>
+                    <p>{primer.analogy}</p>
+                  </div>
+
+                  <div>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="font-mono text-[10px] text-[#8a8a8a] uppercase">
+                        Code Pattern
+                      </span>
+                    </div>
+                    <pre className="overflow-x-auto rounded-xl bg-[#080808] p-3 font-mono text-[11px] text-[#f5f5f5] border border-white/10 leading-snug">
+                      <code>{primer.tinyExample}</code>
+                    </pre>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-xs text-[#8a8a8a] py-4 text-center">
+                  No dedicated primer needed for this case.
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* TAB 2: Architectural Principles */}
+          {companionTab === "principles" && (
+            <div className="space-y-3">
+              {techNotesList.length > 0 ? (
+                techNotesList.map((t) => (
+                  <div
+                    key={t.name}
+                    className="rounded-xl bg-white/[0.02] border border-white/[0.06] p-3.5 hover:border-white/15 transition-colors"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="rounded-md bg-white/[0.04] border border-white/[0.08] px-2 py-0.5 font-mono text-[9px] uppercase tracking-wider text-[#8a8a8a]">
+                        {t.kind}
+                      </span>
+                    </div>
+                    <p className="mt-1.5 text-xs font-bold text-[#f5f5f5]">{t.name}</p>
+                    <p className="mt-1 text-xs leading-relaxed text-[#8a8a8a]">{t.note}</p>
+                  </div>
+                ))
+              ) : (
+                <p className="text-xs text-[#8a8a8a] py-4 text-center">
+                  No architectural notes for this case.
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* TAB 3: Engineering Concepts */}
+          {companionTab === "concepts" && (
+            <div className="space-y-3">
+              <p className="font-mono text-[11px] text-[#8a8a8a]">
+                Key domain concepts mastered in this case:
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {engineeringConceptsList.map((concept) => (
+                  <span
+                    key={concept}
+                    className="rounded-lg bg-white/[0.03] border border-white/[0.08] px-2.5 py-1 font-mono text-xs text-[#f5f5f5] hover:border-[#ccff00]/40 hover:text-[#ccff00] transition-colors"
+                  >
+                    {concept}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </>
+  );
+}
+
 function CaseStudyPage() {
   const { slug } = Route.useLoaderData();
   const { points, has, awards, isAuthenticated } = useWallet();
@@ -111,6 +425,8 @@ function CaseStudyPage() {
   const [openConcept, setOpenConcept] = useState<string | null>(null);
   const [reflection, setReflection] = useState("");
   const [companionTab, setCompanionTab] = useState<"primer" | "principles" | "concepts">("primer");
+  const [mobileSectionsOpen, setMobileSectionsOpen] = useState(false);
+  const [mobileCompanionOpen, setMobileCompanionOpen] = useState(false);
 
   const cloudProgress = useQuery(
     api.caseProgress.getCaseProgress,
@@ -118,6 +434,7 @@ function CaseStudyPage() {
   );
   const saveProgress = useMutation(api.caseProgress.saveCaseProgress);
   const markComplete = useMutation(api.caseProgress.markCaseComplete);
+  const reconcileAwards = useMutation(api.caseProgress.reconcileUserAwards);
   const unlockedCases = useQuery(api.caseProgress.getUserUnlockedCases, {});
 
   useEffect(() => {
@@ -131,6 +448,23 @@ function CaseStudyPage() {
       setReflection(cloudProgress.reflection);
     }
   }, [cloudProgress, reflection]);
+
+  // Automatically mark section as viewed when moving through reading sections
+  useEffect(() => {
+    if (isAuthenticated && study && !study.isLocked && step >= 0 && step <= 7 && step !== 6) {
+      saveProgress({
+        caseSlug: study.slug,
+        completedSections: [step],
+      }).catch(() => {});
+    }
+  }, [step, isAuthenticated, study, saveProgress]);
+
+  // Reconcile awards if lab was passed but completion bonus has not been credited
+  useEffect(() => {
+    if (isAuthenticated && cloudProgress?.passed && study?.slug && !has(caseAwardId(study.slug))) {
+      reconcileAwards().catch(() => {});
+    }
+  }, [isAuthenticated, cloudProgress?.passed, study?.slug, has, reconcileAwards]);
 
   // If unauthenticated: render authentication requirement screen
   if (!isAuthenticated) {
@@ -233,8 +567,13 @@ function CaseStudyPage() {
 
   const viewedSections = cloudProgress?.completedSections ?? [];
   const caseRewarded = has(caseAwardId(study.slug));
-  const labEarned = has(labAwardId(study.slug));
-  const isCompleted = isStudyComplete(awards, cloudProgress, study.slug);
+  const labEarned = Boolean(
+    cloudProgress?.passed ||
+    cloudProgress?.completedSections?.includes(6) ||
+    has(labAwardId(study.slug)) ||
+    isLabCompleted(awards, study.slug),
+  );
+  const isCompleted = caseRewarded || cloudProgress?.status === "completed";
   const sectionDone = (i: number) =>
     i === 6 ? labEarned : isCompleted || viewedSections.includes(i);
   const sectionsDone = SECTION_LABELS.map((_, i) => sectionDone(i));
@@ -383,963 +722,854 @@ function CaseStudyPage() {
           </div>
 
           <div className="grid lg:grid-cols-[210px_1fr_340px] xl:grid-cols-[220px_1fr_360px]">
-            {/* LEFT RAIL — stepper */}
-            <aside className="border-b border-white/[0.08] p-4 lg:border-b-0 lg:border-r">
-              <p className="mb-3 font-mono text-[10px] uppercase tracking-[0.18em] text-[#8a8a8a]">
-                Sections
-              </p>
-              <ol className="space-y-1.5">
-                {SECTION_LABELS.map((label, i) => {
-                  const done = sectionsDone[i] ?? false;
-                  const current = i === step;
-                  return (
-                    <li key={label}>
-                      <button
-                        type="button"
-                        onClick={() => setStep(i)}
-                        className={`flex w-full items-center gap-2 rounded-xl px-2.5 py-2 text-left transition-all ${
-                          current
-                            ? "bg-[#182608] text-[#ccff00] border border-[#ccff00]/40 shadow-[0_0_12px_rgba(204,255,0,0.25)]"
-                            : done
-                              ? "bg-[#182608]/70 text-[#ccff00] border border-[#ccff00]/25"
-                              : "text-[#8a8a8a] hover:bg-white/[0.04] hover:text-[#f5f5f5]"
-                        }`}
-                      >
-                        <span
-                          className={`font-mono text-[10px] font-bold ${
-                            current ? "text-[#ccff00]" : ""
-                          }`}
-                        >
-                          {String(i + 1).padStart(2, "0")}
-                        </span>
-                        <span
-                          className={`text-xs ${
-                            current
-                              ? "font-bold text-[#ccff00]"
-                              : done
-                                ? "font-medium text-[#ccff00]"
-                                : "font-medium"
-                          }`}
-                        >
-                          {label}
-                        </span>
-                        {current && (
-                          <span className="ml-auto size-1.5 rounded-full recording-dot" />
-                        )}
-                        {done && !current && (
-                          <span className="ml-auto font-mono text-[10px] text-[#ccff00]">✓</span>
-                        )}
-                      </button>
-                    </li>
-                  );
-                })}
-              </ol>
-
-              <p className="mb-2 mt-6 font-mono text-[10px] uppercase tracking-[0.18em] text-[#8a8a8a]">
-                Prerequisites
-              </p>
-              <ul className="space-y-1.5">
-                {(study.prerequisites ?? []).map((p) => (
-                  <li key={p} className="text-[11px] leading-relaxed text-[#8a8a8a]">
-                    · {p}
-                  </li>
-                ))}
-              </ul>
+            {/* LEFT RAIL — stepper (Desktop only) */}
+            <aside className="hidden lg:block border-r border-white/[0.08] p-4 bg-[#0d0d0d]/30">
+              <StepperList
+                step={step}
+                setStep={setStep}
+                sectionsDone={sectionsDone}
+                prerequisites={study.prerequisites}
+              />
             </aside>
 
-            {/* MAIN CONTENT */}
-            <div className="p-3.5 sm:p-5 lg:p-6 min-w-0">
-              <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-primary">
-                {String(step + 1).padStart(2, "0")} — {SECTION_KICKERS[step]}
-              </p>
+            {/* MAIN CONTENT AREA */}
+            <div className="min-w-0 w-full flex flex-col">
+              {/* MOBILE STICKY SUBHEADER (< lg) */}
+              <div className="lg:hidden sticky top-0 z-20 flex items-center justify-between gap-2 border-b border-white/[0.08] bg-[#121212]/95 backdrop-blur-md px-3.5 py-2.5">
+                <button
+                  type="button"
+                  onClick={() => setMobileSectionsOpen(true)}
+                  className="flex items-center gap-2 rounded-xl bg-white/[0.05] border border-white/10 px-3 py-1.5 font-mono text-xs font-semibold text-[#f5f5f5] hover:border-[#ccff00]/40 transition-colors"
+                >
+                  <BookOpen className="size-3.5 text-[#ccff00]" />
+                  <span className="truncate max-w-[150px] sm:max-w-[220px]">
+                    {String(step + 1).padStart(2, "0")}/08 · {SECTION_LABELS[step]}
+                  </span>
+                  <ChevronDown className="size-3 text-[#8a8a8a]" />
+                </button>
 
-              {/* 01 — DISCOVER */}
-              {step === 0 && (
-                <>
-                  <H2>The situation</H2>
-                  <p className="mt-3 max-w-[62ch] text-pretty text-sm leading-relaxed text-ink2">
-                    {study.discover?.situation || (study.discover as any)?.task}
-                  </p>
-                  <ArrowChain steps={study.discover?.humanFlow ?? []} />
-                  <div className="mt-5 rounded-2xl bg-rose/40 p-5 ring-1 ring-primary/15">
-                    <p className="font-mono text-[10px] uppercase tracking-widest text-ink2">
-                      The question
+                <div className="flex items-center gap-2">
+                  <span className="font-mono text-xs font-bold text-[#ccff00]">{progress}%</span>
+                  <button
+                    type="button"
+                    onClick={() => setMobileCompanionOpen(true)}
+                    className="flex items-center gap-1.5 rounded-xl bg-[#141a05] border border-[#ccff00]/30 px-3 py-1.5 font-mono text-xs font-bold text-[#ccff00] shadow-[0_0_10px_rgba(204,255,0,0.2)]"
+                  >
+                    <Lightbulb className="size-3.5" />
+                    <span>Notes & RC</span>
+                  </button>
+                </div>
+              </div>
+
+              <div className="p-3.5 sm:p-5 lg:p-6 min-w-0 w-full">
+                <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-primary">
+                  {String(step + 1).padStart(2, "0")} — {SECTION_KICKERS[step]}
+                </p>
+
+                {/* 01 — DISCOVER */}
+                {step === 0 && (
+                  <>
+                    <H2>The situation</H2>
+                    <p className="mt-3 max-w-[62ch] text-pretty text-sm leading-relaxed text-ink2">
+                      {study.discover?.situation || (study.discover as any)?.task}
                     </p>
-                    <p className="mt-2 text-pretty text-sm font-medium leading-relaxed">
-                      {study.discover?.question ||
-                        (study.discover as any)?.action ||
-                        "How does this system guarantee reliability and correctness?"}
-                    </p>
-                  </div>
-                  <Kicker>Why the problem exists</Kicker>
-                  <ul className="mt-3 space-y-2">
-                    {(study.discover?.whyItExists ?? []).map((r) => (
-                      <li key={r} className="flex gap-3 text-sm text-ink2">
-                        <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-primary" />
-                        <span className="text-pretty leading-relaxed">{r}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <Kicker>What you will be able to do</Kicker>
-                  <ul className="mt-3 space-y-2">
-                    {(study.learningObjectives ?? []).map((o) => (
-                      <li
-                        key={o}
-                        className="rounded-lg bg-card/60 px-3 py-2 text-[13px] leading-relaxed text-ink2 ring-1 ring-line/70"
-                      >
-                        {o}
-                      </li>
-                    ))}
-                  </ul>
-                </>
-              )}
-
-              {/* 02 — UNDERSTAND */}
-              {step === 1 && (
-                <>
-                  <H2>How the system behaves</H2>
-                  <p className="mt-3 max-w-[62ch] text-pretty text-sm leading-relaxed text-ink2">
-                    {study.understand?.overview}
-                  </p>
-
-                  <Kicker>Each component: what, why, what it does</Kicker>
-                  <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                    {(study.understand?.components ?? []).map((c) => (
-                      <div key={c.name} className="rounded-2xl bg-card/60 p-4 ring-1 ring-line/70">
-                        <p className="text-sm font-semibold tracking-tight">{c.name}</p>
-                        <dl className="mt-2 space-y-1.5 text-[12px] leading-relaxed text-ink2">
-                          <dt className="font-mono text-[10px] uppercase tracking-widest">
-                            What is it
-                          </dt>
-                          <dd>{c.whatIsIt}</dd>
-                          <dt className="font-mono text-[10px] uppercase tracking-widest">
-                            Why it exists
-                          </dt>
-                          <dd>{c.whyItExists}</dd>
-                          <dt className="font-mono text-[10px] uppercase tracking-widest">
-                            What it does
-                          </dt>
-                          <dd>{c.whatItDoes}</dd>
-                        </dl>
-                      </div>
-                    ))}
-                  </div>
-
-                  {study.understand?.analogy && (
-                    <>
-                      <Kicker>Analogy · {study.understand.analogy.title}</Kicker>
-                      <ArrowChain steps={study.understand.analogy.everyday ?? []} />
-                      <p className="mt-3 font-mono text-[10px] uppercase tracking-widest text-ink2">
-                        Mapped to the technical model
+                    <ArrowChain steps={study.discover?.humanFlow ?? []} />
+                    <div className="mt-5 rounded-2xl bg-rose/40 p-5 ring-1 ring-primary/15">
+                      <p className="font-mono text-[10px] uppercase tracking-widest text-ink2">
+                        The question
                       </p>
-                      <ArrowChain steps={study.understand.analogy.technical ?? []} />
-                    </>
-                  )}
-
-                  <Kicker>The flow, step by step</Kicker>
-                  <ol className="mt-3 space-y-2">
-                    {(study.understand?.flow ?? []).map((s, i) => (
-                      <li key={s}>
-                        <div className="flex items-center gap-3 rounded-lg bg-card/60 px-3 py-2 ring-1 ring-line/70">
-                          <span className="font-mono text-[10px] text-primary">
-                            {String(i + 1).padStart(2, "0")}
-                          </span>
-                          <span className="text-sm">{s}</span>
-                        </div>
-                        {i < (study.understand?.flow?.length ?? 0) - 1 && (
-                          <div className="ml-6 h-3 w-px bg-line" />
-                        )}
-                      </li>
-                    ))}
-                  </ol>
-                </>
-              )}
-
-              {/* 03 — PRINCIPLES */}
-              {step === 2 && (
-                <>
-                  <H2>What holds this system up</H2>
-                  <p className="mt-3 max-w-[62ch] text-pretty text-sm leading-relaxed text-ink2">
-                    Every concept follows the same shape: what it is, why it exists, an everyday
-                    analogy, the technical explanation, and where it appears in this case.
-                  </p>
-                  <div className="mt-5 space-y-3">
-                    {study.concepts.map((c) => {
-                      const open = openConcept === c.id;
-                      return (
-                        <div
-                          key={c.id}
-                          className="overflow-hidden rounded-2xl bg-card/60 ring-1 ring-line/70"
-                        >
-                          <button
-                            type="button"
-                            onClick={() => setOpenConcept(open ? null : c.id)}
-                            className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left"
-                          >
-                            <span className="text-sm font-semibold tracking-tight">{c.name}</span>
-                            <span className="flex items-center gap-2 font-mono text-[10px] text-ink2">
-                              <span className="rounded bg-butter/70 px-2 py-0.5">
-                                {c.difficulty}
-                              </span>
-                              {open ? "−" : "+"}
-                            </span>
-                          </button>
-                          {open && (
-                            <div className="border-t border-line/70 px-4 py-3">
-                              <dl className="space-y-2 text-[12px] leading-relaxed text-ink2">
-                                <dt className="font-mono text-[10px] uppercase tracking-widest">
-                                  Simple definition
-                                </dt>
-                                <dd>{c.simpleDefinition}</dd>
-                                <dt className="font-mono text-[10px] uppercase tracking-widest">
-                                  Why it exists
-                                </dt>
-                                <dd>{c.whyItExists}</dd>
-                                <dt className="font-mono text-[10px] uppercase tracking-widest">
-                                  Real-world analogy
-                                </dt>
-                                <dd>{c.realWorldAnalogy}</dd>
-                                <dt className="font-mono text-[10px] uppercase tracking-widest">
-                                  Technical explanation
-                                </dt>
-                                <dd>{c.technicalExplanation}</dd>
-                                <dt className="font-mono text-[10px] uppercase tracking-widest">
-                                  Where it appears here
-                                </dt>
-                                <dd>{c.caseApplication}</dd>
-                              </dl>
-                              <div className="mt-3 grid gap-3 sm:grid-cols-2">
-                                <div className="rounded-xl bg-rose/40 p-3 ring-1 ring-primary/10">
-                                  <p className="font-mono text-[10px] uppercase tracking-widest text-ink2">
-                                    Common mistakes
-                                  </p>
-                                  <ul className="mt-1.5 space-y-1 text-[11px] leading-relaxed text-ink2">
-                                    {(c.commonMistakes ?? []).map((m: string) => (
-                                      <li key={m}>· {m}</li>
-                                    ))}
-                                  </ul>
-                                </div>
-                                <div className="rounded-xl bg-mint/40 p-3 ring-1 ring-primary/10">
-                                  <p className="font-mono text-[10px] uppercase tracking-widest text-ink2">
-                                    Practice
-                                  </p>
-                                  <ul className="mt-1.5 space-y-1 text-[11px] leading-relaxed text-ink2">
-                                    {(
-                                      ((c as any).practice ||
-                                        (c as any).microDrills ||
-                                        []) as string[]
-                                    ).map((p: string) => (
-                                      <li key={p}>· {p}</li>
-                                    ))}
-                                  </ul>
-                                </div>
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </>
-              )}
-
-              {/* 04 — ARCHITECTURE */}
-              {step === 3 && (
-                <>
-                  <H2>How the pieces connect</H2>
-                  <p className="mt-3 max-w-[62ch] text-pretty text-sm leading-relaxed text-ink2">
-                    {study.architecture?.caption || (study.architecture as any)?.overview}
-                  </p>
-                  <div className="mt-4 flex flex-wrap gap-2">
-                    {(study.architecture?.levels ?? []).map((l, i) => (
-                      <button
-                        key={l.title}
-                        type="button"
-                        onClick={() => setLevel(i)}
-                        className={`rounded-lg px-3 py-1.5 font-mono text-[11px] ring-1 transition-colors ${
-                          i === level
-                            ? "bg-primary/10 text-ink ring-primary/30"
-                            : "bg-card/60 text-ink2 ring-line/70 hover:text-ink"
-                        }`}
-                      >
-                        {l.title}
-                      </button>
-                    ))}
-                  </div>
-                  <div className="mt-4 rounded-2xl bg-paper/70 p-5 ring-1 ring-primary/10">
-                    <p className="mb-4 text-[12px] leading-relaxed text-ink2">
-                      {diagram?.description}
-                    </p>
-                    {diagram && <MermaidDiagram chart={diagram.mermaid} />}
-                    <div className="mt-4 flex flex-wrap items-center gap-4 border-t border-line/70 pt-3 font-mono text-[10px] text-ink2">
-                      <span className="flex items-center gap-1.5">
-                        <span className="size-2 rounded-full bg-rose ring-1 ring-primary/20" />
-                        request in
-                      </span>
-                      <span className="flex items-center gap-1.5">
-                        <span className="size-2 rounded-full bg-mint ring-1 ring-primary/20" />
-                        process
-                      </span>
-                      <span className="flex items-center gap-1.5">
-                        <span className="size-2 rounded-full bg-butter ring-1 ring-primary/20" />
-                        persist
-                      </span>
+                      <p className="mt-2 text-pretty text-sm font-medium leading-relaxed">
+                        {study.discover?.question ||
+                          (study.discover as any)?.action ||
+                          "How does this system guarantee reliability and correctness?"}
+                      </p>
                     </div>
-                  </div>
-                </>
-              )}
+                    <Kicker>Why the problem exists</Kicker>
+                    <ul className="mt-3 space-y-2">
+                      {(study.discover?.whyItExists ?? []).map((r) => (
+                        <li key={r} className="flex gap-3 text-sm text-ink2">
+                          <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-primary" />
+                          <span className="text-pretty leading-relaxed">{r}</span>
+                        </li>
+                      ))}
+                    </ul>
+                    <Kicker>What you will be able to do</Kicker>
+                    <ul className="mt-3 space-y-2">
+                      {(study.learningObjectives ?? []).map((o) => (
+                        <li
+                          key={o}
+                          className="rounded-lg bg-card/60 px-3 py-2 text-[13px] leading-relaxed text-ink2 ring-1 ring-line/70"
+                        >
+                          {o}
+                        </li>
+                      ))}
+                    </ul>
+                  </>
+                )}
 
-              {/* 05 — DECISIONS */}
-              {step === 4 && (
-                <>
-                  <H2>Why this technology, and what it costs</H2>
-                  <p className="mt-3 max-w-[62ch] text-pretty text-sm leading-relaxed text-ink2">
-                    Every decision answers the same six questions, so you learn why a technology
-                    exists rather than memorising its name.
-                  </p>
-                  <div className="mt-5 space-y-3">
-                    {(study.decisions ?? []).map((d: any, idx: number) => {
-                      const title = d.title || d.decision || `Decision ${idx + 1}`;
-                      const what = d.what || d.choiceA;
-                      const why = d.why || d.verdict;
-                      const problem = d.problemSolved;
-                      const withoutIt = d.withoutIt || d.choiceB;
-                      const alts = Array.isArray(d.alternatives)
-                        ? d.alternatives.join(" · ")
-                        : d.alternatives || (d.choiceB ? `Alternative: ${d.choiceB}` : null);
-                      const tradeoff = d.tradeoff;
+                {/* 02 — UNDERSTAND */}
+                {step === 1 && (
+                  <>
+                    <H2>How the system behaves</H2>
+                    <p className="mt-3 max-w-[62ch] text-pretty text-sm leading-relaxed text-ink2">
+                      {study.understand?.overview}
+                    </p>
 
-                      return (
+                    <Kicker>Each component: what, why, what it does</Kicker>
+                    <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                      {(study.understand?.components ?? []).map((c) => (
                         <div
-                          key={title + idx}
+                          key={c.name}
                           className="rounded-2xl bg-card/60 p-4 ring-1 ring-line/70"
                         >
-                          <p className="text-sm font-semibold tracking-tight">{title}</p>
+                          <p className="text-sm font-semibold tracking-tight">{c.name}</p>
                           <dl className="mt-2 space-y-1.5 text-[12px] leading-relaxed text-ink2">
-                            {what && (
-                              <>
-                                <dt className="font-mono text-[10px] uppercase tracking-widest">
-                                  What
-                                </dt>
-                                <dd>{what}</dd>
-                              </>
-                            )}
-                            {why && (
-                              <>
-                                <dt className="font-mono text-[10px] uppercase tracking-widest">
-                                  Why
-                                </dt>
-                                <dd>{why}</dd>
-                              </>
-                            )}
-                            {problem && (
-                              <>
-                                <dt className="font-mono text-[10px] uppercase tracking-widest">
-                                  Problem it solves
-                                </dt>
-                                <dd>{problem}</dd>
-                              </>
-                            )}
-                            {withoutIt && (
-                              <>
-                                <dt className="font-mono text-[10px] uppercase tracking-widest">
-                                  Without it
-                                </dt>
-                                <dd>{withoutIt}</dd>
-                              </>
-                            )}
-                            {alts && (
-                              <>
-                                <dt className="font-mono text-[10px] uppercase tracking-widest">
-                                  Alternatives
-                                </dt>
-                                <dd>{alts}</dd>
-                              </>
-                            )}
+                            <dt className="font-mono text-[10px] uppercase tracking-widest">
+                              What is it
+                            </dt>
+                            <dd>{c.whatIsIt}</dd>
+                            <dt className="font-mono text-[10px] uppercase tracking-widest">
+                              Why it exists
+                            </dt>
+                            <dd>{c.whyItExists}</dd>
+                            <dt className="font-mono text-[10px] uppercase tracking-widest">
+                              What it does
+                            </dt>
+                            <dd>{c.whatItDoes}</dd>
                           </dl>
-                          {tradeoff && (
-                            <p className="mt-2 rounded-lg bg-butter/50 px-3 py-2 text-[12px] leading-relaxed text-ink">
-                              <span className="font-mono text-[10px] uppercase tracking-widest text-ink2">
-                                Trade-off ·{" "}
-                              </span>
-                              {tradeoff}
-                            </p>
-                          )}
                         </div>
-                      );
-                    })}
-                  </div>
-                </>
-              )}
+                      ))}
+                    </div>
 
-              {/* 06 — IMPLEMENTATION */}
-              {step === 5 && (
-                <>
-                  <H2>From reasoning to code</H2>
-                  <p className="mt-3 max-w-[62ch] text-pretty text-sm leading-relaxed text-ink2">
-                    {study.implementation?.behaviour}
-                  </p>
+                    {study.understand?.analogy && (
+                      <>
+                        <Kicker>Analogy · {study.understand.analogy.title}</Kicker>
+                        <ArrowChain steps={study.understand.analogy.everyday ?? []} />
+                        <p className="mt-3 font-mono text-[10px] uppercase tracking-widest text-ink2">
+                          Mapped to the technical model
+                        </p>
+                        <ArrowChain steps={study.understand.analogy.technical ?? []} />
+                      </>
+                    )}
 
-                  <Kicker>Language-independent algorithm</Kicker>
-                  <ol className="mt-3 space-y-2">
-                    {(study.implementation?.algorithm ?? []).map((s: string, i: number) => (
-                      <li key={s} className="flex gap-3 text-sm text-ink2">
-                        <span className="font-mono text-[11px] text-primary">
-                          {String(i + 1).padStart(2, "0")}
-                        </span>
-                        <span className="text-pretty leading-relaxed">{s}</span>
-                      </li>
-                    ))}
-                  </ol>
-
-                  {(study.implementation?.ladder ?? []).length > 0 && (
-                    <>
-                      <Kicker>The implementation ladder</Kicker>
-                      <div className="mt-3 grid gap-2 sm:grid-cols-2">
-                        {(study.implementation?.ladder ?? []).map((l: any) => (
-                          <div
-                            key={l.level || l.step}
-                            className="rounded-xl bg-card/60 p-3 ring-1 ring-line/70"
-                          >
-                            <p className="font-mono text-[10px] uppercase tracking-widest text-primary">
-                              {l.level || `Step ${l.step}`} · {l.title || l.focus}
-                            </p>
-                            <p className="mt-1 text-[12px] leading-relaxed text-ink2">
-                              {l.detail || l.buildsOn}
-                            </p>
+                    <Kicker>The flow, step by step</Kicker>
+                    <ol className="mt-3 space-y-2">
+                      {(study.understand?.flow ?? []).map((s, i) => (
+                        <li key={s}>
+                          <div className="flex items-center gap-3 rounded-lg bg-card/60 px-3 py-2 ring-1 ring-line/70">
+                            <span className="font-mono text-[10px] text-primary">
+                              {String(i + 1).padStart(2, "0")}
+                            </span>
+                            <span className="text-sm">{s}</span>
                           </div>
-                        ))}
-                      </div>
-                    </>
-                  )}
+                          {i < (study.understand?.flow?.length ?? 0) - 1 && (
+                            <div className="ml-6 h-3 w-px bg-line" />
+                          )}
+                        </li>
+                      ))}
+                    </ol>
+                  </>
+                )}
 
-                  {/* Language tabs */}
-                  {study.implementation?.samples && study.implementation.samples.length > 0 && (
-                    <div className="mt-5 flex flex-wrap items-center gap-1.5 rounded-xl bg-black/40 p-1.5 border border-white/[0.06] max-w-full">
-                      {study.implementation.samples.map((s: any, i: number) => (
+                {/* 03 — PRINCIPLES */}
+                {step === 2 && (
+                  <>
+                    <H2>What holds this system up</H2>
+                    <p className="mt-3 max-w-[62ch] text-pretty text-sm leading-relaxed text-ink2">
+                      Every concept follows the same shape: what it is, why it exists, an everyday
+                      analogy, the technical explanation, and where it appears in this case.
+                    </p>
+                    <div className="mt-5 space-y-3">
+                      {study.concepts.map((c) => {
+                        const open = openConcept === c.id;
+                        return (
+                          <div
+                            key={c.id}
+                            className="overflow-hidden rounded-2xl bg-card/60 ring-1 ring-line/70"
+                          >
+                            <button
+                              type="button"
+                              onClick={() => setOpenConcept(open ? null : c.id)}
+                              className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left"
+                            >
+                              <span className="text-sm font-semibold tracking-tight">{c.name}</span>
+                              <span className="flex items-center gap-2 font-mono text-[10px] text-ink2">
+                                <span className="rounded bg-butter/70 px-2 py-0.5">
+                                  {c.difficulty}
+                                </span>
+                                {open ? "−" : "+"}
+                              </span>
+                            </button>
+                            {open && (
+                              <div className="border-t border-line/70 px-4 py-3">
+                                <dl className="space-y-2 text-[12px] leading-relaxed text-ink2">
+                                  <dt className="font-mono text-[10px] uppercase tracking-widest">
+                                    Simple definition
+                                  </dt>
+                                  <dd>{c.simpleDefinition}</dd>
+                                  <dt className="font-mono text-[10px] uppercase tracking-widest">
+                                    Why it exists
+                                  </dt>
+                                  <dd>{c.whyItExists}</dd>
+                                  <dt className="font-mono text-[10px] uppercase tracking-widest">
+                                    Real-world analogy
+                                  </dt>
+                                  <dd>{c.realWorldAnalogy}</dd>
+                                  <dt className="font-mono text-[10px] uppercase tracking-widest">
+                                    Technical explanation
+                                  </dt>
+                                  <dd>{c.technicalExplanation}</dd>
+                                  <dt className="font-mono text-[10px] uppercase tracking-widest">
+                                    Where it appears here
+                                  </dt>
+                                  <dd>{c.caseApplication}</dd>
+                                </dl>
+                                <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                                  <div className="rounded-xl bg-rose/40 p-3 ring-1 ring-primary/10">
+                                    <p className="font-mono text-[10px] uppercase tracking-widest text-ink2">
+                                      Common mistakes
+                                    </p>
+                                    <ul className="mt-1.5 space-y-1 text-[11px] leading-relaxed text-ink2">
+                                      {(c.commonMistakes ?? []).map((m: string) => (
+                                        <li key={m}>· {m}</li>
+                                      ))}
+                                    </ul>
+                                  </div>
+                                  <div className="rounded-xl bg-mint/40 p-3 ring-1 ring-primary/10">
+                                    <p className="font-mono text-[10px] uppercase tracking-widest text-ink2">
+                                      Practice
+                                    </p>
+                                    <ul className="mt-1.5 space-y-1 text-[11px] leading-relaxed text-ink2">
+                                      {(
+                                        ((c as any).practice ||
+                                          (c as any).microDrills ||
+                                          []) as string[]
+                                      ).map((p: string) => (
+                                        <li key={p}>· {p}</li>
+                                      ))}
+                                    </ul>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </>
+                )}
+
+                {/* 04 — ARCHITECTURE */}
+                {step === 3 && (
+                  <>
+                    <H2>How the pieces connect</H2>
+                    <p className="mt-3 max-w-[62ch] text-pretty text-sm leading-relaxed text-ink2">
+                      {study.architecture?.caption || (study.architecture as any)?.overview}
+                    </p>
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      {(study.architecture?.levels ?? []).map((l, i) => (
                         <button
-                          key={s.language}
+                          key={l.title}
                           type="button"
-                          onClick={() => setLang(i)}
-                          className={`rounded-lg px-3.5 py-2 sm:py-1.5 font-mono text-[11px] font-bold transition-all cursor-pointer ${
-                            i === lang
-                              ? "bg-[#182608] text-[#ccff00] border border-[#ccff00]/40 shadow-[0_0_8px_rgba(204,255,0,0.25)]"
-                              : "text-[#8a8a8a] hover:text-[#f5f5f5]"
+                          onClick={() => setLevel(i)}
+                          className={`rounded-lg px-3 py-1.5 font-mono text-[11px] ring-1 transition-colors ${
+                            i === level
+                              ? "bg-primary/10 text-ink ring-primary/30"
+                              : "bg-card/60 text-ink2 ring-line/70 hover:text-ink"
                           }`}
                         >
-                          {s.language.charAt(0).toUpperCase() + s.language.slice(1)}
+                          {l.title}
                         </button>
                       ))}
-                      <span className="ml-auto px-2 font-mono text-[10px] text-[#777]">
-                        {sample?.filename}
-                      </span>
                     </div>
-                  )}
-
-                  {sample?.code &&
-                    (() => {
-                      const langKey =
-                        (
-                          {
-                            python: "Python",
-                            java: "Java",
-                            javascript: "JavaScript",
-                            c: "C",
-                          } as const
-                        )[
-                          String(sample?.language ?? "python").toLowerCase() as
-                            "python" | "java" | "javascript" | "c"
-                        ] ?? "Python";
-                      return (
-                        <CodeEditor
-                          value={sample.code}
-                          onChange={() => {}}
-                          language={langKey}
-                          disabled={true}
-                          rows={Math.max(12, sample.code.split("\n").length + 1)}
-                        />
-                      );
-                    })()}
-
-                  {sample?.explanations && sample.explanations.length > 0 && (
-                    <>
-                      <Kicker>Line by line, in plain language</Kicker>
-                      <div className="mt-3 space-y-2">
-                        {sample.explanations.map((e: any, idx: number) => (
-                          <div
-                            key={(e.code || "") + idx}
-                            className="rounded-xl bg-card/60 p-3 ring-1 ring-line/70"
-                          >
-                            <code className="font-mono text-[11px] text-primary">{e.code}</code>
-                            <p className="mt-1 text-[12px] leading-relaxed text-ink2">
-                              {e.explanation}
-                            </p>
-                          </div>
-                        ))}
-                      </div>
-                    </>
-                  )}
-
-                  {study.implementation?.simulationNote && (
-                    <p className="mt-5 rounded-xl bg-sky/40 p-3 text-[12px] leading-relaxed text-ink2 ring-1 ring-primary/10">
-                      <span className="font-mono text-[10px] uppercase tracking-widest">
-                        Educational model ·{" "}
-                      </span>
-                      {study.implementation.simulationNote}
-                    </p>
-                  )}
-                </>
-              )}
-
-              {/* 07 — PRACTICE */}
-              {step === 6 && (
-                <>
-                  <H2>Understand, modify, build, think</H2>
-                  <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                    {practiceList.map((ch, i) => (
-                      <div
-                        key={ch.title || i}
-                        className="rounded-2xl bg-card/60 p-4 ring-1 ring-line/70"
-                      >
-                        <div className="flex items-center justify-between">
-                          <span className="font-mono text-[10px] uppercase tracking-widest text-ink2">
-                            Task {String(i + 1).padStart(2, "0")}
-                          </span>
-                          <span className="rounded bg-butter/70 px-2 py-1 font-mono text-[10px]">
-                            {ch.level}
-                          </span>
-                        </div>
-                        <p className="mt-2 text-sm font-semibold tracking-tight">{ch.title}</p>
-                        <p className="mt-1.5 text-pretty text-[12px] leading-relaxed text-ink2">
-                          {ch.brief}
-                        </p>
-                        <p className="mt-2 font-mono text-[10px] uppercase tracking-widest text-ink2">
-                          {PRACTICE_PURPOSE[ch.level] || "Hands-on engineering application"}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-
-                  <CodeArena
-                    lab={study.codeLab}
-                    earned={labEarned}
-                    caseSlug={study.slug}
-                    isAuthenticated={isAuthenticated}
-                    onSolved={() => {
-                      // Server awards the lab + case-complete RC on pass.
-                      // Keep the learner on the page so they can review their pass score,
-                      // continue to Section 08 (Reflection), or click Back to Arena Centre.
-                    }}
-                  />
-                </>
-              )}
-
-              {/* 08 — REFLECTION */}
-              {step === 7 && (
-                <>
-                  <H2>Now explain it yourself</H2>
-                  <ul className="mt-4 space-y-2">
-                    {reflectionList.map((q, idx) => (
-                      <li
-                        key={q || idx}
-                        className="rounded-lg bg-sky/40 px-3 py-2 text-pretty text-sm leading-relaxed ring-1 ring-primary/10"
-                      >
-                        {q}
-                      </li>
-                    ))}
-                  </ul>
-                  <label
-                    htmlFor="reflection"
-                    className="mt-6 block font-mono text-[11px] uppercase tracking-[0.18em] text-ink2"
-                  >
-                    Your written explanation
-                  </label>
-                  <textarea
-                    id="reflection"
-                    rows={6}
-                    value={reflection}
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      setReflection(val);
-                      if (isAuthenticated && val.trim()) {
-                        saveProgress({
-                          caseSlug: study.slug,
-                          reflection: val.trim(),
-                        }).catch(() => {});
-                      }
-                    }}
-                    placeholder="Explain the system in your own words: what each part is responsible for, why it exists, and what you would change. Minimum 300 characters and 50 words."
-                    className={`mt-2 w-full rounded-2xl bg-card/70 p-4 text-sm leading-relaxed text-ink outline-none ring-1 placeholder:text-ink2/60 transition-colors ${
-                      reflectionValid
-                        ? "ring-[#ccff00]/40 focus:ring-[#ccff00]/60"
-                        : "ring-line/70 focus:ring-primary/40"
-                    }`}
-                  />
-                  {/* Character / word counter */}
-                  <div className="mt-2 flex items-center gap-4 font-mono text-[10px]">
-                    <span
-                      className={
-                        reflectionCharCount >= MIN_REFLECTION_CHARS
-                          ? "text-[#ccff00]"
-                          : "text-[#8a8a8a]"
-                      }
-                    >
-                      {reflectionCharCount} / {MIN_REFLECTION_CHARS} chars
-                    </span>
-                    <span className="text-[#3a3a3a]">·</span>
-                    <span
-                      className={
-                        reflectionWordCount >= MIN_REFLECTION_WORDS
-                          ? "text-[#ccff00]"
-                          : "text-[#8a8a8a]"
-                      }
-                    >
-                      {reflectionWordCount} / {MIN_REFLECTION_WORDS} words
-                    </span>
-                    {reflectionValid && (
-                      <span className="text-[#ccff00] font-bold">Ready to complete</span>
-                    )}
-                    {isAuthenticated && reflectionTrimmed && (
-                      <span className="text-[#5a5a5a] ml-auto">synced to cloud</span>
-                    )}
-                  </div>
-                </>
-              )}
-
-              {step === 7 && isCompleted && (
-                <div className="mt-8 rounded-3xl bg-gradient-to-b from-[#182608] via-[#101905] to-[#080c03] border-2 border-[#ccff00]/60 p-6 shadow-[0_0_35px_rgba(204,255,0,0.25)]">
-                  <div className="flex flex-wrap items-center justify-between gap-4">
-                    <div className="flex items-center gap-3">
-                      <div className="size-12 rounded-2xl bg-gradient-to-br from-[#d4ff00] to-[#ccff00] flex items-center justify-center text-[#080808] font-bold shadow-[0_0_15px_rgba(204,255,0,0.5)]">
-                        <CheckCircle2 className="size-6 stroke-[2.5]" />
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <span className="font-mono text-[10px] uppercase tracking-widest text-[#ccff00] font-bold">
-                            Investigation Mastered
-                          </span>
-                          <span className="rounded-md bg-[#182608] text-[#ccff00] font-mono text-[10px] px-2 py-0.5 font-bold border border-[#ccff00]/40">
-                            +{caseRc} RC Banked
-                          </span>
-                        </div>
-                        <h3 className="text-lg font-bold text-[#f5f5f5] mt-0.5">
-                          {study.title} Cleared!
-                        </h3>
-                      </div>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => navigate({ to: "/cases" })}
-                      className="rounded-xl bg-gradient-to-r from-[#d4ff00] via-[#ccff00] to-[#9df000] px-5 py-2.5 font-mono text-xs font-bold text-[#080808] shadow-[0_0_15px_rgba(204,255,0,0.4)] hover:shadow-[0_0_25px_rgba(204,255,0,0.6)] transition-all"
-                    >
-                      ✓ Back to Arena Centre
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {step === 6 ? (
-                <div className="mt-8 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-mint/40 p-3 ring-1 ring-primary/15">
-                  <p className="text-[12px] leading-relaxed text-ink2">
-                    {labEarned
-                      ? `Practice complete — you passed the lab at 80%+! Proceed to reflection to complete the case study.`
-                      : `This section unlocks only by passing the AI-judged code lab above at 80% or higher.`}
-                  </p>
-                  {labEarned && (
-                    <button
-                      type="button"
-                      onClick={() => navigate({ to: "/cases" })}
-                      className="rounded-xl bg-gradient-to-r from-[#d4ff00] via-[#ccff00] to-[#9df000] px-4 py-2.5 font-mono text-xs font-bold text-[#080808] shadow-[0_0_15px_rgba(204,255,0,0.4)] transition-all hover:shadow-[0_0_20px_rgba(204,255,0,0.6)]"
-                    >
-                      Back to the Arena Centre
-                    </button>
-                  )}
-                </div>
-              ) : (
-                <div className="mt-8 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-mint/40 p-3 ring-1 ring-primary/15">
-                  <div className="flex-1">
-                    <p className="text-[12px] leading-relaxed text-ink2">
-                      {step === 7
-                        ? isCompleted
-                          ? "Case study fully mastered."
-                          : !labEarned
-                            ? "Pass the Practice lab first, then write your reflection to complete."
-                            : !reflectionValid
-                              ? `Write your reflection (${reflectionCharCount}/${MIN_REFLECTION_CHARS} chars, ${reflectionWordCount}/${MIN_REFLECTION_WORDS} words) to unlock completion.`
-                              : "Reflection meets requirements. Ready to complete this case study."
-                        : sectionsDone[step]
-                          ? `Section ${step + 1} of 8 viewed.`
-                          : `Finished reading this section? Mark it done to track progress.`}
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    disabled={
-                      step === 7
-                        ? !labEarned || !reflectionValid || isCompleted
-                        : sectionsDone[step]
-                    }
-                    onClick={() => {
-                      if (isAuthenticated) {
-                        saveProgress({
-                          caseSlug: study.slug,
-                          completedSections: [step],
-                        }).catch(() => {});
-                        if (step === 7 && labEarned && reflectionValid) {
-                          markComplete({ caseSlug: study.slug })
-                            .then(() => toast.success(`+${caseRc} RC — Case study complete!`))
-                            .catch((err: Error) => toast.error(err.message));
-                        }
-                      }
-                      if (step !== 7) {
-                        setStep((s) => Math.min(SECTION_LABELS.length - 1, s + 1));
-                      }
-                    }}
-                    className="rounded-xl bg-gradient-to-r from-[#d4ff00] via-[#ccff00] to-[#9df000] px-4 py-2.5 font-mono text-xs font-bold text-[#080808] shadow-[0_0_15px_rgba(204,255,0,0.4)] transition-all hover:shadow-[0_0_20px_rgba(204,255,0,0.6)] disabled:opacity-40 disabled:pointer-events-none"
-                  >
-                    {step === 7
-                      ? isCompleted
-                        ? "Case Study Mastered"
-                        : !labEarned
-                          ? "Pass practice first"
-                          : !reflectionValid
-                            ? `Reflection: ${reflectionCharCount}/${MIN_REFLECTION_CHARS} chars`
-                            : `Complete Case + Claim +${caseRc} RC`
-                      : sectionsDone[step]
-                        ? "Viewed"
-                        : "Mark section done"}
-                  </button>
-                </div>
-              )}
-
-              <div className="mt-5 flex items-center justify-between border-t border-white/[0.08] pt-4">
-                <button
-                  type="button"
-                  disabled={step === 0}
-                  onClick={() => setStep((s) => Math.max(0, s - 1))}
-                  className="neu-btn rounded-xl px-4 py-2 font-mono text-xs font-medium text-[#b8b8b8] hover:text-[#f5f5f5] disabled:opacity-30 disabled:pointer-events-none"
-                >
-                  ← Previous
-                </button>
-                <span className="font-mono text-[11px] uppercase tracking-widest text-[#8a8a8a]">
-                  {String(step + 1).padStart(2, "0")} / 08
-                </span>
-                <button
-                  type="button"
-                  disabled={step === SECTION_LABELS.length - 1}
-                  onClick={() => setStep((s) => Math.min(SECTION_LABELS.length - 1, s + 1))}
-                  className="rounded-xl bg-gradient-to-r from-[#d4ff00] via-[#ccff00] to-[#9df000] px-4 py-2 font-mono text-xs font-bold text-[#080808] shadow-[0_0_12px_rgba(204,255,0,0.35)] disabled:opacity-30 disabled:pointer-events-none"
-                >
-                  Next →
-                </button>
-              </div>
-            </div>
-
-            {/* RIGHT COMPANION RAIL */}
-            <aside className="space-y-4 border-t border-white/[0.08] p-5 lg:border-l lg:border-t-0 bg-[#0d0d0d]/40">
-              {/* 1. Wallet & Session Yield */}
-              <div className="rounded-2xl border border-white/[0.08] bg-[#121212]/90 p-4 shadow-sm">
-                <RCWalletPanel />
-
-                {/* RC Yield in this case */}
-                <div className="mt-4 pt-3.5 border-t border-white/[0.06]">
-                  <div className="flex items-center justify-between mb-2">
-                    <p className="font-mono text-[10px] uppercase tracking-widest text-[#8a8a8a]">
-                      Case Yield Potential
-                    </p>
-                    <span className="font-mono text-xs font-bold text-[#ccff00]">
-                      +{caseRewarded ? caseRc : 0} / {caseRc} RC
-                    </span>
-                  </div>
-
-                  <p className="mb-2 text-[11px] leading-relaxed text-[#8a8a8a]">
-                    Full {caseRc} RC is awarded upon completing the entire 8-section path (reading,
-                    passing the code lab, and writing reflection).
-                  </p>
-
-                  <div className="space-y-1.5 font-mono text-[11px] text-[#8a8a8a]">
-                    <div className="flex justify-between items-center py-0.5">
-                      <span>Reading Steps (0-5, 7)</span>
-                      <span
-                        className={doneCount >= 7 ? "text-[#ccff00] font-bold" : "text-[#8a8a8a]"}
-                      >
-                        {doneCount >= 7 ? "✓ Viewed" : `${doneCount}/7 complete`}
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center py-0.5">
-                      <span>Practice (CodeArena)</span>
-                      <span className={labEarned ? "text-[#ccff00] font-bold" : "text-[#8a8a8a]"}>
-                        {labEarned ? "✓ Passed" : "pending"}
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center py-0.5">
-                      <span>Full Case Complete</span>
-                      <span
-                        className={caseRewarded ? "text-[#ccff00] font-bold" : "text-[#8a8a8a]"}
-                      >
-                        {caseRewarded ? `+${caseRc} RC ✓` : `+${caseRc} RC`}
-                      </span>
-                    </div>
-                  </div>
-
-                  {caseRewarded && (
-                    <div className="mt-3 rounded-xl bg-[#182608] border border-[#ccff00]/30 px-3 py-2 font-mono text-xs font-bold text-[#ccff00] flex items-center gap-1.5">
-                      <span>✓</span>
-                      <span>Case mastered · {caseRc} RC banked</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* 2. Modular Knowledge Hub (Tabs: Primer | Principles | Concepts) */}
-              <div className="rounded-2xl border border-white/[0.08] bg-[#121212]/90 p-4 shadow-sm space-y-4">
-                {/* Tab Header */}
-                <div className="flex items-center justify-between border-b border-white/[0.06] pb-3">
-                  <span className="font-mono text-[10px] uppercase tracking-widest text-[#8a8a8a] font-bold">
-                    Knowledge Companion
-                  </span>
-                </div>
-
-                {/* Segmented Tab Switcher */}
-                <div className="grid grid-cols-3 gap-1 rounded-xl bg-black/40 p-1 border border-white/[0.06]">
-                  <button
-                    type="button"
-                    onClick={() => setCompanionTab("primer")}
-                    className={`rounded-lg py-1.5 text-center font-mono text-[11px] font-bold transition-all ${
-                      companionTab === "primer"
-                        ? "bg-[#182608] text-[#ccff00] border border-[#ccff00]/40"
-                        : "text-[#8a8a8a] hover:text-[#f5f5f5]"
-                    }`}
-                  >
-                    Primer
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setCompanionTab("principles")}
-                    className={`rounded-lg py-1.5 text-center font-mono text-[11px] font-bold transition-all ${
-                      companionTab === "principles"
-                        ? "bg-[#182608] text-[#ccff00] border border-[#ccff00]/40"
-                        : "text-[#8a8a8a] hover:text-[#f5f5f5]"
-                    }`}
-                  >
-                    Principles ({study.techNotes.length})
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setCompanionTab("concepts")}
-                    className={`rounded-lg py-1.5 text-center font-mono text-[11px] font-bold transition-all ${
-                      companionTab === "concepts"
-                        ? "bg-[#182608] text-[#ccff00] border border-[#ccff00]/40"
-                        : "text-[#8a8a8a] hover:text-[#f5f5f5]"
-                    }`}
-                  >
-                    Concepts
-                  </button>
-                </div>
-
-                {/* Tab Content */}
-                <div className="pt-1">
-                  {/* TAB 1: Primer */}
-                  {companionTab === "primer" && (
-                    <div>
-                      {primer ? (
-                        <div className="space-y-3">
-                          <div>
-                            <div className="flex items-center gap-1.5 mb-1">
-                              <span className="size-1.5 rounded-full recording-dot" />
-                              <span className="font-mono text-[10px] text-[#ccff00] font-bold">
-                                {primer.minutes} MIN ARCHITECTURE PRIMER
-                              </span>
-                            </div>
-                            <h4 className="text-sm font-bold text-[#f5f5f5]">{primer.concept}</h4>
-                          </div>
-
-                          <p className="text-xs leading-relaxed text-[#b8b8b8]">
-                            {primer.definition}
-                          </p>
-
-                          <div className="rounded-xl bg-white/[0.02] border border-white/[0.06] p-3 text-xs leading-relaxed text-[#b8b8b8]">
-                            <p className="font-mono text-[10px] uppercase text-[#8a8a8a] mb-1 font-bold">
-                              Why it matters
-                            </p>
-                            <p>{primer.whyNeeded}</p>
-                          </div>
-
-                          <div className="rounded-xl bg-[#141a05] border border-[#ccff00]/25 p-3 text-xs leading-relaxed text-[#a3e635]">
-                            <span className="font-mono text-[10px] font-bold text-[#ccff00] block mb-1">
-                              Analogy
-                            </span>
-                            <p>{primer.analogy}</p>
-                          </div>
-
-                          <div>
-                            <div className="flex items-center justify-between mb-1.5">
-                              <span className="font-mono text-[10px] text-[#8a8a8a] uppercase">
-                                Code Pattern
-                              </span>
-                            </div>
-                            <pre className="overflow-x-auto rounded-xl bg-[#080808] p-3 font-mono text-[11px] text-[#f5f5f5] border border-white/10 leading-snug">
-                              <code>{primer.tinyExample}</code>
-                            </pre>
-                          </div>
-                        </div>
-                      ) : (
-                        <p className="text-xs text-[#8a8a8a] py-4 text-center">
-                          No dedicated primer needed for this case.
-                        </p>
-                      )}
-                    </div>
-                  )}
-
-                  {/* TAB 2: Architectural Principles */}
-                  {companionTab === "principles" && (
-                    <div className="space-y-3">
-                      {techNotesList.length > 0 ? (
-                        techNotesList.map((t) => (
-                          <div
-                            key={t.name}
-                            className="rounded-xl bg-white/[0.02] border border-white/[0.06] p-3.5 hover:border-white/15 transition-colors"
-                          >
-                            <div className="flex items-center justify-between">
-                              <span className="rounded-md bg-white/[0.04] border border-white/[0.08] px-2 py-0.5 font-mono text-[9px] uppercase tracking-wider text-[#8a8a8a]">
-                                {t.kind}
-                              </span>
-                            </div>
-                            <p className="mt-1.5 text-xs font-bold text-[#f5f5f5]">{t.name}</p>
-                            <p className="mt-1 text-xs leading-relaxed text-[#8a8a8a]">{t.note}</p>
-                          </div>
-                        ))
-                      ) : (
-                        <p className="text-xs text-[#8a8a8a] py-4 text-center">
-                          No architectural notes for this case.
-                        </p>
-                      )}
-                    </div>
-                  )}
-
-                  {/* TAB 3: Engineering Concepts */}
-                  {companionTab === "concepts" && (
-                    <div className="space-y-3">
-                      <p className="font-mono text-[11px] text-[#8a8a8a]">
-                        Key domain concepts mastered in this case:
+                    <div className="mt-4 rounded-2xl bg-paper/70 p-5 ring-1 ring-primary/10">
+                      <p className="mb-4 text-[12px] leading-relaxed text-ink2">
+                        {diagram?.description}
                       </p>
-                      <div className="flex flex-wrap gap-2">
-                        {engineeringConceptsList.map((concept) => (
-                          <span
-                            key={concept}
-                            className="rounded-lg bg-white/[0.03] border border-white/[0.08] px-2.5 py-1 font-mono text-xs text-[#f5f5f5] hover:border-[#ccff00]/40 hover:text-[#ccff00] transition-colors"
-                          >
-                            {concept}
-                          </span>
-                        ))}
+                      {diagram && <MermaidDiagram chart={diagram.mermaid} />}
+                      <div className="mt-4 flex flex-wrap items-center gap-4 border-t border-line/70 pt-3 font-mono text-[10px] text-ink2">
+                        <span className="flex items-center gap-1.5">
+                          <span className="size-2 rounded-full bg-rose ring-1 ring-primary/20" />
+                          request in
+                        </span>
+                        <span className="flex items-center gap-1.5">
+                          <span className="size-2 rounded-full bg-mint ring-1 ring-primary/20" />
+                          process
+                        </span>
+                        <span className="flex items-center gap-1.5">
+                          <span className="size-2 rounded-full bg-butter ring-1 ring-primary/20" />
+                          persist
+                        </span>
                       </div>
                     </div>
-                  )}
+                  </>
+                )}
+
+                {/* 05 — DECISIONS */}
+                {step === 4 && (
+                  <>
+                    <H2>Why this technology, and what it costs</H2>
+                    <p className="mt-3 max-w-[62ch] text-pretty text-sm leading-relaxed text-ink2">
+                      Every decision answers the same six questions, so you learn why a technology
+                      exists rather than memorising its name.
+                    </p>
+                    <div className="mt-5 space-y-3">
+                      {(study.decisions ?? []).map((d: any, idx: number) => {
+                        const title = d.title || d.decision || `Decision ${idx + 1}`;
+                        const what = d.what || d.choiceA;
+                        const why = d.why || d.verdict;
+                        const problem = d.problemSolved;
+                        const withoutIt = d.withoutIt || d.choiceB;
+                        const alts = Array.isArray(d.alternatives)
+                          ? d.alternatives.join(" · ")
+                          : d.alternatives || (d.choiceB ? `Alternative: ${d.choiceB}` : null);
+                        const tradeoff = d.tradeoff;
+
+                        return (
+                          <div
+                            key={title + idx}
+                            className="rounded-2xl bg-card/60 p-4 ring-1 ring-line/70"
+                          >
+                            <p className="text-sm font-semibold tracking-tight">{title}</p>
+                            <dl className="mt-2 space-y-1.5 text-[12px] leading-relaxed text-ink2">
+                              {what && (
+                                <>
+                                  <dt className="font-mono text-[10px] uppercase tracking-widest">
+                                    What
+                                  </dt>
+                                  <dd>{what}</dd>
+                                </>
+                              )}
+                              {why && (
+                                <>
+                                  <dt className="font-mono text-[10px] uppercase tracking-widest">
+                                    Why
+                                  </dt>
+                                  <dd>{why}</dd>
+                                </>
+                              )}
+                              {problem && (
+                                <>
+                                  <dt className="font-mono text-[10px] uppercase tracking-widest">
+                                    Problem it solves
+                                  </dt>
+                                  <dd>{problem}</dd>
+                                </>
+                              )}
+                              {withoutIt && (
+                                <>
+                                  <dt className="font-mono text-[10px] uppercase tracking-widest">
+                                    Without it
+                                  </dt>
+                                  <dd>{withoutIt}</dd>
+                                </>
+                              )}
+                              {alts && (
+                                <>
+                                  <dt className="font-mono text-[10px] uppercase tracking-widest">
+                                    Alternatives
+                                  </dt>
+                                  <dd>{alts}</dd>
+                                </>
+                              )}
+                            </dl>
+                            {tradeoff && (
+                              <p className="mt-2 rounded-lg bg-butter/50 px-3 py-2 text-[12px] leading-relaxed text-ink">
+                                <span className="font-mono text-[10px] uppercase tracking-widest text-ink2">
+                                  Trade-off ·{" "}
+                                </span>
+                                {tradeoff}
+                              </p>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </>
+                )}
+
+                {/* 06 — IMPLEMENTATION */}
+                {step === 5 && (
+                  <>
+                    <H2>From reasoning to code</H2>
+                    <p className="mt-3 max-w-[62ch] text-pretty text-sm leading-relaxed text-ink2">
+                      {study.implementation?.behaviour}
+                    </p>
+
+                    <Kicker>Language-independent algorithm</Kicker>
+                    <ol className="mt-3 space-y-2">
+                      {(study.implementation?.algorithm ?? []).map((s: string, i: number) => (
+                        <li key={s} className="flex gap-3 text-sm text-ink2">
+                          <span className="font-mono text-[11px] text-primary">
+                            {String(i + 1).padStart(2, "0")}
+                          </span>
+                          <span className="text-pretty leading-relaxed">{s}</span>
+                        </li>
+                      ))}
+                    </ol>
+
+                    {(study.implementation?.ladder ?? []).length > 0 && (
+                      <>
+                        <Kicker>The implementation ladder</Kicker>
+                        <div className="mt-3 grid gap-2 sm:grid-cols-2">
+                          {(study.implementation?.ladder ?? []).map((l: any) => (
+                            <div
+                              key={l.level || l.step}
+                              className="rounded-xl bg-card/60 p-3 ring-1 ring-line/70"
+                            >
+                              <p className="font-mono text-[10px] uppercase tracking-widest text-primary">
+                                {l.level || `Step ${l.step}`} · {l.title || l.focus}
+                              </p>
+                              <p className="mt-1 text-[12px] leading-relaxed text-ink2">
+                                {l.detail || l.buildsOn}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                      </>
+                    )}
+
+                    {/* Language tabs */}
+                    {study.implementation?.samples && study.implementation.samples.length > 0 && (
+                      <div className="mt-5 flex flex-wrap items-center gap-1.5 rounded-xl bg-black/40 p-1.5 border border-white/[0.06] max-w-full">
+                        {study.implementation.samples.map((s: any, i: number) => (
+                          <button
+                            key={s.language}
+                            type="button"
+                            onClick={() => setLang(i)}
+                            className={`rounded-lg px-3.5 py-2 sm:py-1.5 font-mono text-[11px] font-bold transition-all cursor-pointer ${
+                              i === lang
+                                ? "bg-[#182608] text-[#ccff00] border border-[#ccff00]/40 shadow-[0_0_8px_rgba(204,255,0,0.25)]"
+                                : "text-[#8a8a8a] hover:text-[#f5f5f5]"
+                            }`}
+                          >
+                            {s.language.charAt(0).toUpperCase() + s.language.slice(1)}
+                          </button>
+                        ))}
+                        <span className="ml-auto px-2 font-mono text-[10px] text-[#777]">
+                          {sample?.filename}
+                        </span>
+                      </div>
+                    )}
+
+                    {sample?.code &&
+                      (() => {
+                        const langKey =
+                          (
+                            {
+                              python: "Python",
+                              java: "Java",
+                              javascript: "JavaScript",
+                              c: "C",
+                            } as const
+                          )[
+                            String(sample?.language ?? "python").toLowerCase() as
+                              "python" | "java" | "javascript" | "c"
+                          ] ?? "Python";
+                        return (
+                          <CodeEditor
+                            value={sample.code}
+                            onChange={() => {}}
+                            language={langKey}
+                            disabled={true}
+                            rows={Math.max(12, sample.code.split("\n").length + 1)}
+                          />
+                        );
+                      })()}
+
+                    {sample?.explanations && sample.explanations.length > 0 && (
+                      <>
+                        <Kicker>Line by line, in plain language</Kicker>
+                        <div className="mt-3 space-y-2">
+                          {sample.explanations.map((e: any, idx: number) => (
+                            <div
+                              key={(e.code || "") + idx}
+                              className="rounded-xl bg-card/60 p-3 ring-1 ring-line/70"
+                            >
+                              <code className="font-mono text-[11px] text-primary">{e.code}</code>
+                              <p className="mt-1 text-[12px] leading-relaxed text-ink2">
+                                {e.explanation}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                      </>
+                    )}
+
+                    {study.implementation?.simulationNote && (
+                      <p className="mt-5 rounded-xl bg-sky/40 p-3 text-[12px] leading-relaxed text-ink2 ring-1 ring-primary/10">
+                        <span className="font-mono text-[10px] uppercase tracking-widest">
+                          Educational model ·{" "}
+                        </span>
+                        {study.implementation.simulationNote}
+                      </p>
+                    )}
+                  </>
+                )}
+
+                {/* 07 — PRACTICE */}
+                {step === 6 && (
+                  <>
+                    <H2>Understand, modify, build, think</H2>
+                    <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                      {practiceList.map((ch, i) => (
+                        <div
+                          key={ch.title || i}
+                          className="rounded-2xl bg-card/60 p-4 ring-1 ring-line/70"
+                        >
+                          <div className="flex items-center justify-between">
+                            <span className="font-mono text-[10px] uppercase tracking-widest text-ink2">
+                              Task {String(i + 1).padStart(2, "0")}
+                            </span>
+                            <span className="rounded bg-butter/70 px-2 py-1 font-mono text-[10px]">
+                              {ch.level}
+                            </span>
+                          </div>
+                          <p className="mt-2 text-sm font-semibold tracking-tight">{ch.title}</p>
+                          <p className="mt-1.5 text-pretty text-[12px] leading-relaxed text-ink2">
+                            {ch.brief}
+                          </p>
+                          <p className="mt-2 font-mono text-[10px] uppercase tracking-widest text-ink2">
+                            {PRACTICE_PURPOSE[ch.level] || "Hands-on engineering application"}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+
+                    <CodeArena
+                      lab={study.codeLab}
+                      earned={labEarned}
+                      caseSlug={study.slug}
+                      isAuthenticated={isAuthenticated}
+                      onSolved={() => {
+                        // Server awards the lab + case-complete RC on pass.
+                        // Keep the learner on the page so they can review their pass score,
+                        // continue to Section 08 (Reflection), or click Back to Arena Centre.
+                      }}
+                    />
+                  </>
+                )}
+
+                {/* 08 — REFLECTION */}
+                {step === 7 && (
+                  <>
+                    <H2>Now explain it yourself</H2>
+                    <ul className="mt-4 space-y-2">
+                      {reflectionList.map((q, idx) => (
+                        <li
+                          key={q || idx}
+                          className="rounded-lg bg-sky/40 px-3 py-2 text-pretty text-sm leading-relaxed ring-1 ring-primary/10"
+                        >
+                          {q}
+                        </li>
+                      ))}
+                    </ul>
+                    <label
+                      htmlFor="reflection"
+                      className="mt-6 block font-mono text-[11px] uppercase tracking-[0.18em] text-ink2"
+                    >
+                      Your written explanation
+                    </label>
+                    <textarea
+                      id="reflection"
+                      rows={6}
+                      value={reflection}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setReflection(val);
+                        if (isAuthenticated && val.trim()) {
+                          saveProgress({
+                            caseSlug: study.slug,
+                            reflection: val.trim(),
+                          }).catch(() => {});
+                        }
+                      }}
+                      placeholder="Explain the system in your own words: what each part is responsible for, why it exists, and what you would change. Minimum 300 characters and 50 words."
+                      className={`mt-2 w-full rounded-2xl bg-card/70 p-4 text-sm leading-relaxed text-ink outline-none ring-1 placeholder:text-ink2/60 transition-colors ${
+                        reflectionValid
+                          ? "ring-[#ccff00]/40 focus:ring-[#ccff00]/60"
+                          : "ring-line/70 focus:ring-primary/40"
+                      }`}
+                    />
+                    {/* Character / word counter */}
+                    <div className="mt-2 flex items-center gap-4 font-mono text-[10px]">
+                      <span
+                        className={
+                          reflectionCharCount >= MIN_REFLECTION_CHARS
+                            ? "text-[#ccff00]"
+                            : "text-[#8a8a8a]"
+                        }
+                      >
+                        {reflectionCharCount} / {MIN_REFLECTION_CHARS} chars
+                      </span>
+                      <span className="text-[#3a3a3a]">·</span>
+                      <span
+                        className={
+                          reflectionWordCount >= MIN_REFLECTION_WORDS
+                            ? "text-[#ccff00]"
+                            : "text-[#8a8a8a]"
+                        }
+                      >
+                        {reflectionWordCount} / {MIN_REFLECTION_WORDS} words
+                      </span>
+                      {reflectionValid && (
+                        <span className="text-[#ccff00] font-bold">Ready to complete</span>
+                      )}
+                      {isAuthenticated && reflectionTrimmed && (
+                        <span className="text-[#5a5a5a] ml-auto">synced to cloud</span>
+                      )}
+                    </div>
+                  </>
+                )}
+
+                {step === 7 && isCompleted && (
+                  <div className="mt-8 rounded-3xl bg-gradient-to-b from-[#182608] via-[#101905] to-[#080c03] border-2 border-[#ccff00]/60 p-6 shadow-[0_0_35px_rgba(204,255,0,0.25)]">
+                    <div className="flex flex-wrap items-center justify-between gap-4">
+                      <div className="flex items-center gap-3">
+                        <div className="size-12 rounded-2xl bg-gradient-to-br from-[#d4ff00] to-[#ccff00] flex items-center justify-center text-[#080808] font-bold shadow-[0_0_15px_rgba(204,255,0,0.5)]">
+                          <CheckCircle2 className="size-6 stroke-[2.5]" />
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="font-mono text-[10px] uppercase tracking-widest text-[#ccff00] font-bold">
+                              Investigation Mastered
+                            </span>
+                            <span className="rounded-md bg-[#182608] text-[#ccff00] font-mono text-[10px] px-2 py-0.5 font-bold border border-[#ccff00]/40">
+                              +{caseRc} RC Banked
+                            </span>
+                          </div>
+                          <h3 className="text-lg font-bold text-[#f5f5f5] mt-0.5">
+                            {study.title} Cleared!
+                          </h3>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => navigate({ to: "/cases" })}
+                        className="rounded-xl bg-gradient-to-r from-[#d4ff00] via-[#ccff00] to-[#9df000] px-5 py-2.5 font-mono text-xs font-bold text-[#080808] shadow-[0_0_15px_rgba(204,255,0,0.4)] hover:shadow-[0_0_25px_rgba(204,255,0,0.6)] transition-all"
+                      >
+                        ✓ Back to Arena Centre
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {step === 6 ? (
+                  <div className="mt-8 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-mint/40 p-4 ring-1 ring-primary/15">
+                    <p className="text-[12px] leading-relaxed text-ink2">
+                      {labEarned
+                        ? `Practice complete — you passed the lab at 80%+! Proceed to reflection to complete the case study.`
+                        : `This section unlocks only by passing the AI-judged code lab above at 80% or higher.`}
+                    </p>
+                    {labEarned && (
+                      <div className="flex flex-wrap items-center gap-2.5">
+                        <button
+                          type="button"
+                          onClick={() => setStep(7)}
+                          className="rounded-xl bg-gradient-to-r from-[#d4ff00] via-[#ccff00] to-[#9df000] px-5 py-2.5 font-mono text-xs font-bold text-[#080808] shadow-[0_0_15px_rgba(204,255,0,0.4)] transition-all hover:shadow-[0_0_20px_rgba(204,255,0,0.6)]"
+                        >
+                          Proceed to Reflection (Step 08) →
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => navigate({ to: "/cases" })}
+                          className="neu-btn rounded-xl px-4 py-2.5 font-mono text-xs font-semibold text-[#8a8a8a] hover:text-[#f5f5f5]"
+                        >
+                          Back to the Arena Centre
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="mt-8 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-mint/40 p-4 ring-1 ring-primary/15">
+                    <div className="flex-1">
+                      <p className="text-[12px] leading-relaxed text-ink2">
+                        {step === 7
+                          ? caseRewarded
+                            ? "Case study fully mastered and RC points banked."
+                            : !labEarned
+                              ? "Pass the Practice lab first, then write your reflection to complete."
+                              : !reflectionValid
+                                ? `Write your reflection (${reflectionCharCount}/${MIN_REFLECTION_CHARS} chars, ${reflectionWordCount}/${MIN_REFLECTION_WORDS} words) to unlock completion.`
+                                : "Reflection meets requirements. Ready to complete this case study."
+                          : sectionsDone[step]
+                            ? `Section ${step + 1} of 8 viewed.`
+                            : `Finished reading this section? Mark it done to track progress.`}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      disabled={
+                        step === 7
+                          ? !labEarned || !reflectionValid || caseRewarded
+                          : sectionsDone[step]
+                      }
+                      onClick={async () => {
+                        if (isAuthenticated) {
+                          if (step === 7 && labEarned && reflectionValid && !caseRewarded) {
+                            try {
+                              await markComplete({
+                                caseSlug: study.slug,
+                                reflection: reflectionTrimmed,
+                              });
+                              toast.success(`+${caseRc} RC — Case study complete!`);
+                            } catch (err: unknown) {
+                              toast.error((err as Error).message || "Failed to complete case");
+                            }
+                          } else {
+                            saveProgress({
+                              caseSlug: study.slug,
+                              completedSections: [step],
+                            }).catch(() => {});
+                          }
+                        }
+                        if (step !== 7) {
+                          setStep((s) => Math.min(SECTION_LABELS.length - 1, s + 1));
+                        }
+                      }}
+                      className="rounded-xl bg-gradient-to-r from-[#d4ff00] via-[#ccff00] to-[#9df000] px-4 py-2.5 font-mono text-xs font-bold text-[#080808] shadow-[0_0_15px_rgba(204,255,0,0.4)] transition-all hover:shadow-[0_0_20px_rgba(204,255,0,0.6)] disabled:opacity-40 disabled:pointer-events-none"
+                    >
+                      {step === 7
+                        ? caseRewarded
+                          ? "Case Study Mastered"
+                          : !labEarned
+                            ? "Pass practice first"
+                            : !reflectionValid
+                              ? `Reflection: ${reflectionCharCount}/${MIN_REFLECTION_CHARS} chars`
+                              : `Complete Case + Claim +${caseRc} RC`
+                        : sectionsDone[step]
+                          ? "Viewed"
+                          : "Mark section done"}
+                    </button>
+                  </div>
+                )}
+
+                <div className="mt-5 flex items-center justify-between border-t border-white/[0.08] pt-4">
+                  <button
+                    type="button"
+                    disabled={step === 0}
+                    onClick={() => setStep((s) => Math.max(0, s - 1))}
+                    className="neu-btn rounded-xl px-4 py-2 font-mono text-xs font-medium text-[#b8b8b8] hover:text-[#f5f5f5] disabled:opacity-30 disabled:pointer-events-none"
+                  >
+                    ← Previous
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setMobileSectionsOpen(true)}
+                    className="lg:hidden flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-widest text-[#8a8a8a] hover:text-[#ccff00] px-2.5 py-1 rounded-lg hover:bg-white/5 transition-colors border border-transparent hover:border-white/10"
+                  >
+                    <span>{String(step + 1).padStart(2, "0")} / 08</span>
+                    <BookOpen className="size-3 text-[#ccff00]" />
+                  </button>
+                  <span className="hidden lg:inline font-mono text-[11px] uppercase tracking-widest text-[#8a8a8a]">
+                    {String(step + 1).padStart(2, "0")} / 08
+                  </span>
+                  <button
+                    type="button"
+                    disabled={step === SECTION_LABELS.length - 1}
+                    onClick={() => setStep((s) => Math.min(SECTION_LABELS.length - 1, s + 1))}
+                    className="rounded-xl bg-gradient-to-r from-[#d4ff00] via-[#ccff00] to-[#9df000] px-4 py-2 font-mono text-xs font-bold text-[#080808] shadow-[0_0_12px_rgba(204,255,0,0.35)] disabled:opacity-30 disabled:pointer-events-none"
+                  >
+                    Next →
+                  </button>
                 </div>
               </div>
+              {/* End inner content */}
+            </div>
+            {/* End MAIN CONTENT AREA */}
+
+            {/* RIGHT COMPANION RAIL (Desktop only) */}
+            <aside className="hidden lg:block space-y-4 border-l border-white/[0.08] p-5 bg-[#0d0d0d]/40">
+              <CompanionHub
+                companionTab={companionTab}
+                setCompanionTab={setCompanionTab}
+                primer={primer}
+                techNotesList={techNotesList}
+                engineeringConceptsList={engineeringConceptsList}
+                caseRewarded={caseRewarded}
+                caseRc={caseRc}
+                doneCount={doneCount}
+                labEarned={labEarned}
+              />
             </aside>
           </div>
         </div>
+
+        {/* MOBILE SECTIONS DRAWER (Left Slide-Over) */}
+        {mobileSectionsOpen && (
+          <div
+            className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm lg:hidden transition-opacity"
+            onClick={() => setMobileSectionsOpen(false)}
+          >
+            <div
+              className="fixed inset-y-0 left-0 w-[85vw] max-w-[320px] bg-[#0c0c0c] border-r border-white/10 p-5 shadow-2xl overflow-y-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between border-b border-white/10 pb-3 mb-4">
+                <div>
+                  <p className="font-mono text-[10px] uppercase tracking-widest text-[#ccff00] font-bold">
+                    Case Roadmap
+                  </p>
+                  <h3 className="text-sm font-bold text-[#f5f5f5]">{study.title}</h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setMobileSectionsOpen(false)}
+                  className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-[#8a8a8a] hover:text-[#f5f5f5]"
+                >
+                  <X className="size-4" />
+                </button>
+              </div>
+              <StepperList
+                step={step}
+                setStep={setStep}
+                sectionsDone={sectionsDone}
+                prerequisites={study.prerequisites}
+                onSelect={() => setMobileSectionsOpen(false)}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* MOBILE COMPANION DRAWER (Right Slide-Over) */}
+        {mobileCompanionOpen && (
+          <div
+            className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm lg:hidden transition-opacity"
+            onClick={() => setMobileCompanionOpen(false)}
+          >
+            <div
+              className="fixed inset-y-0 right-0 w-[90vw] max-w-[380px] bg-[#0c0c0c] border-l border-white/10 p-5 shadow-2xl overflow-y-auto space-y-4"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                <div>
+                  <p className="font-mono text-[10px] uppercase tracking-widest text-[#ccff00] font-bold">
+                    Knowledge & Wallet
+                  </p>
+                  <h3 className="text-sm font-bold text-[#f5f5f5]">Case Companion</h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setMobileCompanionOpen(false)}
+                  className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-[#8a8a8a] hover:text-[#f5f5f5]"
+                >
+                  <X className="size-4" />
+                </button>
+              </div>
+              <CompanionHub
+                companionTab={companionTab}
+                setCompanionTab={setCompanionTab}
+                primer={primer}
+                techNotesList={techNotesList}
+                engineeringConceptsList={engineeringConceptsList}
+                caseRewarded={caseRewarded}
+                caseRc={caseRc}
+                doneCount={doneCount}
+                labEarned={labEarned}
+              />
+            </div>
+          </div>
+        )}
       </div>
     </AppChrome>
   );

@@ -404,6 +404,7 @@ export const saveCaseProgress = mutation({
 export const markCaseComplete = mutation({
   args: {
     caseSlug: v.string(),
+    reflection: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
@@ -419,22 +420,17 @@ export const markCaseComplete = mutation({
       .withIndex("by_user_case", (q) => q.eq("userId", user._id).eq("caseSlug", args.caseSlug))
       .unique();
 
-    // Verify that the lab was passed
-    if (!progress?.passed) {
-      throw new Error("Lab must be passed before marking case complete");
+    if (!progress) {
+      throw new Error("No progress record found for this case study");
     }
 
-    // Check if all 8 sections (0-7) are completed
-    const hasAllSections = ALL_CASE_SECTION_INDICES.every((sec) =>
-      progress.completedSections.includes(sec),
-    );
-
-    if (!hasAllSections) {
-      throw new Error("All sections must be viewed before marking case complete");
+    // Verify that the lab was passed
+    if (!progress.passed) {
+      throw new Error("Practice code lab must be passed before completing case study");
     }
 
     // Server-side reflection validation (mirrors frontend MIN_REFLECTION_CHARS/WORDS)
-    const reflectionRaw = progress.reflection ?? "";
+    const reflectionRaw = args.reflection ?? progress.reflection ?? "";
     const reflectionTrimmed = reflectionRaw.trim();
     if (reflectionTrimmed.length < MIN_REFLECTION_CHARS) {
       throw new Error(
@@ -456,7 +452,59 @@ export const markCaseComplete = mutation({
       );
     }
 
+    // Mark all sections as completed and persist reflection
+    const allSections = ALL_CASE_SECTION_INDICES;
+    await ctx.db.patch(progress._id, {
+      completedSections: allSections,
+      reflection: reflectionTrimmed,
+      updatedAt: Date.now(),
+    });
+
     return await completeCaseInternal(ctx, user, args.caseSlug, progress._id);
+  },
+});
+
+/**
+ * Reconciles awards and RC balance for users who completed cases
+ * but did not receive their completion RC bonus.
+ */
+export const reconcileUserAwards = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return { reconciled: 0 };
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) => q.eq("tokenIdentifier", identity.tokenIdentifier))
+      .unique();
+    if (!user) return { reconciled: 0 };
+
+    const progressList = await ctx.db
+      .query("caseProgress")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .collect();
+
+    let count = 0;
+    for (const p of progressList) {
+      const isCompleted =
+        Boolean(p.passed) && (p.status === "completed" || (p.completedSections?.length ?? 0) >= 7);
+
+      if (isCompleted) {
+        const awardKey = `case:${p.caseSlug}:complete`;
+        const existingAward = await ctx.db
+          .query("awards")
+          .withIndex("by_user_award", (q) => q.eq("userId", user._id).eq("awardId", awardKey))
+          .unique();
+
+        if (!existingAward) {
+          await completeCaseInternal(ctx, user, p.caseSlug, p._id);
+          count++;
+        }
+      }
+    }
+
+    return { reconciled: count };
   },
 });
 

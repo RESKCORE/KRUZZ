@@ -32,13 +32,15 @@ export const labAwardId = (slug: string) => `case:${slug}:lab`;
 
 export function isCaseCompleted(awards: Record<string, number> | undefined, slug: string): boolean {
   if (!awards) return false;
-  return Boolean(awards[`case:${slug}:complete`] || awards[`${slug}:complete`]);
+  return awards[`case:${slug}:complete`] !== undefined || awards[`${slug}:complete`] !== undefined;
 }
 
 export function isLabCompleted(awards: Record<string, number> | undefined, slug: string): boolean {
   if (!awards) return false;
-  return Boolean(
-    awards[`case:${slug}:lab`] || awards[`${slug}:lab`] || awards[`lab:${slug}:solved`],
+  return (
+    awards[`case:${slug}:lab`] !== undefined ||
+    awards[`${slug}:lab`] !== undefined ||
+    awards[`lab:${slug}:solved`] !== undefined
   );
 }
 
@@ -80,11 +82,13 @@ export function rankFor(points: number) {
 /** Centralize the completion predicate used by every case surface. */
 export function isStudyComplete(
   awards: Record<string, number> | undefined,
-  progressDoc: { passed?: boolean; completedSections?: number[] } | null | undefined,
+  progressDoc:
+    { passed?: boolean; completedSections?: number[]; status?: string } | null | undefined,
   slug: string,
 ): boolean {
   return (
     isCaseCompleted(awards, slug) ||
+    progressDoc?.status === "completed" ||
     Boolean(progressDoc?.passed && (progressDoc?.completedSections?.length ?? 0) >= 7)
   );
 }
