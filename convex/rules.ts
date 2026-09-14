@@ -127,6 +127,34 @@ export type StoreItemDefinition = {
 };
 
 export const STORE_CATALOG: Record<string, StoreItemDefinition> = {
+  "theme-acid-lime": {
+    id: "theme-acid-lime",
+    name: "Deep Obsidian & Electric Acid Lime UI",
+    cost: 0,
+    description: "Default KRUZZ active theme.",
+    type: "cosmetic_equipable",
+  },
+  "theme-cyberpunk": {
+    id: "theme-cyberpunk",
+    name: "Cyberpunk Neon UI",
+    cost: 35,
+    description: "Night-city aesthetics with electric cyan accents and hot magenta glows.",
+    type: "cosmetic_equipable",
+  },
+  "theme-matrix": {
+    id: "theme-matrix",
+    name: "Matrix Phosphor UI",
+    cost: 35,
+    description: "Classic systems hacker console with phosphor emerald green highlights.",
+    type: "cosmetic_equipable",
+  },
+  "theme-monochrome": {
+    id: "theme-monochrome",
+    name: "Monolith Slate UI",
+    cost: 25,
+    description: "Crisp architectural stark white contrast with cold titanium shadows.",
+    type: "cosmetic_equipable",
+  },
   "pdf-architecture-blueprints": {
     id: "pdf-architecture-blueprints",
     name: "System Architecture Blueprint Guide",
@@ -147,6 +175,13 @@ export const STORE_CATALOG: Record<string, StoreItemDefinition> = {
     cost: 250,
     description: "Cryptographically stamped portfolio dossier badge.",
     type: "one_time_ownership",
+  },
+  "streak-shield": {
+    id: "streak-shield",
+    name: "Streak Freeze Protection",
+    cost: 30,
+    description: "Preserves your active daily investigation streak if you miss a single day.",
+    type: "repeatable_consumable",
   },
 };
 

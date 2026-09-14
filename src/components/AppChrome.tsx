@@ -13,8 +13,10 @@ import {
   Settings,
   LogOut,
   ChevronRight,
+  Palette,
 } from "lucide-react";
 import { useAccount } from "@/lib/account";
+import { useTheme } from "@/lib/theme";
 import { AuthGate } from "@/components/AuthGate";
 
 function SettingsDropdown() {
@@ -22,6 +24,7 @@ function SettingsDropdown() {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { signOut } = useClerk();
   const { user } = useUser();
+  const { activeThemeMeta } = useTheme();
   const router = useRouter();
 
   useEffect(() => {
@@ -95,6 +98,20 @@ function SettingsDropdown() {
                 Profile
               </span>
               <ChevronRight className="size-3 text-[#555]" />
+            </Link>
+
+            <Link
+              to="/store"
+              onClick={() => setOpen(false)}
+              className="flex items-center justify-between rounded-xl px-3 py-2 text-xs font-medium text-[#b8b8b8] transition-colors hover:bg-white/[0.06] hover:text-[#f5f5f5]"
+            >
+              <span className="flex items-center gap-2">
+                <Palette className="size-3.5 text-[#ccff00]" />
+                Themes & Perks
+              </span>
+              <span className="font-mono text-[9px] rounded bg-[#182608] border border-[#ccff00]/30 px-1.5 py-0.5 text-[#ccff00]">
+                {activeThemeMeta?.name?.split(" ")[0] ?? "Theme"}
+              </span>
             </Link>
           </div>
 

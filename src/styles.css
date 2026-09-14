@@ -48,9 +48,9 @@
   --color-butter: var(--butter);
 
   /* Specific accents from inspiration */
-  --color-lime-glow: #d4ff00;
-  --color-lime-soft: #ccff00;
-  --color-recording: #ccff00;
+  --color-lime-glow: var(--lime-glow);
+  --color-lime-soft: var(--lime-soft);
+  --color-recording: var(--lime-soft);
 }
 
 :root {
@@ -88,12 +88,27 @@
   --border: rgba(255, 255, 255, 0.08);
   --input: rgba(255, 255, 255, 0.12);
   --ring: #ccff00;
+
+  /* Dynamic Theme Accents */
+  --lime-glow: #d4ff00;
+  --lime-soft: #ccff00;
+  --grid-glow: rgba(204, 255, 0, 0.12);
+  --glow-color: rgba(204, 255, 0, 0.4);
+  --theme-border-subtle: rgba(204, 255, 0, 0.18);
+  --theme-inner-glow: rgba(204, 255, 0, 0.04);
+  --theme-inner-glow-active: rgba(204, 255, 0, 0.12);
+  --theme-ring: rgba(204, 255, 0, 0.08);
+  --theme-selection: rgba(204, 255, 0, 0.18);
 }
 
 @utility grid-bg {
   background-color: #080808;
   background-image:
-    radial-gradient(ellipse at 50% -10%, rgba(204, 255, 0, 0.12) 0%, transparent 60%),
+    radial-gradient(
+      ellipse at 50% -10%,
+      var(--grid-glow, rgba(204, 255, 0, 0.12)) 0%,
+      transparent 60%
+    ),
     linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
     linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
   background-size:
@@ -122,13 +137,13 @@
 }
 
 @utility recording-dot {
-  background-color: #ccff00;
-  box-shadow: 0 0 10px 2px rgba(204, 255, 0, 0.85);
+  background-color: var(--primary, #ccff00);
+  box-shadow: 0 0 10px 2px var(--glow-color, rgba(204, 255, 0, 0.85));
   animation: pulse-live 2s infinite;
 }
 
 @utility glow-lime {
-  box-shadow: 0 0 25px rgba(204, 255, 0, 0.4);
+  box-shadow: 0 0 25px var(--glow-color, rgba(204, 255, 0, 0.4));
 }
 
 /* ========================================================================= */
@@ -163,20 +178,20 @@ body::-webkit-scrollbar {
 @keyframes pulse-live {
   0% {
     transform: scale(0.95);
-    box-shadow: 0 0 0 0 rgba(204, 255, 0, 0.8);
+    box-shadow: 0 0 0 0 var(--glow-color, rgba(204, 255, 0, 0.8));
   }
   70% {
     transform: scale(1);
-    box-shadow: 0 0 0 6px rgba(204, 255, 0, 0);
+    box-shadow: 0 0 0 6px transparent;
   }
   100% {
     transform: scale(0.95);
-    box-shadow: 0 0 0 0 rgba(204, 255, 0, 0);
+    box-shadow: 0 0 0 0 transparent;
   }
 }
 
 /* =========================================================================
-   CODE EDITOR — Deep Obsidian + Electric Acid Lime
+   CODE EDITOR — Dynamic Themed Obsidian
    ========================================================================= */
 
 .code-editor-root {
@@ -185,12 +200,12 @@ body::-webkit-scrollbar {
   flex-direction: column;
   border-radius: 1rem;
   overflow: hidden;
-  border: 1px solid rgba(204, 255, 0, 0.18);
+  border: 1px solid var(--theme-border-subtle, rgba(204, 255, 0, 0.18));
   background: #080a08;
   box-shadow:
     0 0 0 1px rgba(0, 0, 0, 0.6),
     0 8px 32px rgba(0, 0, 0, 0.55),
-    0 0 60px rgba(204, 255, 0, 0.04) inset;
+    0 0 60px var(--theme-inner-glow, rgba(204, 255, 0, 0.04)) inset;
   transition:
     border-color 0.2s ease,
     box-shadow 0.2s ease;
@@ -198,12 +213,12 @@ body::-webkit-scrollbar {
 }
 
 .code-editor-root:focus-within {
-  border-color: rgba(204, 255, 0, 0.55);
+  border-color: var(--primary, rgba(204, 255, 0, 0.55));
   box-shadow:
     0 0 0 1px rgba(0, 0, 0, 0.6),
     0 8px 32px rgba(0, 0, 0, 0.55),
-    0 0 40px rgba(204, 255, 0, 0.12) inset,
-    0 0 0 3px rgba(204, 255, 0, 0.08);
+    0 0 40px var(--theme-inner-glow-active, rgba(204, 255, 0, 0.12)) inset,
+    0 0 0 3px var(--theme-ring, rgba(204, 255, 0, 0.08));
 }
 
 /* ── Top bar (fake window controls) */
@@ -283,7 +298,7 @@ body::-webkit-scrollbar {
 /* ── Textarea (transparent — only caret/selection visible) */
 .code-editor-textarea {
   color: transparent;
-  caret-color: #ccff00;
+  caret-color: var(--primary, #ccff00);
   background: transparent;
   border: none;
   outline: none;
@@ -297,7 +312,7 @@ body::-webkit-scrollbar {
 }
 
 .code-editor-textarea::selection {
-  background: rgba(204, 255, 0, 0.18);
+  background: var(--theme-selection, rgba(204, 255, 0, 0.18));
   color: transparent;
 }
 
@@ -340,7 +355,7 @@ body::-webkit-scrollbar {
   .code-editor-highlight,
   .code-editor-textarea {
     padding: 10px 12px;
-    font-size: 14.5px; /* Noticeably bigger and clearer on mobile viewports */
+    font-size: 14.5px;
     line-height: 24px;
   }
   .code-editor-statusbar {
@@ -352,7 +367,7 @@ body::-webkit-scrollbar {
 }
 
 .code-editor-statusbar span:first-child {
-  color: rgba(204, 255, 0, 0.7);
+  color: var(--primary, rgba(204, 255, 0, 0.7));
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -377,7 +392,7 @@ body::-webkit-scrollbar {
   color: #70d8d8;
 }
 .tok-fn {
-  color: #ccff00;
+  color: var(--primary, #ccff00);
 }
 .tok-op {
   color: #ff79c6;
@@ -410,7 +425,7 @@ body::-webkit-scrollbar {
     border-color 0.2s ease,
     box-shadow 0.2s ease;
   scrollbar-width: thin;
-  scrollbar-color: rgba(204, 255, 0, 0.2) transparent;
+  scrollbar-color: var(--theme-border-subtle, rgba(204, 255, 0, 0.2)) transparent;
 }
 
 .explanation-area::placeholder {
@@ -419,13 +434,239 @@ body::-webkit-scrollbar {
 }
 
 .explanation-area:focus {
-  border-color: rgba(204, 255, 0, 0.5);
+  border-color: var(--primary, rgba(204, 255, 0, 0.5));
   box-shadow:
-    0 0 0 3px rgba(204, 255, 0, 0.07),
-    0 0 24px rgba(204, 255, 0, 0.08) inset;
+    0 0 0 3px var(--theme-ring, rgba(204, 255, 0, 0.07)),
+    0 0 24px var(--theme-inner-glow, rgba(204, 255, 0, 0.08)) inset;
 }
 
 .explanation-area:disabled {
   opacity: 0.45;
   cursor: not-allowed;
+}
+
+/* =========================================================================
+   IN-APP THEME ACCENT SYSTEM (Dynamic Theme Switching)
+   ========================================================================= */
+
+/* Theme 1: Electric Acid Lime (Default) */
+:root,
+[data-theme="theme-acid-lime"] {
+  --theme-border-subtle: rgba(204, 255, 0, 0.18);
+  --theme-inner-glow: rgba(204, 255, 0, 0.04);
+  --theme-inner-glow-active: rgba(204, 255, 0, 0.12);
+  --theme-ring: rgba(204, 255, 0, 0.08);
+  --theme-selection: rgba(204, 255, 0, 0.18);
+  --grid-glow: rgba(204, 255, 0, 0.12);
+  --glow-color: rgba(204, 255, 0, 0.4);
+}
+
+/* Theme 2: Cyberpunk Neon (Electric Cyan & Hot Magenta) */
+[data-theme="theme-cyberpunk"] {
+  --primary: #00f0ff;
+  --primary-foreground: #040810;
+  --accent: #ff007f;
+  --accent-foreground: #ffffff;
+  --ring: #00f0ff;
+  --lime-glow: #00f0ff;
+  --lime-soft: #00f0ff;
+  --mint: rgba(0, 240, 255, 0.18);
+  --rose: rgba(255, 0, 127, 0.2);
+  --sky: rgba(0, 240, 255, 0.25);
+  --butter: rgba(255, 0, 127, 0.18);
+  --grid-glow: rgba(0, 240, 255, 0.16);
+  --glow-color: rgba(0, 240, 255, 0.45);
+  --theme-border-subtle: rgba(0, 240, 255, 0.25);
+  --theme-inner-glow: rgba(0, 240, 255, 0.05);
+  --theme-inner-glow-active: rgba(0, 240, 255, 0.15);
+  --theme-ring: rgba(0, 240, 255, 0.12);
+  --theme-selection: rgba(0, 240, 255, 0.22);
+}
+
+[data-theme="theme-cyberpunk"] [class*="text-[#ccff00]"],
+[data-theme="theme-cyberpunk"] [class*="text-[#d4ff00]"],
+[data-theme="theme-cyberpunk"] [class*="text-[#a3e635]"],
+[data-theme="theme-cyberpunk"] [class*="text-[#9df000]"] {
+  color: #00f0ff !important;
+}
+
+[data-theme="theme-cyberpunk"] [class*="hover:text-[#ccff00]"]:hover {
+  color: #00f0ff !important;
+}
+
+[data-theme="theme-cyberpunk"] [class*="bg-[#ccff00]"],
+[data-theme="theme-cyberpunk"] [class*="bg-[#d4ff00]"] {
+  background-color: #00f0ff !important;
+  color: #040810 !important;
+}
+
+[data-theme="theme-cyberpunk"] [class*="border-[#ccff00]"] {
+  border-color: rgba(0, 240, 255, 0.45) !important;
+}
+
+[data-theme="theme-cyberpunk"] [class*="hover:border-[#ccff00]"]:hover {
+  border-color: #00f0ff !important;
+}
+
+[data-theme="theme-cyberpunk"] [class*="bg-[#182608]"],
+[data-theme="theme-cyberpunk"] [class*="bg-[#141a05]"] {
+  background-color: rgba(0, 240, 255, 0.1) !important;
+}
+
+[data-theme="theme-cyberpunk"] [class*="shadow-[0_0_15px_rgba(204,255,0"],
+[data-theme="theme-cyberpunk"] [class*="shadow-[0_0_12px_rgba(204,255,0"],
+[data-theme="theme-cyberpunk"] [class*="shadow-[0_0_20px_rgba(204,255,0"],
+[data-theme="theme-cyberpunk"] [class*="shadow-[0_0_10px_rgba(204,255,0"],
+[data-theme="theme-cyberpunk"] [class*="shadow-[0_0_25px_rgba(204,255,0"] {
+  box-shadow: 0 0 16px rgba(0, 240, 255, 0.35) !important;
+}
+
+[data-theme="theme-cyberpunk"] [class*="from-[#d4ff00]"] {
+  --tw-gradient-from: #00f0ff !important;
+}
+[data-theme="theme-cyberpunk"] [class*="via-[#ccff00]"] {
+  --tw-gradient-stops: var(--tw-gradient-from), #38bdf8, var(--tw-gradient-to) !important;
+}
+[data-theme="theme-cyberpunk"] [class*="to-[#9df000]"] {
+  --tw-gradient-to: #ec4899 !important;
+}
+
+/* Theme 3: Matrix Phosphor Emerald */
+[data-theme="theme-matrix"] {
+  --primary: #00ff66;
+  --primary-foreground: #020a04;
+  --accent: #00ff66;
+  --accent-foreground: #020a04;
+  --ring: #00ff66;
+  --lime-glow: #00ff66;
+  --lime-soft: #00ff66;
+  --mint: rgba(0, 255, 102, 0.16);
+  --rose: rgba(0, 255, 102, 0.12);
+  --sky: rgba(0, 255, 102, 0.14);
+  --butter: rgba(0, 255, 102, 0.2);
+  --grid-glow: rgba(0, 255, 102, 0.14);
+  --glow-color: rgba(0, 255, 102, 0.45);
+  --theme-border-subtle: rgba(0, 255, 102, 0.22);
+  --theme-inner-glow: rgba(0, 255, 102, 0.04);
+  --theme-inner-glow-active: rgba(0, 255, 102, 0.12);
+  --theme-ring: rgba(0, 255, 102, 0.1);
+  --theme-selection: rgba(0, 255, 102, 0.2);
+}
+
+[data-theme="theme-matrix"] [class*="text-[#ccff00]"],
+[data-theme="theme-matrix"] [class*="text-[#d4ff00]"],
+[data-theme="theme-matrix"] [class*="text-[#a3e635]"],
+[data-theme="theme-matrix"] [class*="text-[#9df000]"] {
+  color: #00ff66 !important;
+}
+
+[data-theme="theme-matrix"] [class*="hover:text-[#ccff00]"]:hover {
+  color: #00ff66 !important;
+}
+
+[data-theme="theme-matrix"] [class*="bg-[#ccff00]"],
+[data-theme="theme-matrix"] [class*="bg-[#d4ff00]"] {
+  background-color: #00ff66 !important;
+  color: #020a04 !important;
+}
+
+[data-theme="theme-matrix"] [class*="border-[#ccff00]"] {
+  border-color: rgba(0, 255, 102, 0.4) !important;
+}
+
+[data-theme="theme-matrix"] [class*="hover:border-[#ccff00]"]:hover {
+  border-color: #00ff66 !important;
+}
+
+[data-theme="theme-matrix"] [class*="bg-[#182608]"],
+[data-theme="theme-matrix"] [class*="bg-[#141a05]"] {
+  background-color: rgba(0, 255, 102, 0.08) !important;
+}
+
+[data-theme="theme-matrix"] [class*="shadow-[0_0_15px_rgba(204,255,0"],
+[data-theme="theme-matrix"] [class*="shadow-[0_0_12px_rgba(204,255,0"],
+[data-theme="theme-matrix"] [class*="shadow-[0_0_20px_rgba(204,255,0"],
+[data-theme="theme-matrix"] [class*="shadow-[0_0_10px_rgba(204,255,0"],
+[data-theme="theme-matrix"] [class*="shadow-[0_0_25px_rgba(204,255,0"] {
+  box-shadow: 0 0 16px rgba(0, 255, 102, 0.35) !important;
+}
+
+[data-theme="theme-matrix"] [class*="from-[#d4ff00]"] {
+  --tw-gradient-from: #10b981 !important;
+}
+[data-theme="theme-matrix"] [class*="via-[#ccff00]"] {
+  --tw-gradient-stops: var(--tw-gradient-from), #00ff66, var(--tw-gradient-to) !important;
+}
+[data-theme="theme-matrix"] [class*="to-[#9df000]"] {
+  --tw-gradient-to: #059669 !important;
+}
+
+/* Theme 4: Monolith High-Contrast Slate */
+[data-theme="theme-monochrome"] {
+  --primary: #ffffff;
+  --primary-foreground: #050505;
+  --accent: #e2e8f0;
+  --accent-foreground: #050505;
+  --ring: #ffffff;
+  --lime-glow: #ffffff;
+  --lime-soft: #ffffff;
+  --mint: rgba(255, 255, 255, 0.14);
+  --rose: rgba(255, 255, 255, 0.1);
+  --sky: rgba(255, 255, 255, 0.12);
+  --butter: rgba(255, 255, 255, 0.15);
+  --grid-glow: rgba(255, 255, 255, 0.1);
+  --glow-color: rgba(255, 255, 255, 0.35);
+  --theme-border-subtle: rgba(255, 255, 255, 0.2);
+  --theme-inner-glow: rgba(255, 255, 255, 0.03);
+  --theme-inner-glow-active: rgba(255, 255, 255, 0.1);
+  --theme-ring: rgba(255, 255, 255, 0.08);
+  --theme-selection: rgba(255, 255, 255, 0.2);
+}
+
+[data-theme="theme-monochrome"] [class*="text-[#ccff00]"],
+[data-theme="theme-monochrome"] [class*="text-[#d4ff00]"],
+[data-theme="theme-monochrome"] [class*="text-[#a3e635]"],
+[data-theme="theme-monochrome"] [class*="text-[#9df000]"] {
+  color: #ffffff !important;
+}
+
+[data-theme="theme-monochrome"] [class*="hover:text-[#ccff00]"]:hover {
+  color: #ffffff !important;
+}
+
+[data-theme="theme-monochrome"] [class*="bg-[#ccff00]"],
+[data-theme="theme-monochrome"] [class*="bg-[#d4ff00]"] {
+  background-color: #ffffff !important;
+  color: #050505 !important;
+}
+
+[data-theme="theme-monochrome"] [class*="border-[#ccff00]"] {
+  border-color: rgba(255, 255, 255, 0.35) !important;
+}
+
+[data-theme="theme-monochrome"] [class*="hover:border-[#ccff00]"]:hover {
+  border-color: #ffffff !important;
+}
+
+[data-theme="theme-monochrome"] [class*="bg-[#182608]"],
+[data-theme="theme-monochrome"] [class*="bg-[#141a05]"] {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+[data-theme="theme-monochrome"] [class*="shadow-[0_0_15px_rgba(204,255,0"],
+[data-theme="theme-monochrome"] [class*="shadow-[0_0_12px_rgba(204,255,0"],
+[data-theme="theme-monochrome"] [class*="shadow-[0_0_20px_rgba(204,255,0"],
+[data-theme="theme-monochrome"] [class*="shadow-[0_0_10px_rgba(204,255,0"],
+[data-theme="theme-monochrome"] [class*="shadow-[0_0_25px_rgba(204,255,0"] {
+  box-shadow: 0 0 16px rgba(255, 255, 255, 0.25) !important;
+}
+
+[data-theme="theme-monochrome"] [class*="from-[#d4ff00]"] {
+  --tw-gradient-from: #ffffff !important;
+}
+[data-theme="theme-monochrome"] [class*="via-[#ccff00]"] {
+  --tw-gradient-stops: var(--tw-gradient-from), #e2e8f0, var(--tw-gradient-to) !important;
+}
+[data-theme="theme-monochrome"] [class*="to-[#9df000]"] {
+  --tw-gradient-to: #94a3b8 !important;
 }

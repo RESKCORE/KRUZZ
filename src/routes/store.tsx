@@ -1,13 +1,16 @@
+import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { AppChrome } from "@/components/AppChrome";
 import { useAccount, useWallet } from "@/lib/account";
+import { useTheme, THEMES } from "@/lib/theme";
 import { toast } from "sonner";
 import {
+  Check,
+  CheckCircle2,
   Download,
   Flame,
   Palette,
   ShieldCheck,
-  ShoppingBag,
   Sparkles,
   Terminal,
 } from "lucide-react";
@@ -18,7 +21,8 @@ export const Route = createFileRoute("/store")({
       { title: "Store & Perks — KRUZZ" },
       {
         name: "description",
-        content: "Redeem your Reasoning Credits for developer perks, themes, and blueprints.",
+        content:
+          "Redeem your Reasoning Credits for developer perks, in-app UI themes, and blueprints.",
       },
     ],
   }),
@@ -28,49 +32,87 @@ export const Route = createFileRoute("/store")({
 interface StoreItem {
   id: string;
   name: string;
-  category: string;
+  category: "Theme" | "Download" | "Tooling" | "Credential" | "Utility";
   cost: number;
   description: string;
   icon: typeof Sparkles;
   unlocked?: boolean;
+  themeId?: string;
+  paletteChips?: string[];
 }
 
 const STORE_ITEMS: StoreItem[] = [
   {
     id: "theme-acid-lime",
-    name: "Deep Obsidian & Electric Acid Lime UI",
+    themeId: "theme-acid-lime",
+    name: "Electric Acid Lime UI",
     category: "Theme",
     cost: 0,
     description:
-      "High-contrast dark obsidian cards with electric acid lime accents. Default active theme.",
+      "Signature KRUZZ aesthetic: deep matte obsidian surfaces with high-energy electric acid lime accents. Default active theme.",
     icon: Palette,
     unlocked: true,
+    paletteChips: ["#ccff00", "#d4ff00", "#182608"],
+  },
+  {
+    id: "theme-cyberpunk",
+    themeId: "theme-cyberpunk",
+    name: "Cyberpunk Neon UI",
+    category: "Theme",
+    cost: 35,
+    description:
+      "Night-city architecture: vivid electric cyan highlights, hot magenta glows, and midnight obsidian cards across all pages.",
+    icon: Palette,
+    paletteChips: ["#00f0ff", "#ff007f", "#040810"],
+  },
+  {
+    id: "theme-matrix",
+    themeId: "theme-matrix",
+    name: "Matrix Phosphor UI",
+    category: "Theme",
+    cost: 35,
+    description:
+      "Hacker systems console: high-intensity terminal phosphor green glowing against deep onyx void surfaces.",
+    icon: Palette,
+    paletteChips: ["#00ff66", "#10b981", "#020a04"],
+  },
+  {
+    id: "theme-monochrome",
+    themeId: "theme-monochrome",
+    name: "Monolith Slate UI",
+    category: "Theme",
+    cost: 25,
+    description:
+      "Minimalist architectural palette: crisp stark white contrast with cold titanium shadows and dark slate accents.",
+    icon: Palette,
+    paletteChips: ["#ffffff", "#e2e8f0", "#1e1e1e"],
   },
   {
     id: "pdf-architecture-blueprints",
     name: "System Architecture Cheat-Sheet & Roadmap",
     category: "Download",
-    cost: 50,
+    cost: 150,
     description:
       "Exhaustive 15-section system design engineering roadmap, mental models, invariant laws, and architectural cheat-sheets in Markdown.",
     icon: Download,
   },
   {
-    id: "badge-verified-thinker",
-    name: "Systems Thinker Certificate of Reasoning",
-    category: "Credential",
-    cost: 120,
-    description:
-      "Verifiable digital credential showcasing completion of distributed systems reasoning.",
-    icon: ShieldCheck,
-  },
-  {
     id: "pack-terminal-themes",
     name: "JetBrains & VS Code Terminal Theme Pack",
     category: "Tooling",
-    cost: 40,
-    description: "Exportable color schemes matching KRUZZ's high-contrast carbon palette.",
+    cost: 100,
+    description:
+      "Exportable color schemes matching KRUZZ palettes for your external IDE, terminal, and code editor.",
     icon: Terminal,
+  },
+  {
+    id: "badge-verified-thinker",
+    name: "Systems Thinker Certificate of Reasoning",
+    category: "Credential",
+    cost: 250,
+    description:
+      "Verifiable high-resolution stamped digital credential showcasing mastery of distributed systems reasoning.",
+    icon: ShieldCheck,
   },
   {
     id: "streak-shield",
@@ -82,9 +124,13 @@ const STORE_ITEMS: StoreItem[] = [
   },
 ];
 
+const CATEGORIES = ["All", "Theme", "Download", "Tooling", "Credential"] as const;
+
 function StorePage() {
   const { points, redeemStoreItem, has, isAuthenticated } = useWallet();
   const { user, profile } = useAccount();
+  const { currentTheme, setTheme, isThemeUnlocked, activeThemeMeta } = useTheme();
+  const [selectedCategory, setSelectedCategory] = useState<string>("All");
 
   const handleDownloadCheatSheet = async () => {
     try {
@@ -140,34 +186,57 @@ System Design is the discipline of defining components, modules, interfaces, and
     }
   };
 
-  const handleDownloadTheme = () => {
+  const handleDownloadTheme = (themeId?: string) => {
+    const targetTheme = themeId || currentTheme;
+    const isCyber = targetTheme === "theme-cyberpunk";
+    const isMatrix = targetTheme === "theme-matrix";
+    const isMono = targetTheme === "theme-monochrome";
+
+    const themeName = isCyber
+      ? "KRUZZ Cyberpunk Neon"
+      : isMatrix
+        ? "KRUZZ Matrix Phosphor"
+        : isMono
+          ? "KRUZZ Monolith Slate"
+          : "KRUZZ Acid Lime";
+
+    const primaryColor = isCyber
+      ? "#00F0FF"
+      : isMatrix
+        ? "#00FF66"
+        : isMono
+          ? "#FFFFFF"
+          : "#CCFF00";
+
+    const bgColor = isCyber ? "#070614" : isMatrix ? "#010802" : isMono ? "#0A0A0A" : "#080808";
+
     const themeJson = {
-      name: "KRUZZ Acid Lime",
+      name: themeName,
       type: "dark",
       colors: {
-        "editor.background": "#080808",
+        "editor.background": bgColor,
         "editor.foreground": "#F5F5F5",
         "activityBar.background": "#000000",
         "sideBar.background": "#0a0a0a",
         "sideBar.border": "#1a1a1a",
         "statusBar.background": "#000000",
-        "statusBar.foreground": "#CCFF00",
-        "editorCursor.foreground": "#CCFF00",
-        "editor.selectionBackground": "#182608",
+        "statusBar.foreground": primaryColor,
+        "editorCursor.foreground": primaryColor,
+        "editor.selectionBackground": isCyber ? "#003344" : "#182608",
         "editor.lineHighlightBackground": "#0f1505",
-        "terminal.background": "#080808",
+        "terminal.background": bgColor,
         "terminal.foreground": "#F5F5F5",
-        "terminal.ansiGreen": "#CCFF00",
-        "terminal.ansiBrightGreen": "#D4FF00",
+        "terminal.ansiGreen": primaryColor,
+        "terminal.ansiBrightGreen": primaryColor,
       },
       tokenColors: [
         {
           scope: ["keyword", "storage.type", "storage.modifier"],
-          settings: { foreground: "#CCFF00", fontStyle: "bold" },
+          settings: { foreground: primaryColor, fontStyle: "bold" },
         },
         {
           scope: ["string", "string.quoted"],
-          settings: { foreground: "#A3E635" },
+          settings: { foreground: isCyber ? "#38BDF8" : isMatrix ? "#34D399" : "#E2E8F0" },
         },
         {
           scope: ["comment"],
@@ -183,10 +252,10 @@ System Design is the discipline of defining components, modules, interfaces, and
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "kruzz-acid-lime.color-theme.json";
+    a.download = `${themeName.toLowerCase().replace(/\s+/g, "-")}.color-theme.json`;
     a.click();
     URL.revokeObjectURL(url);
-    toast.success("VS Code & Terminal Theme Pack downloaded!");
+    toast.success(`${themeName} exported for VS Code & Terminal!`);
   };
 
   const handleDownloadCertificate = () => {
@@ -216,7 +285,7 @@ System Design is the discipline of defining components, modules, interfaces, and
       ctx.stroke();
     }
 
-    // Outer and Inner Gold/Lime Borders
+    // Outer and Inner Borders
     ctx.strokeStyle = "rgba(204, 255, 0, 0.4)";
     ctx.lineWidth = 3;
     ctx.strokeRect(50, 50, 1500, 900);
@@ -296,6 +365,37 @@ System Design is the discipline of defining components, modules, interfaces, and
   };
 
   const handleRedeem = async (item: StoreItem) => {
+    // Handling Themes
+    if (item.category === "Theme") {
+      const isOwned = item.unlocked || isThemeUnlocked(item.id, has);
+      if (isOwned) {
+        setTheme(item.id);
+        toast.success(`Active website theme changed to "${item.name}"!`);
+        return;
+      }
+
+      if (!isAuthenticated) {
+        toast.error("Please sign in to unlock in-app themes with your RC balance.");
+        return;
+      }
+
+      if (points < item.cost) {
+        toast.error(`Insufficient RC balance! You need ${item.cost - points} more RC.`);
+        return;
+      }
+
+      const res = await redeemStoreItem(item.id);
+      if (!res.success) {
+        toast.error((res as any).error || "Failed to unlock theme.");
+        return;
+      }
+
+      toast.success(`Successfully unlocked and equipped ${item.name}!`);
+      setTheme(item.id);
+      return;
+    }
+
+    // Handling Non-Theme Items
     if (!isAuthenticated) {
       toast.error("Please sign in to redeem items from the store.");
       return;
@@ -337,49 +437,156 @@ System Design is the discipline of defining components, modules, interfaces, and
     }
   };
 
+  const filteredItems =
+    selectedCategory === "All"
+      ? STORE_ITEMS
+      : STORE_ITEMS.filter((item) => item.category === selectedCategory);
+
   return (
     <AppChrome>
       <div className="mx-auto max-w-[1240px] px-4 py-8 md:px-6">
         {/* Store Header */}
-        <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
               <span className="size-2 rounded-full recording-dot" />
               <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#ccff00] font-bold">
-                RC Exchange
+                RC Exchange & Perks
               </p>
             </div>
             <h1 className="mt-1.5 text-2xl md:text-3xl font-bold tracking-tight text-[#f5f5f5]">
-              Perks & Rewards Store
+              Perks & Themes Store
             </h1>
             <p className="mt-1 text-xs text-[#8a8a8a]">
-              Redeem Reasoning Credits (RC) earned by reading architecture and writing code.
+              Redeem Reasoning Credits (RC) for real-time in-app website themes, architecture
+              blueprints, and credentials.
             </p>
           </div>
 
-          <div className="flex items-center gap-2.5 rounded-2xl bg-[#141a05] border border-[#ccff00]/30 px-4 py-2.5 shadow-[0_0_15px_rgba(204,255,0,0.2)]">
-            <span className="font-mono text-xs text-[#8a8a8a]">Your Balance:</span>
-            <span className="font-mono text-base font-bold text-[#ccff00]">{points} RC</span>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2.5 rounded-2xl bg-[#141a05] border border-[#ccff00]/30 px-4 py-2.5 shadow-[0_0_15px_rgba(204,255,0,0.2)]">
+              <span className="font-mono text-xs text-[#8a8a8a]">Your Balance:</span>
+              <span className="font-mono text-base font-bold text-[#ccff00]">{points} RC</span>
+            </div>
           </div>
+        </div>
+
+        {/* Active Theme Quick-Bar Banner */}
+        <div className="mb-8 rounded-2xl border border-white/[0.08] bg-gradient-to-r from-white/[0.03] to-white/[0.01] p-4 sm:p-5 shadow-lg backdrop-blur-md">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="flex items-center gap-3.5">
+              <div className="flex size-10 items-center justify-center rounded-xl bg-[#182608] border border-[#ccff00]/30 text-[#ccff00] shadow-[0_0_10px_rgba(204,255,0,0.2)]">
+                <Palette className="size-5" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="font-mono text-[10px] uppercase tracking-wider text-[#8a8a8a]">
+                    Active In-App Theme
+                  </span>
+                  <span className="rounded-full bg-[#ccff00]/15 px-2 py-0.5 font-mono text-[10px] font-bold text-[#ccff00] border border-[#ccff00]/30">
+                    Live
+                  </span>
+                </div>
+                <h3 className="text-sm font-bold text-[#f5f5f5]">
+                  {activeThemeMeta?.name ?? "Electric Acid Lime"} —{" "}
+                  <span className="text-xs font-normal text-[#b8b8b8]">
+                    {activeThemeMeta?.subtitle ?? "Deep Obsidian & Neon Lime"}
+                  </span>
+                </h3>
+              </div>
+            </div>
+
+            {/* Quick-equip pills for all unlocked themes */}
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="font-mono text-[11px] text-[#8a8a8a] hidden sm:inline">
+                Quick Switch:
+              </span>
+              {THEMES.map((theme) => {
+                const isUnlocked = isThemeUnlocked(theme.id, has);
+                const isActive = currentTheme === theme.id;
+                if (!isUnlocked) return null;
+
+                return (
+                  <button
+                    key={theme.id}
+                    type="button"
+                    onClick={() => {
+                      setTheme(theme.id);
+                      toast.success(`Switched theme to ${theme.name}`);
+                    }}
+                    className={`flex items-center gap-2 rounded-xl px-3 py-1.5 font-mono text-xs font-semibold transition-all cursor-pointer ${
+                      isActive
+                        ? "bg-[#182608] border border-[#ccff00]/60 text-[#ccff00] shadow-[0_0_12px_rgba(204,255,0,0.25)]"
+                        : "bg-white/[0.04] border border-white/[0.08] text-[#8a8a8a] hover:text-[#f5f5f5] hover:bg-white/[0.08]"
+                    }`}
+                  >
+                    <span
+                      className="size-2 rounded-full"
+                      style={{ backgroundColor: theme.palette.primary }}
+                    />
+                    {theme.name.split(" ")[0]}
+                    {isActive && <Check className="size-3 text-[#ccff00]" />}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* Category Filters */}
+        <div className="mb-6 flex flex-wrap items-center gap-2">
+          {CATEGORIES.map((cat) => {
+            const isSelected = selectedCategory === cat;
+            return (
+              <button
+                key={cat}
+                type="button"
+                onClick={() => setSelectedCategory(cat)}
+                className={`rounded-xl px-3.5 py-1.5 font-mono text-xs font-semibold transition-all cursor-pointer ${
+                  isSelected
+                    ? "bg-[#ccff00] text-[#080808] font-bold shadow-[0_0_12px_rgba(204,255,0,0.3)]"
+                    : "bg-white/[0.04] border border-white/[0.08] text-[#8a8a8a] hover:text-[#f5f5f5] hover:bg-white/[0.08]"
+                }`}
+              >
+                {cat === "All" ? "All Items" : cat === "Theme" ? "Website Themes" : cat}
+              </button>
+            );
+          })}
         </div>
 
         {/* Store Grid */}
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {STORE_ITEMS.map((item) => {
-            const isOwned = item.unlocked || has(`store:${item.id}`);
+          {filteredItems.map((item) => {
+            const isTheme = item.category === "Theme";
+            const isOwned =
+              item.unlocked ||
+              has(`store:${item.id}`) ||
+              (isTheme && isThemeUnlocked(item.id, has));
+            const isActiveTheme = isTheme && currentTheme === item.id;
             const canAfford = points >= item.cost;
             const Icon = item.icon;
 
             return (
               <div
                 key={item.id}
-                className="glass-panel group relative flex flex-col justify-between rounded-3xl p-6 border border-white/[0.08] shadow-[0_20px_40px_rgba(0,0,0,0.45)] hover:border-[#ccff00]/40 transition-all hover:-translate-y-1"
+                className={`glass-panel group relative flex flex-col justify-between rounded-3xl p-6 border shadow-[0_20px_40px_rgba(0,0,0,0.45)] transition-all hover:-translate-y-1 ${
+                  isActiveTheme
+                    ? "border-[#ccff00]/60 shadow-[0_0_25px_rgba(204,255,0,0.15)]"
+                    : "border-white/[0.08] hover:border-[#ccff00]/40"
+                }`}
               >
                 <div>
                   <div className="flex items-center justify-between">
-                    <span className="font-mono text-[10px] uppercase tracking-widest text-[#8a8a8a]">
-                      {item.category}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-[10px] uppercase tracking-widest text-[#8a8a8a]">
+                        {item.category === "Theme" ? "In-App Theme" : item.category}
+                      </span>
+                      {isActiveTheme && (
+                        <span className="flex items-center gap-1 rounded-md bg-[#182608] border border-[#ccff00]/40 px-2 py-0.5 font-mono text-[9px] font-bold text-[#ccff00]">
+                          <CheckCircle2 className="size-2.5" /> ACTIVE
+                        </span>
+                      )}
+                    </div>
                     <span
                       className={`font-mono text-xs font-bold ${
                         isOwned ? "text-[#a3e635]" : "text-[#ccff00]"
@@ -401,30 +608,56 @@ System Design is the discipline of defining components, modules, interfaces, and
                   </div>
 
                   <p className="mt-3 text-xs leading-relaxed text-[#b8b8b8]">{item.description}</p>
+
+                  {/* Visual palette chips for theme items */}
+                  {item.paletteChips && (
+                    <div className="mt-4 flex items-center gap-2 rounded-xl bg-black/40 border border-white/[0.06] p-2.5">
+                      <span className="font-mono text-[10px] text-[#8a8a8a] mr-1">Palette:</span>
+                      {item.paletteChips.map((color, idx) => (
+                        <div key={idx} className="flex items-center gap-1.5" title={color}>
+                          <span
+                            className="size-3.5 rounded-full border border-white/20 shadow-sm"
+                            style={{ backgroundColor: color }}
+                          />
+                          <span className="font-mono text-[10px] text-[#8a8a8a]">
+                            {idx === 0 ? "Accent" : idx === 1 ? "Glow" : "Surface"}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 <div className="mt-6 pt-4 border-t border-white/[0.08]">
                   <button
                     type="button"
                     onClick={() => handleRedeem(item)}
-                    disabled={!isOwned && !canAfford}
+                    disabled={!isTheme && !isOwned && !canAfford}
                     className={`w-full rounded-xl py-2.5 font-mono text-xs font-bold transition-all ${
-                      isOwned
-                        ? "bg-[#182608] border border-[#ccff00]/40 text-[#ccff00] hover:bg-[#20330a] shadow-[0_0_12px_rgba(204,255,0,0.2)] cursor-pointer"
-                        : canAfford
-                          ? "bg-gradient-to-r from-[#d4ff00] via-[#ccff00] to-[#9df000] text-[#080808] shadow-[0_0_15px_rgba(204,255,0,0.4)] hover:shadow-[0_0_20px_rgba(204,255,0,0.6)] cursor-pointer"
-                          : "neu-btn text-[#8a8a8a] opacity-50 cursor-not-allowed"
+                      isActiveTheme
+                        ? "bg-[#182608] border border-[#ccff00]/60 text-[#ccff00] cursor-default shadow-[0_0_15px_rgba(204,255,0,0.2)]"
+                        : isTheme && isOwned
+                          ? "bg-[#ccff00] text-[#080808] hover:bg-[#d4ff00] shadow-[0_0_15px_rgba(204,255,0,0.3)] cursor-pointer"
+                          : isOwned
+                            ? "bg-[#182608] border border-[#ccff00]/40 text-[#ccff00] hover:bg-[#20330a] shadow-[0_0_12px_rgba(204,255,0,0.2)] cursor-pointer"
+                            : canAfford
+                              ? "bg-gradient-to-r from-[#d4ff00] via-[#ccff00] to-[#9df000] text-[#080808] shadow-[0_0_15px_rgba(204,255,0,0.4)] hover:shadow-[0_0_20px_rgba(204,255,0,0.6)] cursor-pointer"
+                              : "neu-btn text-[#8a8a8a] opacity-50 cursor-not-allowed"
                     }`}
                   >
-                    {isOwned
-                      ? item.category === "Download" || item.category === "Tooling"
-                        ? "↓ Download Deliverable"
-                        : item.category === "Credential"
-                          ? "↓ Download Certificate"
-                          : "✓ Active in Account"
-                      : canAfford
-                        ? `Unlock for ${item.cost} RC`
-                        : `Need ${item.cost - points} more RC`}
+                    {isActiveTheme
+                      ? "✓ Active In-App Theme"
+                      : isTheme && isOwned
+                        ? "Equip In-App Theme"
+                        : isOwned
+                          ? item.category === "Download" || item.category === "Tooling"
+                            ? "↓ Download Deliverable"
+                            : item.category === "Credential"
+                              ? "↓ Download Certificate"
+                              : "✓ Active in Account"
+                          : canAfford
+                            ? `Unlock for ${item.cost} RC`
+                            : `Need ${item.cost - points} more RC`}
                   </button>
                 </div>
               </div>

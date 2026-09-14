@@ -96,7 +96,7 @@ export const redeemStoreItem = mutation({
     const awardId = `store:${item.id}`;
 
     // One-time ownership check: prevent duplicate purchases for permanent items
-    if (item.type === "one_time_ownership") {
+    if (item.type === "one_time_ownership" || item.type === "cosmetic_equipable") {
       const existingAward = await ctx.db
         .query("awards")
         .withIndex("by_user_award", (q) => q.eq("userId", user._id).eq("awardId", awardId))
