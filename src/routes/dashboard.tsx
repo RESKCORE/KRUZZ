@@ -68,7 +68,7 @@ function DashboardPage() {
           <div>
             <div className="flex items-center gap-2">
               <span className="size-2 rounded-full recording-dot" />
-              <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#ccff00] font-bold">
+              <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-primary font-bold">
                 Command Center · Telemetry
               </p>
             </div>
@@ -76,7 +76,7 @@ function DashboardPage() {
               Welcome back, {displayName}
             </h1>
             <p className="mt-1 font-mono text-xs text-[#8a8a8a]">
-              Tier: <span className="text-[#ccff00] font-bold">{rank.name}</span> · Balance:{" "}
+              Tier: <span className="text-primary font-bold">{rank.name}</span> · Balance:{" "}
               <span className="text-[#f5f5f5] font-bold">{points} RC</span> · Cadence:{" "}
               <span className="text-[#f5f5f5] font-bold">{streakCurrent} Days</span>
             </p>
@@ -87,7 +87,7 @@ function DashboardPage() {
               <Link
                 to="/cases/$slug"
                 params={{ slug: nextCase.slug }}
-                className="inline-flex items-center gap-2.5 rounded-xl bg-gradient-to-r from-[#d4ff00] via-[#ccff00] to-[#9df000] px-4.5 py-2.5 font-mono text-xs font-black text-[#080808] shadow-[0_0_18px_rgba(204,255,0,0.45)] transition-all hover:shadow-[0_0_24px_rgba(204,255,0,0.7)] hover:scale-[1.02] active:scale-[0.98]"
+                className="inline-flex items-center gap-2.5 rounded-xl bg-primary px-4.5 py-2.5 font-mono text-xs font-black text-primary-foreground shadow-[0_0_18px_var(--glow-color,rgba(204,255,0,0.45))] transition-all hover:shadow-[0_0_24px_var(--glow-color,rgba(204,255,0,0.7))] hover:scale-[1.02] active:scale-[0.98]"
               >
                 <span>Resume Case: {nextCase.shortTitle || nextCase.title}</span>
                 <ArrowRight className="size-4" />
@@ -113,13 +113,13 @@ function DashboardPage() {
             {/* Active Investigation Card */}
             <div className="glass-panel relative overflow-hidden rounded-3xl p-6 border border-white/[0.08] shadow-[0_20px_40px_rgba(0,0,0,0.5)]">
               {/* Background ambient lighting */}
-              <div className="absolute top-0 right-0 size-60 rounded-full bg-[#ccff00]/10 blur-3xl pointer-events-none" />
+              <div className="absolute top-0 right-0 size-60 rounded-full bg-primary/10 blur-3xl pointer-events-none" />
 
               {nextCase ? (
                 <div className="relative z-10">
                   <div className="flex flex-wrap items-center justify-between gap-2 border-b border-white/[0.06] pb-4">
                     <div className="flex items-center gap-2 font-mono text-[11px]">
-                      <span className="rounded-md bg-[#ccff00]/15 border border-[#ccff00]/30 px-2 py-0.5 font-bold text-[#ccff00]">
+                      <span className="rounded-md bg-primary/15 border border-primary/30 px-2 py-0.5 font-bold text-primary">
                         CASE {nextCase.index}
                       </span>
                       <span className="text-[#8a8a8a]">·</span>
@@ -160,14 +160,14 @@ function DashboardPage() {
                     <Link
                       to="/cases/$slug"
                       params={{ slug: nextCase.slug }}
-                      className="rounded-xl bg-gradient-to-r from-[#182608] to-[#0d1404] border border-[#ccff00]/40 px-4 py-2 font-mono text-xs font-bold text-[#ccff00] hover:bg-[#ccff00] hover:text-[#080808] transition-all"
+                      className="rounded-xl bg-[var(--theme-surface,#182608)] border border-primary/40 px-4 py-2 font-mono text-xs font-bold text-primary hover:bg-primary hover:text-primary-foreground shadow-[0_0_12px_var(--glow-color,rgba(204,255,0,0.2))] transition-all"
                     >
                       Enter 8-Section Workspace →
                     </Link>
 
                     <span className="font-mono text-[11px] text-[#8a8a8a]">
                       Potential Yield:{" "}
-                      <strong className="text-[#ccff00]">
+                      <strong className="text-primary">
                         +{getCaseStudyRc(nextCase.difficulty)} RC
                       </strong>
                     </span>
@@ -175,7 +175,7 @@ function DashboardPage() {
                 </div>
               ) : (
                 <div className="py-12 text-center">
-                  <div className="inline-block size-6 animate-spin rounded-full border-2 border-[#ccff00] border-t-transparent mb-3" />
+                  <div className="inline-block size-6 animate-spin rounded-full border-2 border-primary border-t-transparent mb-3" />
                   <p className="font-mono text-xs text-[#8a8a8a]">Loading Next Investigation...</p>
                 </div>
               )}
@@ -188,12 +188,12 @@ function DashboardPage() {
             <div className="glass-panel rounded-3xl p-6 border border-white/[0.08] shadow-[0_20px_40px_rgba(0,0,0,0.5)]">
               <div className="flex items-center justify-between mb-4 border-b border-white/[0.06] pb-4">
                 <div className="flex items-center gap-2">
-                  <Layers className="size-4 text-[#ccff00]" />
+                  <Layers className="size-4 text-primary" />
                   <h3 className="font-bold text-sm text-[#f5f5f5]">
                     Core Engineering Track ({caseStudies.length} Cases)
                   </h3>
                 </div>
-                <Link to="/cases" className="font-mono text-xs text-[#ccff00] hover:underline">
+                <Link to="/cases" className="font-mono text-xs text-primary hover:underline">
                   View Library →
                 </Link>
               </div>
@@ -217,9 +217,9 @@ function DashboardPage() {
                       params={{ slug: c.slug }}
                       className={
                         isDone
-                          ? "group flex items-center justify-between rounded-2xl p-4 transition-all border-2 border-[#ccff00]/60 bg-gradient-to-r from-[#182608]/95 to-[#0e1704]/95 shadow-[0_0_20px_rgba(204,255,0,0.18)] hover:border-[#ccff00] hover:shadow-[0_0_30px_rgba(204,255,0,0.3)]"
+                          ? "group flex items-center justify-between rounded-2xl p-4 transition-all border-2 border-primary/60 bg-[var(--theme-surface,#182608)]/90 shadow-[0_0_20px_var(--glow-color,rgba(204,255,0,0.18))] hover:border-primary hover:shadow-[0_0_30px_var(--glow-color,rgba(204,255,0,0.3))]"
                           : isCaseUnlocked
-                            ? "neu-btn group flex items-center justify-between rounded-2xl p-4 hover:border-[#ccff00]/40 transition-all"
+                            ? "neu-btn group flex items-center justify-between rounded-2xl p-4 hover:border-primary/40 transition-all"
                             : "neu-btn group flex items-center justify-between rounded-2xl p-4 opacity-75 hover:border-white/20 transition-all"
                       }
                     >
@@ -227,15 +227,15 @@ function DashboardPage() {
                         <div className="flex items-center gap-1.5 font-mono text-[10px] text-[#8a8a8a]">
                           <span>{c.index}</span>
                           <span>·</span>
-                          <span className={isDone ? "text-[#ccff00] font-bold" : "text-[#ccff00]"}>
+                          <span className={isDone ? "text-primary font-bold" : "text-primary"}>
                             {c.learnerLevel}
                           </span>
                         </div>
                         <p
                           className={`mt-1 text-xs font-bold transition-colors ${
                             isDone
-                              ? "text-[#f5f5f5] group-hover:text-[#ccff00]"
-                              : "text-[#f5f5f5] group-hover:text-[#ccff00]"
+                              ? "text-[#f5f5f5] group-hover:text-primary"
+                              : "text-[#f5f5f5] group-hover:text-primary"
                           }`}
                         >
                           {c.shortTitle}
@@ -243,16 +243,16 @@ function DashboardPage() {
                       </div>
 
                       {isDone ? (
-                        <span className="flex items-center gap-1.5 font-mono text-[10px] font-extrabold text-[#080808] bg-gradient-to-r from-[#d4ff00] via-[#ccff00] to-[#9df000] px-2.5 py-1 rounded-lg shadow-[0_0_12px_rgba(204,255,0,0.4)]">
+                        <span className="flex items-center gap-1.5 font-mono text-[10px] font-extrabold text-primary-foreground bg-primary px-2.5 py-1 rounded-lg shadow-[0_0_12px_var(--glow-color,rgba(204,255,0,0.4))]">
                           <CheckCircle2 className="size-3.5 stroke-[2.5]" />
                           Completed
                         </span>
                       ) : count > 0 ? (
-                        <span className="font-mono text-[10px] text-[#ccff00] bg-[#141a05] border border-[#ccff00]/30 px-2 py-1 rounded-lg font-bold">
+                        <span className="font-mono text-[10px] text-primary bg-[var(--theme-surface,#182608)] border border-primary/30 px-2 py-1 rounded-lg font-bold">
                           {String(count).padStart(2, "0")} / 08
                         </span>
                       ) : isCaseUnlocked ? (
-                        <span className="font-mono text-[10px] text-[#ccff00] bg-[#141a05] border border-[#ccff00]/30 px-2 py-1 rounded-lg">
+                        <span className="font-mono text-[10px] text-primary bg-[var(--theme-surface,#182608)] border border-primary/30 px-2 py-1 rounded-lg">
                           🔓 Available
                         </span>
                       ) : c.tier === "premium" ? (
@@ -283,12 +283,12 @@ function DashboardPage() {
             <div className="glass-panel rounded-3xl p-5 border border-white/[0.08] shadow-[0_20px_40px_rgba(0,0,0,0.5)]">
               <div className="flex items-center justify-between mb-4 border-b border-white/[0.06] pb-3">
                 <div className="flex items-center gap-2">
-                  <Trophy className="size-4 text-[#ccff00]" />
+                  <Trophy className="size-4 text-primary" />
                   <h3 className="font-mono text-xs font-bold uppercase tracking-wider text-[#f5f5f5]">
                     Global Standings
                   </h3>
                 </div>
-                <span className="font-mono text-[10px] text-[#8a8a8a]">Convex Verified</span>
+                <span className="font-mono text-[10px] text-[#8a8a8a]">By Cases Solved</span>
               </div>
 
               {topLearners && topLearners.length > 0 ? (
@@ -302,9 +302,9 @@ function DashboardPage() {
                         <span
                           className={`font-mono text-xs font-bold w-4 ${
                             i === 0
-                              ? "text-[#ccff00]"
+                              ? "text-primary"
                               : i === 1
-                                ? "text-[#d4ff00]"
+                                ? "text-primary/90"
                                 : i === 2
                                   ? "text-[#f5f5f5]"
                                   : "text-[#8a8a8a]"
@@ -318,8 +318,11 @@ function DashboardPage() {
                       </div>
                       <div className="flex items-center gap-2">
                         <span className="font-mono text-[10px] text-[#8a8a8a]">{u.rank}</span>
-                        <span className="font-mono text-xs font-bold text-[#ccff00]">
-                          {u.points} RC
+                        <span className="font-mono text-xs font-bold text-primary flex items-center gap-1">
+                          <CheckCircle2 className="size-3" />
+                          {u.completedCasesCount === 1
+                            ? "1 solved"
+                            : `${u.completedCasesCount ?? 0} solved`}
                         </span>
                       </div>
                     </div>
@@ -327,7 +330,7 @@ function DashboardPage() {
                 </div>
               ) : (
                 <div className="rounded-2xl bg-white/[0.02] border border-white/[0.06] p-4 text-center">
-                  <Sparkles className="size-5 text-[#ccff00] mx-auto mb-1.5 opacity-80" />
+                  <Sparkles className="size-5 text-primary mx-auto mb-1.5 opacity-80" />
                   <p className="text-xs text-[#8a8a8a]">
                     Complete case investigations to earn your ranking on the global telemetry board.
                   </p>

@@ -69,7 +69,7 @@ function SettingsDropdown() {
         onClick={() => setOpen((prev) => !prev)}
         className={`flex size-8 items-center justify-center rounded-xl border transition-all duration-200 cursor-pointer ${
           open
-            ? "border-[#ccff00]/60 bg-[#182608] text-[#ccff00] shadow-[0_0_12px_rgba(204,255,0,0.3)]"
+            ? "border-primary/60 bg-[var(--theme-surface,#182608)] text-primary shadow-[0_0_12px_var(--glow-color,rgba(204,255,0,0.3))]"
             : "border-white/[0.08] bg-white/[0.03] text-[#8a8a8a] hover:border-white/20 hover:text-[#f5f5f5] hover:bg-white/[0.06]"
         }`}
         aria-label="User Settings"
@@ -79,7 +79,7 @@ function SettingsDropdown() {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-2 w-56 rounded-2xl border border-white/[0.1] bg-[#0d0f0d]/95 p-1.5 shadow-[0_16px_36px_rgba(0,0,0,0.7)] backdrop-blur-xl z-50 animate-in fade-in zoom-in-95 duration-150">
+        <div className="absolute right-0 top-full mt-2 w-56 rounded-2xl border border-white/[0.1] bg-[#0a0a0a]/95 p-1.5 shadow-[0_16px_36px_rgba(0,0,0,0.7)] backdrop-blur-xl z-50 animate-in fade-in zoom-in-95 duration-150">
           <div className="border-b border-white/[0.06] px-3 py-2.5">
             <p className="truncate text-xs font-bold text-[#f5f5f5]">{displayName}</p>
             {displayEmail && (
@@ -94,7 +94,7 @@ function SettingsDropdown() {
               className="flex items-center justify-between rounded-xl px-3 py-2 text-xs font-medium text-[#b8b8b8] transition-colors hover:bg-white/[0.06] hover:text-[#f5f5f5]"
             >
               <span className="flex items-center gap-2">
-                <User className="size-3.5 text-[#ccff00]" />
+                <User className="size-3.5 text-primary" />
                 Profile
               </span>
               <ChevronRight className="size-3 text-[#555]" />
@@ -106,10 +106,10 @@ function SettingsDropdown() {
               className="flex items-center justify-between rounded-xl px-3 py-2 text-xs font-medium text-[#b8b8b8] transition-colors hover:bg-white/[0.06] hover:text-[#f5f5f5]"
             >
               <span className="flex items-center gap-2">
-                <Palette className="size-3.5 text-[#ccff00]" />
+                <Palette className="size-3.5 text-primary" />
                 Themes & Perks
               </span>
-              <span className="font-mono text-[9px] rounded bg-[#182608] border border-[#ccff00]/30 px-1.5 py-0.5 text-[#ccff00]">
+              <span className="font-mono text-[9px] rounded bg-[var(--theme-surface,#182608)] border border-primary/30 px-1.5 py-0.5 text-primary">
                 {activeThemeMeta?.name?.split(" ")[0] ?? "Theme"}
               </span>
             </Link>
@@ -227,7 +227,7 @@ export function AppChrome({ children }: AppChromeProps) {
         alt="KRUZZ Logo"
         className="size-8 rounded-lg object-contain transition-transform duration-200 group-hover:scale-105"
       />
-      <span className="hidden sm:inline font-mono text-xs font-black tracking-widest text-[#f5f5f5] group-hover:text-[#ccff00] transition-colors">
+      <span className="hidden sm:inline font-mono text-xs font-black tracking-widest text-[#f5f5f5] group-hover:text-primary transition-colors">
         KRUZZ
       </span>
     </Link>
@@ -241,7 +241,7 @@ export function AppChrome({ children }: AppChromeProps) {
       <SignedOut>
         <Link
           to="/sign-in"
-          className="rounded-lg bg-gradient-to-r from-[#d4ff00] to-[#ccff00] px-3 py-1.5 font-mono text-[10px] font-bold text-[#080808] shadow-[0_0_10px_rgba(204,255,0,0.4)] transition-all hover:scale-105 active:scale-95 cursor-pointer"
+          className="rounded-lg bg-primary text-primary-foreground px-3 py-1.5 font-mono text-[10px] font-bold shadow-[0_0_10px_var(--glow-color,rgba(204,255,0,0.4))] transition-all hover:scale-105 active:scale-95 cursor-pointer"
         >
           Sign In
         </Link>

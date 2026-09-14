@@ -163,11 +163,11 @@ export function UserProfileCard({ className = "" }: UserProfileCardProps) {
         />
         {/* Subtle Darkening & Glow Overlay to keep badges and avatar seamless */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-black/20 to-[#080808]/90 pointer-events-none" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(204,255,0,0.18)_0%,transparent_70%)] pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,var(--grid-glow,rgba(204,255,0,0.18))_0%,transparent_70%)] pointer-events-none" />
 
         {/* Top Badges */}
         <div className="relative z-10 flex items-center justify-between">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-[#080808]/80 backdrop-blur-md px-3 py-1 font-mono text-[10px] font-bold uppercase tracking-wider text-[#ccff00] border border-[#ccff00]/30">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-[#080808]/80 backdrop-blur-md px-3 py-1 font-mono text-[10px] font-bold uppercase tracking-wider text-primary border border-primary/30">
             <span className="size-1.5 rounded-full recording-dot" />
             {rank.name}
           </span>
@@ -183,7 +183,7 @@ export function UserProfileCard({ className = "" }: UserProfileCardProps) {
             type="button"
             onClick={() => bannerInputRef.current?.click()}
             title="Change banner"
-            className="absolute bottom-2 right-2 z-20 flex items-center gap-1.5 rounded-full bg-[#080808]/80 backdrop-blur-md px-2.5 py-1 font-mono text-[10px] font-semibold text-[#f5f5f5] border border-white/[0.12] hover:border-[#ccff00]/50 hover:text-[#ccff00] transition-colors"
+            className="absolute bottom-2 right-2 z-20 flex items-center gap-1.5 rounded-full bg-[#080808]/80 backdrop-blur-md px-2.5 py-1 font-mono text-[10px] font-semibold text-[#f5f5f5] border border-white/[0.12] hover:border-primary/50 hover:text-primary transition-colors cursor-pointer"
           >
             <ImagePlus className="size-3.5" />
             <span>Banner</span>
@@ -196,11 +196,11 @@ export function UserProfileCard({ className = "" }: UserProfileCardProps) {
         <div className="flex items-end justify-between">
           {/* Avatar with refined ring */}
           <div className="relative">
-            <div className="size-20 rounded-full border-[3.5px] border-[#101010] bg-[#161616] overflow-hidden ring-1.5 ring-[#ccff00]/70">
+            <div className="size-20 rounded-full border-[3.5px] border-[#101010] bg-[#161616] overflow-hidden ring-2 ring-primary/70 shadow-[0_0_15px_var(--glow-color,rgba(204,255,0,0.3))]">
               {avatarUrl ? (
                 <img src={avatarUrl} alt={displayName} className="size-full object-cover" />
               ) : isAuthenticated ? (
-                <div className="flex size-full items-center justify-center bg-gradient-to-br from-[#1a2609] to-[#0d1304] font-mono text-base font-black text-[#ccff00]">
+                <div className="flex size-full items-center justify-center bg-[var(--theme-surface,#182608)] font-mono text-base font-black text-primary">
                   {initials || "RC"}
                 </div>
               ) : (
@@ -214,7 +214,7 @@ export function UserProfileCard({ className = "" }: UserProfileCardProps) {
                 type="button"
                 onClick={() => picInputRef.current?.click()}
                 title="Change profile picture"
-                className="absolute -bottom-1 -right-1 grid size-7 place-items-center rounded-full bg-[#ccff00] text-[#080808] border-2 border-[#101010] hover:scale-110 active:scale-95 transition-transform"
+                className="absolute -bottom-1 -right-1 grid size-7 place-items-center rounded-full bg-primary text-primary-foreground border-2 border-[#101010] hover:scale-110 active:scale-95 transition-transform cursor-pointer shadow-[0_0_10px_var(--glow-color,rgba(204,255,0,0.4))]"
               >
                 <Camera className="size-3.5" />
               </button>
@@ -227,15 +227,15 @@ export function UserProfileCard({ className = "" }: UserProfileCardProps) {
               <button
                 type="button"
                 onClick={() => setIsShareModalOpen(true)}
-                className="neu-btn flex items-center gap-1.5 rounded-full px-4 py-1.5 font-mono text-xs font-semibold text-[#f5f5f5] hover:border-[#ccff00]/40 hover:text-[#ccff00] active:scale-95 transition-all"
+                className="neu-btn flex items-center gap-1.5 rounded-full px-4 py-1.5 font-mono text-xs font-semibold text-[#f5f5f5] hover:border-primary/40 hover:text-primary active:scale-95 transition-all cursor-pointer"
               >
-                <Share2 className="size-3.5 text-[#ccff00]" />
+                <Share2 className="size-3.5 text-primary" />
                 <span>Share</span>
               </button>
             ) : (
               <Link
                 to="/sign-in"
-                className="rounded-full bg-gradient-to-r from-[#d4ff00] to-[#ccff00] px-3.5 py-1.5 font-mono text-xs font-bold text-[#080808] hover:scale-105 transition-all inline-block"
+                className="rounded-full bg-primary text-primary-foreground px-3.5 py-1.5 font-mono text-xs font-bold hover:scale-105 transition-all inline-block shadow-[0_0_12px_var(--glow-color,rgba(204,255,0,0.35))]"
               >
                 Sign In
               </Link>
@@ -248,8 +248,8 @@ export function UserProfileCard({ className = "" }: UserProfileCardProps) {
           <div className="flex items-center gap-1.5">
             <h3 className="text-lg font-bold tracking-tight text-[#f5f5f5]">{displayName}</h3>
             {isAuthenticated && (
-              <span className="text-[#ccff00] text-xs font-bold" title="Verified Investigator">
-                <ShieldCheck className="size-4 inline text-[#ccff00]" />
+              <span className="text-primary text-xs font-bold" title="Verified Investigator">
+                <ShieldCheck className="size-4 inline text-primary" />
               </span>
             )}
           </div>
@@ -263,7 +263,7 @@ export function UserProfileCard({ className = "" }: UserProfileCardProps) {
           {/* Metric 1 */}
           <div className="border-r border-white/[0.08] px-1">
             <div className="flex items-center justify-center gap-1 font-mono text-base font-bold text-[#f5f5f5]">
-              <Star className="size-3.5 fill-[#ccff00] text-[#ccff00]" />
+              <Star className="size-3.5 fill-primary text-primary" />
               <span>{points}</span>
             </div>
             <p className="mt-1 font-mono text-[10px] text-[#8a8a8a] uppercase tracking-wider">
@@ -274,7 +274,7 @@ export function UserProfileCard({ className = "" }: UserProfileCardProps) {
           {/* Metric 2 */}
           <div className="border-r border-white/[0.08] px-1">
             <div className="flex items-center justify-center gap-1 font-mono text-base font-bold text-[#f5f5f5]">
-              <BookOpen className="size-3.5 text-[#ccff00]" />
+              <BookOpen className="size-3.5 text-primary" />
               <span>
                 {clearedCasesCount}/{caseStudies.length || 35}
               </span>
@@ -287,7 +287,7 @@ export function UserProfileCard({ className = "" }: UserProfileCardProps) {
           {/* Metric 3 */}
           <div className="px-1">
             <div className="flex items-center justify-center gap-1 font-mono text-base font-bold text-[#f5f5f5]">
-              <Flame className="size-3.5 text-[#ccff00] fill-[#ccff00]/30" />
+              <Flame className="size-3.5 text-primary fill-primary/30" />
               <span>{streakCurrent}d</span>
             </div>
             <p className="mt-1 font-mono text-[10px] text-[#8a8a8a] uppercase tracking-wider">

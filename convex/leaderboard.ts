@@ -1,16 +1,59 @@
 import { query } from "./_generated/server";
 
+/**
+ * Global Leaderboard:
+ * Ranks investigators primarily by case studies completion count (curriculum mastery),
+ * using RC balance as tie-breaker.
+ *
+ * Strictly returns `completedCasesCount` instead of user points.
+ */
 export const getTopLearners = query({
   args: {},
   handler: async (ctx) => {
-    const topUsers = await ctx.db.query("users").withIndex("by_points").order("desc").take(10);
+    const users = await ctx.db.query("users").collect();
 
-    return topUsers.map((u) => ({
+    const results = await Promise.all(
+      users.map(async (u) => {
+        const progressList = await ctx.db
+          .query("caseProgress")
+          .withIndex("by_user", (q) => q.eq("userId", u._id))
+          .collect();
+
+        const completedCasesCount = progressList.filter(
+          (p) =>
+            p.status === "completed" ||
+            Boolean(p.passed && (p.completedSections?.length ?? 0) >= 7),
+        ).length;
+
+        return {
+          _id: u._id,
+          name: u.name || "Anonymous Investigator",
+          completedCasesCount,
+          points: u.points,
+          rank: u.rank,
+          imageUrl: u.customImageUrl ?? u.imageUrl,
+          createdAt: u.createdAt ?? 0,
+        };
+      }),
+    );
+
+    // Sort primarily by completedCasesCount (descending), tie-break with points and createdAt
+    results.sort((a, b) => {
+      if (b.completedCasesCount !== a.completedCasesCount) {
+        return b.completedCasesCount - a.completedCasesCount;
+      }
+      if (b.points !== a.points) {
+        return b.points - a.points;
+      }
+      return a.createdAt - b.createdAt;
+    });
+
+    return results.slice(0, 10).map((u) => ({
       _id: u._id,
-      name: u.name || "Anonymous Learner",
-      points: u.points,
+      name: u.name,
+      completedCasesCount: u.completedCasesCount,
       rank: u.rank,
-      imageUrl: u.customImageUrl ?? u.imageUrl,
+      imageUrl: u.imageUrl,
     }));
   },
 });

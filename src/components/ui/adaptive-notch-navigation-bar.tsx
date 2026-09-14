@@ -191,8 +191,8 @@ export const NotchItem = forwardRef<HTMLButtonElement, NotchItemProps>(
         onKeyDown={handleKeyDown}
         className={cn(
           "relative flex h-9 cursor-pointer items-center gap-2 rounded-full px-3.5 text-xs font-semibold transition-all outline-none select-none",
-          "focus-visible:ring-2 focus-visible:ring-[#ccff00]/50",
-          isActive ? "text-[#ccff00]" : "text-[#8a8a8a] hover:text-[#f5f5f5]",
+          "focus-visible:ring-2 focus-visible:ring-primary/50",
+          isActive ? "text-primary" : "text-[#8a8a8a] hover:text-[#f5f5f5]",
           disabled && "cursor-not-allowed pointer-events-none opacity-40",
           className,
         )}
@@ -201,7 +201,7 @@ export const NotchItem = forwardRef<HTMLButtonElement, NotchItemProps>(
         {isActive && (
           <motion.span
             layoutId="notch-active-pill"
-            className="absolute inset-0 rounded-full bg-[#182608] border border-[#ccff00]/40 shadow-[0_0_12px_rgba(204,255,0,0.25)]"
+            className="absolute inset-0 rounded-full bg-[var(--theme-surface,#182608)] border border-primary/40 shadow-[0_0_12px_var(--glow-color,rgba(204,255,0,0.25))]"
             transition={{
               type: "spring",
               stiffness: 400,
@@ -215,7 +215,7 @@ export const NotchItem = forwardRef<HTMLButtonElement, NotchItemProps>(
             <Icon
               className={cn(
                 "size-4 shrink-0 transition-colors",
-                isActive ? "text-[#ccff00]" : "text-[#8a8a8a] group-hover:text-[#f5f5f5]",
+                isActive ? "text-primary" : "text-[#8a8a8a] group-hover:text-[#f5f5f5]",
               )}
             />
           )}
@@ -223,7 +223,7 @@ export const NotchItem = forwardRef<HTMLButtonElement, NotchItemProps>(
           <span className="leading-none">{label}</span>
 
           {badge && (
-            <span className="rounded-full bg-[#ccff00] px-1.5 py-0.5 text-[9px] font-black uppercase text-[#080808]">
+            <span className="rounded-full bg-primary px-1.5 py-0.5 text-[9px] font-black uppercase text-primary-foreground">
               {badge}
             </span>
           )}
@@ -257,24 +257,22 @@ function NotchDropdownItem({ item, isSelected, onSelect }: NotchDropdownItemProp
       onClick={handleClick}
       className={cn(
         "flex w-full cursor-pointer items-center justify-between gap-2.5 rounded-xl px-3 py-2 text-left text-sm outline-none transition-colors select-none",
-        "focus-visible:ring-2 focus-visible:ring-[#ccff00]/50",
+        "focus-visible:ring-2 focus-visible:ring-primary/50",
         isSelected
-          ? "bg-[#182608] font-semibold text-[#ccff00] border border-[#ccff00]/40"
-          : "text-[#8a8a8a] hover:bg-white/[0.04] hover:text-[#f5f5f5] active:bg-[#182608]",
+          ? "bg-[var(--theme-surface,#182608)] font-semibold text-primary border border-primary/40"
+          : "text-[#8a8a8a] hover:bg-white/[0.04] hover:text-[#f5f5f5] active:bg-[var(--theme-surface,#182608)]",
         item.disabled && "cursor-not-allowed pointer-events-none opacity-40",
       )}
     >
       <div className="flex items-center gap-2.5">
         {Icon && (
-          <Icon
-            className={cn("size-4 shrink-0", isSelected ? "text-[#ccff00]" : "text-[#8a8a8a]")}
-          />
+          <Icon className={cn("size-4 shrink-0", isSelected ? "text-primary" : "text-[#8a8a8a]")} />
         )}
 
         <span>{item.label}</span>
       </div>
 
-      {isSelected && <Check className="size-3.5 text-[#ccff00]" />}
+      {isSelected && <Check className="size-3.5 text-primary" />}
     </button>
   );
 }
@@ -486,10 +484,10 @@ export function NotchNav({
               aria-haspopup="listbox"
               aria-label="Toggle navigation menu"
               onClick={handleToggleDropdown}
-              className="group flex h-8.5 w-full cursor-pointer items-center justify-center gap-1.5 rounded-full px-3 text-xs sm:text-sm font-semibold text-[#f5f5f5] outline-none transition-colors hover:bg-white/[0.06] focus-visible:ring-2 focus-visible:ring-[#ccff00]/50"
+              className="group flex h-8.5 w-full cursor-pointer items-center justify-center gap-1.5 rounded-full px-3 text-xs sm:text-sm font-semibold text-[#f5f5f5] outline-none transition-colors hover:bg-white/[0.06] focus-visible:ring-2 focus-visible:ring-primary/50"
             >
               {activeItem?.icon && (
-                <activeItem.icon className="size-3.5 sm:size-4 shrink-0 text-[#ccff00]" />
+                <activeItem.icon className="size-3.5 sm:size-4 shrink-0 text-primary" />
               )}
 
               <span className="leading-none">{activeItem?.label}</span>

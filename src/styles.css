@@ -452,6 +452,9 @@ body::-webkit-scrollbar {
 /* Theme 1: Electric Acid Lime (Default) */
 :root,
 [data-theme="theme-acid-lime"] {
+  --theme-surface: #182608;
+  --theme-surface-deep: #0e1704;
+  --theme-surface-subtle: #141a05;
   --theme-border-subtle: rgba(204, 255, 0, 0.18);
   --theme-inner-glow: rgba(204, 255, 0, 0.04);
   --theme-inner-glow-active: rgba(204, 255, 0, 0.12);
@@ -476,6 +479,9 @@ body::-webkit-scrollbar {
   --butter: rgba(255, 0, 127, 0.18);
   --grid-glow: rgba(0, 240, 255, 0.16);
   --glow-color: rgba(0, 240, 255, 0.45);
+  --theme-surface: #041a2e;
+  --theme-surface-deep: #020c18;
+  --theme-surface-subtle: #05243f;
   --theme-border-subtle: rgba(0, 240, 255, 0.25);
   --theme-inner-glow: rgba(0, 240, 255, 0.05);
   --theme-inner-glow-active: rgba(0, 240, 255, 0.15);
@@ -494,6 +500,14 @@ body::-webkit-scrollbar {
   color: #00f0ff !important;
 }
 
+[data-theme="theme-cyberpunk"] [class*="fill-[#ccff00]"] {
+  fill: #00f0ff !important;
+}
+
+[data-theme="theme-cyberpunk"] [class*="ring-[#ccff00]"] {
+  --tw-ring-color: #00f0ff !important;
+}
+
 [data-theme="theme-cyberpunk"] [class*="bg-[#ccff00]"],
 [data-theme="theme-cyberpunk"] [class*="bg-[#d4ff00]"] {
   background-color: #00f0ff !important;
@@ -510,13 +524,24 @@ body::-webkit-scrollbar {
 
 [data-theme="theme-cyberpunk"] [class*="bg-[#182608]"],
 [data-theme="theme-cyberpunk"] [class*="bg-[#141a05]"] {
-  background-color: rgba(0, 240, 255, 0.1) !important;
+  background-color: #041a2e !important;
+}
+
+[data-theme="theme-cyberpunk"] [class*="from-[#182608]"],
+[data-theme="theme-cyberpunk"] [class*="via-[#101905]"],
+[data-theme="theme-cyberpunk"] [class*="to-[#0d1404]"],
+[data-theme="theme-cyberpunk"] [class*="to-[#0e1704]"],
+[data-theme="theme-cyberpunk"] [class*="to-[#080c03]"] {
+  --tw-gradient-from: #041a2e !important;
+  --tw-gradient-to: #020c18 !important;
 }
 
 [data-theme="theme-cyberpunk"] [class*="shadow-[0_0_15px_rgba(204,255,0"],
 [data-theme="theme-cyberpunk"] [class*="shadow-[0_0_12px_rgba(204,255,0"],
 [data-theme="theme-cyberpunk"] [class*="shadow-[0_0_20px_rgba(204,255,0"],
 [data-theme="theme-cyberpunk"] [class*="shadow-[0_0_10px_rgba(204,255,0"],
+[data-theme="theme-cyberpunk"] [class*="shadow-[0_0_24px_rgba(204,255,0"],
+[data-theme="theme-cyberpunk"] [class*="shadow-[0_0_35px_rgba(204,255,0"],
 [data-theme="theme-cyberpunk"] [class*="shadow-[0_0_25px_rgba(204,255,0"] {
   box-shadow: 0 0 16px rgba(0, 240, 255, 0.35) !important;
 }
@@ -527,6 +552,7 @@ body::-webkit-scrollbar {
 [data-theme="theme-cyberpunk"] [class*="via-[#ccff00]"] {
   --tw-gradient-stops: var(--tw-gradient-from), #38bdf8, var(--tw-gradient-to) !important;
 }
+[data-theme="theme-cyberpunk"] [class*="to-[#ccff00]"],
 [data-theme="theme-cyberpunk"] [class*="to-[#9df000]"] {
   --tw-gradient-to: #ec4899 !important;
 }
@@ -546,6 +572,9 @@ body::-webkit-scrollbar {
   --butter: rgba(0, 255, 102, 0.2);
   --grid-glow: rgba(0, 255, 102, 0.14);
   --glow-color: rgba(0, 255, 102, 0.45);
+  --theme-surface: #03210d;
+  --theme-surface-deep: #011206;
+  --theme-surface-subtle: #052c12;
   --theme-border-subtle: rgba(0, 255, 102, 0.22);
   --theme-inner-glow: rgba(0, 255, 102, 0.04);
   --theme-inner-glow-active: rgba(0, 255, 102, 0.12);
@@ -564,6 +593,14 @@ body::-webkit-scrollbar {
   color: #00ff66 !important;
 }
 
+[data-theme="theme-matrix"] [class*="fill-[#ccff00]"] {
+  fill: #00ff66 !important;
+}
+
+[data-theme="theme-matrix"] [class*="ring-[#ccff00]"] {
+  --tw-ring-color: #00ff66 !important;
+}
+
 [data-theme="theme-matrix"] [class*="bg-[#ccff00]"],
 [data-theme="theme-matrix"] [class*="bg-[#d4ff00]"] {
   background-color: #00ff66 !important;
@@ -580,13 +617,24 @@ body::-webkit-scrollbar {
 
 [data-theme="theme-matrix"] [class*="bg-[#182608]"],
 [data-theme="theme-matrix"] [class*="bg-[#141a05]"] {
-  background-color: rgba(0, 255, 102, 0.08) !important;
+  background-color: #03210d !important;
+}
+
+[data-theme="theme-matrix"] [class*="from-[#182608]"],
+[data-theme="theme-matrix"] [class*="via-[#101905]"],
+[data-theme="theme-matrix"] [class*="to-[#0d1404]"],
+[data-theme="theme-matrix"] [class*="to-[#0e1704]"],
+[data-theme="theme-matrix"] [class*="to-[#080c03]"] {
+  --tw-gradient-from: #03210d !important;
+  --tw-gradient-to: #011206 !important;
 }
 
 [data-theme="theme-matrix"] [class*="shadow-[0_0_15px_rgba(204,255,0"],
 [data-theme="theme-matrix"] [class*="shadow-[0_0_12px_rgba(204,255,0"],
 [data-theme="theme-matrix"] [class*="shadow-[0_0_20px_rgba(204,255,0"],
 [data-theme="theme-matrix"] [class*="shadow-[0_0_10px_rgba(204,255,0"],
+[data-theme="theme-matrix"] [class*="shadow-[0_0_24px_rgba(204,255,0"],
+[data-theme="theme-matrix"] [class*="shadow-[0_0_35px_rgba(204,255,0"],
 [data-theme="theme-matrix"] [class*="shadow-[0_0_25px_rgba(204,255,0"] {
   box-shadow: 0 0 16px rgba(0, 255, 102, 0.35) !important;
 }
@@ -597,6 +645,7 @@ body::-webkit-scrollbar {
 [data-theme="theme-matrix"] [class*="via-[#ccff00]"] {
   --tw-gradient-stops: var(--tw-gradient-from), #00ff66, var(--tw-gradient-to) !important;
 }
+[data-theme="theme-matrix"] [class*="to-[#ccff00]"],
 [data-theme="theme-matrix"] [class*="to-[#9df000]"] {
   --tw-gradient-to: #059669 !important;
 }
@@ -616,6 +665,9 @@ body::-webkit-scrollbar {
   --butter: rgba(255, 255, 255, 0.15);
   --grid-glow: rgba(255, 255, 255, 0.1);
   --glow-color: rgba(255, 255, 255, 0.35);
+  --theme-surface: #1e2229;
+  --theme-surface-deep: #111317;
+  --theme-surface-subtle: #282c35;
   --theme-border-subtle: rgba(255, 255, 255, 0.2);
   --theme-inner-glow: rgba(255, 255, 255, 0.03);
   --theme-inner-glow-active: rgba(255, 255, 255, 0.1);
@@ -634,6 +686,14 @@ body::-webkit-scrollbar {
   color: #ffffff !important;
 }
 
+[data-theme="theme-monochrome"] [class*="fill-[#ccff00]"] {
+  fill: #ffffff !important;
+}
+
+[data-theme="theme-monochrome"] [class*="ring-[#ccff00]"] {
+  --tw-ring-color: #ffffff !important;
+}
+
 [data-theme="theme-monochrome"] [class*="bg-[#ccff00]"],
 [data-theme="theme-monochrome"] [class*="bg-[#d4ff00]"] {
   background-color: #ffffff !important;
@@ -650,13 +710,24 @@ body::-webkit-scrollbar {
 
 [data-theme="theme-monochrome"] [class*="bg-[#182608]"],
 [data-theme="theme-monochrome"] [class*="bg-[#141a05]"] {
-  background-color: rgba(255, 255, 255, 0.08) !important;
+  background-color: #1e2229 !important;
+}
+
+[data-theme="theme-monochrome"] [class*="from-[#182608]"],
+[data-theme="theme-monochrome"] [class*="via-[#101905]"],
+[data-theme="theme-monochrome"] [class*="to-[#0d1404]"],
+[data-theme="theme-monochrome"] [class*="to-[#0e1704]"],
+[data-theme="theme-monochrome"] [class*="to-[#080c03]"] {
+  --tw-gradient-from: #1e2229 !important;
+  --tw-gradient-to: #111317 !important;
 }
 
 [data-theme="theme-monochrome"] [class*="shadow-[0_0_15px_rgba(204,255,0"],
 [data-theme="theme-monochrome"] [class*="shadow-[0_0_12px_rgba(204,255,0"],
 [data-theme="theme-monochrome"] [class*="shadow-[0_0_20px_rgba(204,255,0"],
 [data-theme="theme-monochrome"] [class*="shadow-[0_0_10px_rgba(204,255,0"],
+[data-theme="theme-monochrome"] [class*="shadow-[0_0_24px_rgba(204,255,0"],
+[data-theme="theme-monochrome"] [class*="shadow-[0_0_35px_rgba(204,255,0"],
 [data-theme="theme-monochrome"] [class*="shadow-[0_0_25px_rgba(204,255,0"] {
   box-shadow: 0 0 16px rgba(255, 255, 255, 0.25) !important;
 }
@@ -667,6 +738,7 @@ body::-webkit-scrollbar {
 [data-theme="theme-monochrome"] [class*="via-[#ccff00]"] {
   --tw-gradient-stops: var(--tw-gradient-from), #e2e8f0, var(--tw-gradient-to) !important;
 }
+[data-theme="theme-monochrome"] [class*="to-[#ccff00]"],
 [data-theme="theme-monochrome"] [class*="to-[#9df000]"] {
   --tw-gradient-to: #94a3b8 !important;
 }

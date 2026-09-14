@@ -475,7 +475,7 @@ System Design is the discipline of defining components, modules, interfaces, and
         <div className="mb-8 rounded-2xl border border-white/[0.08] bg-gradient-to-r from-white/[0.03] to-white/[0.01] p-4 sm:p-5 shadow-lg backdrop-blur-md">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-3.5">
-              <div className="flex size-10 items-center justify-center rounded-xl bg-[#182608] border border-[#ccff00]/30 text-[#ccff00] shadow-[0_0_10px_rgba(204,255,0,0.2)]">
+              <div className="flex size-10 items-center justify-center rounded-xl bg-[var(--theme-surface,#182608)] border border-primary/30 text-primary shadow-[0_0_10px_var(--glow-color,rgba(204,255,0,0.2))]">
                 <Palette className="size-5" />
               </div>
               <div>
@@ -483,7 +483,7 @@ System Design is the discipline of defining components, modules, interfaces, and
                   <span className="font-mono text-[10px] uppercase tracking-wider text-[#8a8a8a]">
                     Active In-App Theme
                   </span>
-                  <span className="rounded-full bg-[#ccff00]/15 px-2 py-0.5 font-mono text-[10px] font-bold text-[#ccff00] border border-[#ccff00]/30">
+                  <span className="rounded-full bg-primary/15 px-2 py-0.5 font-mono text-[10px] font-bold text-primary border border-primary/30">
                     Live
                   </span>
                 </div>
@@ -516,7 +516,7 @@ System Design is the discipline of defining components, modules, interfaces, and
                     }}
                     className={`flex items-center gap-2 rounded-xl px-3 py-1.5 font-mono text-xs font-semibold transition-all cursor-pointer ${
                       isActive
-                        ? "bg-[#182608] border border-[#ccff00]/60 text-[#ccff00] shadow-[0_0_12px_rgba(204,255,0,0.25)]"
+                        ? "bg-[var(--theme-surface,#182608)] border border-primary/60 text-primary shadow-[0_0_12px_var(--glow-color,rgba(204,255,0,0.25))]"
                         : "bg-white/[0.04] border border-white/[0.08] text-[#8a8a8a] hover:text-[#f5f5f5] hover:bg-white/[0.08]"
                     }`}
                   >
@@ -525,7 +525,7 @@ System Design is the discipline of defining components, modules, interfaces, and
                       style={{ backgroundColor: theme.palette.primary }}
                     />
                     {theme.name.split(" ")[0]}
-                    {isActive && <Check className="size-3 text-[#ccff00]" />}
+                    {isActive && <Check className="size-3 text-primary" />}
                   </button>
                 );
               })}
@@ -544,7 +544,7 @@ System Design is the discipline of defining components, modules, interfaces, and
                 onClick={() => setSelectedCategory(cat)}
                 className={`rounded-xl px-3.5 py-1.5 font-mono text-xs font-semibold transition-all cursor-pointer ${
                   isSelected
-                    ? "bg-[#ccff00] text-[#080808] font-bold shadow-[0_0_12px_rgba(204,255,0,0.3)]"
+                    ? "bg-primary text-primary-foreground font-bold shadow-[0_0_12px_var(--glow-color,rgba(204,255,0,0.3))]"
                     : "bg-white/[0.04] border border-white/[0.08] text-[#8a8a8a] hover:text-[#f5f5f5] hover:bg-white/[0.08]"
                 }`}
               >
@@ -571,8 +571,8 @@ System Design is the discipline of defining components, modules, interfaces, and
                 key={item.id}
                 className={`glass-panel group relative flex flex-col justify-between rounded-3xl p-6 border shadow-[0_20px_40px_rgba(0,0,0,0.45)] transition-all hover:-translate-y-1 ${
                   isActiveTheme
-                    ? "border-[#ccff00]/60 shadow-[0_0_25px_rgba(204,255,0,0.15)]"
-                    : "border-white/[0.08] hover:border-[#ccff00]/40"
+                    ? "border-primary/60 shadow-[0_0_25px_var(--glow-color,rgba(204,255,0,0.15))]"
+                    : "border-white/[0.08] hover:border-primary/40"
                 }`}
               >
                 <div>
@@ -582,14 +582,14 @@ System Design is the discipline of defining components, modules, interfaces, and
                         {item.category === "Theme" ? "In-App Theme" : item.category}
                       </span>
                       {isActiveTheme && (
-                        <span className="flex items-center gap-1 rounded-md bg-[#182608] border border-[#ccff00]/40 px-2 py-0.5 font-mono text-[9px] font-bold text-[#ccff00]">
+                        <span className="flex items-center gap-1 rounded-md bg-[var(--theme-surface,#182608)] border border-primary/40 px-2 py-0.5 font-mono text-[9px] font-bold text-primary">
                           <CheckCircle2 className="size-2.5" /> ACTIVE
                         </span>
                       )}
                     </div>
                     <span
                       className={`font-mono text-xs font-bold ${
-                        isOwned ? "text-[#a3e635]" : "text-[#ccff00]"
+                        isOwned ? "text-primary" : "text-primary/90"
                       }`}
                     >
                       {isOwned ? "UNLOCKED" : `${item.cost} RC`}
@@ -597,11 +597,11 @@ System Design is the discipline of defining components, modules, interfaces, and
                   </div>
 
                   <div className="mt-4 flex items-center gap-3">
-                    <div className="flex size-11 items-center justify-center rounded-2xl bg-[#182608] border border-[#ccff00]/30 text-[#ccff00] shadow-[0_0_10px_rgba(204,255,0,0.2)]">
+                    <div className="flex size-11 items-center justify-center rounded-2xl bg-[var(--theme-surface,#182608)] border border-primary/30 text-primary shadow-[0_0_10px_var(--glow-color,rgba(204,255,0,0.2))]">
                       <Icon className="size-5" />
                     </div>
                     <div>
-                      <h3 className="text-sm font-bold text-[#f5f5f5] group-hover:text-[#ccff00] transition-colors">
+                      <h3 className="text-sm font-bold text-[#f5f5f5] group-hover:text-primary transition-colors">
                         {item.name}
                       </h3>
                     </div>
@@ -635,13 +635,13 @@ System Design is the discipline of defining components, modules, interfaces, and
                     disabled={!isTheme && !isOwned && !canAfford}
                     className={`w-full rounded-xl py-2.5 font-mono text-xs font-bold transition-all ${
                       isActiveTheme
-                        ? "bg-[#182608] border border-[#ccff00]/60 text-[#ccff00] cursor-default shadow-[0_0_15px_rgba(204,255,0,0.2)]"
+                        ? "bg-[var(--theme-surface,#182608)] border border-primary/60 text-primary cursor-default shadow-[0_0_15px_var(--glow-color,rgba(204,255,0,0.2))]"
                         : isTheme && isOwned
-                          ? "bg-[#ccff00] text-[#080808] hover:bg-[#d4ff00] shadow-[0_0_15px_rgba(204,255,0,0.3)] cursor-pointer"
+                          ? "bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_15px_var(--glow-color,rgba(204,255,0,0.3))] cursor-pointer"
                           : isOwned
-                            ? "bg-[#182608] border border-[#ccff00]/40 text-[#ccff00] hover:bg-[#20330a] shadow-[0_0_12px_rgba(204,255,0,0.2)] cursor-pointer"
+                            ? "bg-[var(--theme-surface,#182608)] border border-primary/40 text-primary hover:brightness-110 shadow-[0_0_12px_var(--glow-color,rgba(204,255,0,0.2))] cursor-pointer"
                             : canAfford
-                              ? "bg-gradient-to-r from-[#d4ff00] via-[#ccff00] to-[#9df000] text-[#080808] shadow-[0_0_15px_rgba(204,255,0,0.4)] hover:shadow-[0_0_20px_rgba(204,255,0,0.6)] cursor-pointer"
+                              ? "bg-primary text-primary-foreground shadow-[0_0_15px_var(--glow-color,rgba(204,255,0,0.4))] hover:shadow-[0_0_20px_var(--glow-color,rgba(204,255,0,0.6))] cursor-pointer"
                               : "neu-btn text-[#8a8a8a] opacity-50 cursor-not-allowed"
                     }`}
                   >

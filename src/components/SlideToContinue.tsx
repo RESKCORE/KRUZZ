@@ -100,12 +100,12 @@ export function SlideToContinue({
           handleTriggerKeyboard();
         }
       }}
-      className={`relative h-12 w-full select-none rounded-full bg-[#121212] p-1 border border-white/[0.08] overflow-hidden focus:outline-none focus:border-[#ccff00]/40 transition-colors ${className}`}
+      className={`relative h-12 w-full select-none rounded-full bg-[#121212] p-1 border border-white/[0.08] overflow-hidden focus:outline-none focus:border-primary/40 transition-colors ${className}`}
     >
       {/* Dynamic Progress Fill */}
       <motion.div
         style={{ width: progressWidth }}
-        className="absolute inset-y-1 left-1 rounded-full bg-gradient-to-r from-[#ccff00]/10 to-[#ccff00]/25 pointer-events-none"
+        className="absolute inset-y-1 left-1 rounded-full bg-gradient-to-r from-primary/10 to-primary/25 pointer-events-none"
       />
 
       {/* Label Text with Subtle Shimmer */}
@@ -119,7 +119,7 @@ export function SlideToContinue({
             <motion.span
               animate={{ x: [0, 4, 0] }}
               transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
-              className="text-[#ccff00] font-mono font-bold"
+              className="text-primary font-mono font-bold"
             >
               →
             </motion.span>
@@ -136,7 +136,7 @@ export function SlideToContinue({
         onDragStart={() => setIsDragging(true)}
         onDragEnd={handleDragEnd}
         style={{ x }}
-        className={`relative z-10 size-10 rounded-full bg-gradient-to-r from-[#d4ff00] via-[#ccff00] to-[#9df000] text-[#080808] font-bold flex items-center justify-center transition-transform ${
+        className={`relative z-10 size-10 rounded-full bg-primary text-primary-foreground font-bold flex items-center justify-center shadow-[0_0_12px_var(--glow-color,rgba(204,255,0,0.4))] transition-transform ${
           isDragging ? "cursor-grabbing scale-105" : "cursor-grab hover:scale-105"
         }`}
       >

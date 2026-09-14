@@ -6,7 +6,7 @@ import { useAccount, useWallet, useStreak } from "@/lib/account";
 import { isCaseCompleted, isLabCompleted, isStudyComplete, RANKS } from "@/lib/rc";
 import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
-import { BookOpen, ShieldCheck, Trophy } from "lucide-react";
+import { BookOpen, CheckCircle2, ShieldCheck, Trophy } from "lucide-react";
 
 export const Route = createFileRoute("/profile/")({
   head: () => ({
@@ -45,8 +45,8 @@ function ProfilePage() {
   });
 
   // Rank progression metrics — thresholds live in @/lib/rc (RANKS)
-  const currentTierIdx = RANKS.findIndex((t) => t.name === rank.name);
-  const nextTier = RANKS[currentTierIdx + 1];
+  const nextTier = rank.next ? RANKS.find((r) => r.name === rank.next) : null;
+  const currentTierIdx = RANKS.findIndex((r) => r.name === rank.name);
   const currentTierMin = RANKS[currentTierIdx]?.at ?? 0;
   const nextTierMin = nextTier?.at ?? 1000;
   const rankProgressPercent = nextTier
@@ -61,8 +61,8 @@ function ProfilePage() {
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 flex flex-col gap-6">
         {/* Page Header */}
         <div className="border-b border-white/[0.08] pb-6">
-          <div className="flex items-center gap-2 font-mono text-xs text-[#ccff00]">
-            <span className="size-2 rounded-full bg-[#ccff00] animate-pulse" />
+          <div className="flex items-center gap-2 font-mono text-xs text-primary">
+            <span className="size-2 rounded-full bg-primary animate-pulse" />
             <span className="tracking-widest uppercase font-semibold">
               ENGINEERING DOSSIER · VERIFIED IDENTITY
             </span>
@@ -72,7 +72,7 @@ function ProfilePage() {
               Investigator Profile
             </h1>
             <span className="font-mono text-xs text-[#8a8a8a]">
-              Tier: <span className="font-bold text-[#ccff00]">{rank.name}</span> · Balance:{" "}
+              Tier: <span className="font-bold text-primary">{rank.name}</span> · Balance:{" "}
               <span className="font-bold text-[#f5f5f5]">{points} RC</span>
             </span>
           </div>
@@ -94,12 +94,12 @@ function ProfilePage() {
             <div className="glass-panel rounded-3xl p-6 border border-white/[0.08] shadow-[0_16px_32px_rgba(0,0,0,0.35)]">
               <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
                 <div className="flex items-center gap-2">
-                  <ShieldCheck className="size-4.5 text-[#ccff00]" />
+                  <ShieldCheck className="size-4.5 text-primary" />
                   <h3 className="font-bold text-sm text-[#f5f5f5]">System Thinking Rank Ladder</h3>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="font-mono text-xs text-[#8a8a8a]">Current Rank:</span>
-                  <span className="rounded-lg bg-[#182608] border border-[#ccff00]/40 px-2.5 py-0.5 font-mono text-xs font-bold text-[#ccff00]">
+                  <span className="rounded-lg bg-[var(--theme-surface,#182608)] border border-primary/40 px-2.5 py-0.5 font-mono text-xs font-bold text-primary">
                     {rank.name}
                   </span>
                 </div>
@@ -112,13 +112,13 @@ function ProfilePage() {
                     <span>
                       Progression to <strong className="text-[#f5f5f5]">{nextTier.name}</strong>
                     </span>
-                    <span className="text-[#ccff00] font-bold">
+                    <span className="text-primary font-bold">
                       {Math.max(0, nextTierMin - points)} RC needed
                     </span>
                   </div>
                   <div className="h-2 w-full overflow-hidden rounded-full bg-[#141414] p-0.5 border border-white/[0.06]">
                     <div
-                      className="h-full rounded-full bg-gradient-to-r from-[#d4ff00] via-[#ccff00] to-[#9df000] transition-all duration-500"
+                      className="h-full rounded-full bg-primary shadow-[0_0_12px_var(--glow-color,rgba(204,255,0,0.4))] transition-all duration-500"
                       style={{ width: `${rankProgressPercent}%` }}
                     />
                   </div>
@@ -136,7 +136,7 @@ function ProfilePage() {
                       key={tier.name}
                       className={`rounded-2xl p-3 border text-center transition-all ${
                         isCurrent
-                          ? "bg-[#182608] border-[#ccff00]/60"
+                          ? "bg-[var(--theme-surface,#182608)] border-primary/60 shadow-[0_0_12px_var(--glow-color,rgba(204,255,0,0.2))]"
                           : isAchieved
                             ? "bg-white/[0.03] border-white/10"
                             : "bg-black/20 border-white/[0.04] opacity-40"
@@ -146,7 +146,7 @@ function ProfilePage() {
                       <p
                         className={`mt-1 font-bold text-xs truncate ${
                           isCurrent
-                            ? "text-[#ccff00]"
+                            ? "text-primary font-extrabold"
                             : isAchieved
                               ? "text-[#f5f5f5]"
                               : "text-[#8a8a8a]"
@@ -165,11 +165,11 @@ function ProfilePage() {
             <div className="glass-panel rounded-3xl p-6 border border-white/[0.08] shadow-[0_16px_32px_rgba(0,0,0,0.35)] flex-1 flex flex-col">
               <div className="flex items-center justify-between mb-4 pb-3 border-b border-white/[0.06]">
                 <div className="flex items-center gap-2">
-                  <Trophy className="size-4 text-[#ccff00]" />
+                  <Trophy className="size-4 text-primary" />
                   <h3 className="font-bold text-sm text-[#f5f5f5]">Global Standings</h3>
                 </div>
                 <span className="font-mono text-[10px] text-[#8a8a8a] uppercase tracking-wider">
-                  Public Standings
+                  Cases Solved
                 </span>
               </div>
 
@@ -184,11 +184,11 @@ function ProfilePage() {
                         <span
                           className={`grid size-6 place-items-center rounded-lg font-mono text-xs font-bold ${
                             idx === 0
-                              ? "bg-[#ccff00] text-[#080808]"
+                              ? "bg-primary text-primary-foreground"
                               : idx === 1
                                 ? "bg-white/20 text-[#f5f5f5]"
                                 : idx === 2
-                                  ? "bg-[#a3e635]/20 text-[#a3e635]"
+                                  ? "bg-primary/20 text-primary"
                                   : "bg-white/5 text-[#8a8a8a]"
                           }`}
                         >
@@ -200,8 +200,11 @@ function ProfilePage() {
                         </div>
                       </div>
 
-                      <span className="font-mono text-xs font-bold text-[#ccff00]">
-                        {userRank.points} RC
+                      <span className="font-mono text-xs font-bold text-primary flex items-center gap-1">
+                        <CheckCircle2 className="size-3" />
+                        {userRank.completedCasesCount === 1
+                          ? "1 solved"
+                          : `${userRank.completedCasesCount ?? 0} solved`}
                       </span>
                     </div>
                   ))
@@ -224,7 +227,7 @@ function ProfilePage() {
         <div className="glass-panel rounded-3xl p-6 border border-white/[0.08] shadow-[0_16px_32px_rgba(0,0,0,0.35)]">
           <div className="flex items-center justify-between mb-4 pb-3 border-b border-white/[0.06]">
             <div className="flex items-center gap-2">
-              <BookOpen className="size-4 text-[#ccff00]" />
+              <BookOpen className="size-4 text-primary" />
               <h3 className="font-bold text-sm text-[#f5f5f5]">
                 Engineering Case Solved Records ({completedCases.length} of {totalCases})
               </h3>
@@ -248,7 +251,7 @@ function ProfilePage() {
                   key={c.slug}
                   className={`flex flex-wrap items-center justify-between gap-4 rounded-2xl p-4 transition-all ${
                     isDone
-                      ? "bg-gradient-to-r from-[#182608]/80 to-[#0e1704]/80 border-2 border-[#ccff00]/50 shadow-[0_0_24px_rgba(204,255,0,0.12)] hover:border-[#ccff00]"
+                      ? "bg-[var(--theme-surface,#182608)]/80 border-2 border-primary/50 shadow-[0_0_24px_var(--glow-color,rgba(204,255,0,0.12))] hover:border-primary"
                       : "bg-white/[0.02] border border-white/[0.06] hover:border-white/15"
                   }`}
                 >
@@ -256,7 +259,7 @@ function ProfilePage() {
                     <div className="flex items-center gap-2 font-mono text-[10px] text-[#8a8a8a]">
                       <span>Case {c.index}</span>
                       <span>·</span>
-                      <span className="text-[#ccff00] font-bold">{c.category}</span>
+                      <span className="text-primary font-bold">{c.category}</span>
                     </div>
                     <p
                       className={`mt-1 font-bold text-sm transition-colors ${
@@ -271,7 +274,7 @@ function ProfilePage() {
                     <span
                       className={`font-mono text-[10px] px-2.5 py-1 rounded-lg border font-bold ${
                         labDone
-                          ? "bg-[#182608] border-[#ccff00]/40 text-[#ccff00]"
+                          ? "bg-[var(--theme-surface,#182608)] border-primary/40 text-primary"
                           : "bg-white/[0.04] border-white/[0.08] text-[#8a8a8a]"
                       }`}
                     >
@@ -281,9 +284,9 @@ function ProfilePage() {
                     <span
                       className={`font-mono text-[10px] font-bold px-2.5 py-1 rounded-lg border ${
                         isDone
-                          ? "bg-gradient-to-r from-[#d4ff00] via-[#ccff00] to-[#9df000] text-[#080808] font-black shadow-[0_0_12px_rgba(204,255,0,0.4)]"
+                          ? "bg-primary text-primary-foreground font-black shadow-[0_0_12px_var(--glow-color,rgba(204,255,0,0.4))]"
                           : count > 0
-                            ? "bg-[#141a05] border-[#ccff00]/30 text-[#ccff00]"
+                            ? "bg-[var(--theme-surface,#182608)] border-primary/30 text-primary"
                             : "bg-white/[0.04] border-white/[0.08] text-[#8a8a8a]"
                       }`}
                     >
@@ -295,8 +298,8 @@ function ProfilePage() {
                       params={{ slug: c.slug }}
                       className={
                         isDone
-                          ? "rounded-xl bg-[#ccff00] text-[#080808] hover:bg-[#d4ff00] px-3.5 py-1.5 font-mono text-xs font-bold transition-all shadow-[0_0_15px_rgba(204,255,0,0.35)]"
-                          : "rounded-xl bg-white/[0.04] hover:bg-[#ccff00] hover:text-[#080808] border border-white/10 px-3 py-1.5 font-mono text-xs font-semibold text-[#f5f5f5] transition-colors"
+                          ? "rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 px-3.5 py-1.5 font-mono text-xs font-bold transition-all shadow-[0_0_15px_var(--glow-color,rgba(204,255,0,0.35))]"
+                          : "rounded-xl bg-white/[0.04] hover:bg-primary hover:text-primary-foreground border border-white/10 px-3 py-1.5 font-mono text-xs font-semibold text-[#f5f5f5] transition-colors"
                       }
                     >
                       {isDone ? "Review" : "Open"} →

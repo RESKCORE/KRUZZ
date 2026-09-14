@@ -37,7 +37,7 @@ export function StreakStrip({
         <div>
           <div className="flex items-center gap-2">
             <span className="size-2 rounded-full recording-dot" />
-            <p className="font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-[#ccff00]">
+            <p className="font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-primary">
               Consistency Matrix
             </p>
           </div>
@@ -50,7 +50,7 @@ export function StreakStrip({
         </div>
 
         <div className="flex items-center gap-2 rounded-2xl bg-white/[0.03] border border-white/[0.08] px-3.5 py-1.5 text-xs font-mono text-[#b8b8b8]">
-          <Shield className="size-3.5 text-[#ccff00]" />
+          <Shield className="size-3.5 text-primary" />
           <span>Daily Cadence Active</span>
         </div>
       </div>
@@ -67,15 +67,15 @@ export function StreakStrip({
               key={key}
               className={`group relative flex flex-col items-center justify-between rounded-2xl p-2.5 transition-all duration-300 ${
                 on
-                  ? "bg-gradient-to-b from-[#182608] to-[#0d1404] border border-[#ccff00]/50"
+                  ? "bg-[var(--theme-surface,#182608)] border border-primary/50 shadow-[0_0_12px_var(--glow-color,rgba(204,255,0,0.2))]"
                   : isToday
-                    ? "bg-[#181818] border border-[#ccff00]/30"
+                    ? "bg-[#181818] border border-primary/30"
                     : "bg-[#121212] border border-white/[0.05]"
               }`}
             >
               <span
                 className={`font-mono text-[10px] font-medium uppercase ${
-                  on ? "text-[#ccff00]" : isToday ? "text-[#f5f5f5]" : "text-[#8a8a8a]"
+                  on ? "text-primary" : isToday ? "text-[#f5f5f5]" : "text-[#8a8a8a]"
                 }`}
               >
                 {DAY_NAMES[d.getDay()]}
@@ -83,7 +83,7 @@ export function StreakStrip({
 
               <div className="my-2 flex size-7 items-center justify-center rounded-xl">
                 {on ? (
-                  <Flame className="size-4.5 text-[#ccff00] fill-[#ccff00]" />
+                  <Flame className="size-4.5 text-primary fill-primary" />
                 ) : (
                   <span className="font-mono text-xs text-[#8a8a8a]">{d.getDate()}</span>
                 )}
@@ -91,7 +91,7 @@ export function StreakStrip({
 
               <span
                 className={`font-mono text-[9px] font-bold ${
-                  on ? "text-[#ccff00]" : isToday ? "text-[#8a8a8a]" : "text-white/20"
+                  on ? "text-primary" : isToday ? "text-[#8a8a8a]" : "text-white/20"
                 }`}
               >
                 {on ? "LOGGED" : isToday ? "TODAY" : "REST"}
