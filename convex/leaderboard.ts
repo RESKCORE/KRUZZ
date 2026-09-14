@@ -32,6 +32,8 @@ export const getTopLearners = query({
           points: u.points,
           rank: u.rank,
           imageUrl: u.customImageUrl ?? u.imageUrl,
+          publicProfileId: u.publicProfileId,
+          clerkId: u.clerkId,
           createdAt: u.createdAt ?? 0,
         };
       }),
@@ -48,12 +50,14 @@ export const getTopLearners = query({
       return a.createdAt - b.createdAt;
     });
 
-    return results.slice(0, 10).map((u) => ({
+    return results.slice(0, 50).map((u) => ({
       _id: u._id,
       name: u.name,
       completedCasesCount: u.completedCasesCount,
       rank: u.rank,
       imageUrl: u.imageUrl,
+      publicProfileId: u.publicProfileId,
+      clerkId: u.clerkId,
     }));
   },
 });

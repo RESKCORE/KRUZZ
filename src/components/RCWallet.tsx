@@ -8,10 +8,10 @@ export function StreakBadge() {
   return (
     <span
       title={`${current} Day${current === 1 ? "" : "s"} Active Streak`}
-      className="inline-flex items-center gap-1.5 rounded-[10px] bg-[#141414] border border-white/[0.08] px-2.5 py-1.5 font-mono text-[11px] font-bold text-[#f5f5f5] transition-transform hover:scale-105"
+      className="inline-flex items-center gap-1 sm:gap-1.5 rounded-[9px] sm:rounded-[10px] bg-[#141414] border border-white/[0.08] px-2 sm:px-2.5 py-1 sm:py-1.5 font-mono text-[10px] sm:text-[11px] font-bold text-[#f5f5f5] transition-transform hover:scale-105 shrink-0"
     >
       <Flame
-        className={`size-3.5 ${current > 0 ? "text-primary fill-primary/30" : "text-[#8a8a8a]"}`}
+        className={`size-3 sm:size-3.5 ${current > 0 ? "text-primary fill-primary/30" : "text-[#8a8a8a]"}`}
       />
       <span>{current}d</span>
     </span>
@@ -25,13 +25,13 @@ export function RCBadge() {
   return (
     <span
       title={`${rank.name}${rank.next ? ` · ${rank.toNext} RC to ${rank.next}` : ""}`}
-      className="inline-flex items-center gap-1.5 rounded-[10px] bg-primary text-primary-foreground px-2.5 py-1.5 font-mono text-[11px] font-black shadow-[0_0_12px_var(--glow-color,rgba(204,255,0,0.35))] transition-transform hover:scale-105"
+      className="inline-flex items-center gap-1 sm:gap-1.5 rounded-[9px] sm:rounded-[10px] bg-primary text-primary-foreground px-2 sm:px-2.5 py-1 sm:py-1.5 font-mono text-[10px] sm:text-[11px] font-black shadow-[0_0_12px_var(--glow-color,rgba(204,255,0,0.35))] transition-transform hover:scale-105 shrink-0"
     >
-      <span className="grid size-4 place-items-center rounded bg-primary-foreground text-[8px] font-black text-primary">
+      <span className="grid size-3.5 sm:size-4 place-items-center rounded bg-primary-foreground text-[7px] sm:text-[8px] font-black text-primary">
         RC
       </span>
       <span>{points}</span>
-      <span className="hidden text-primary-foreground/80 sm:inline">· {rank.name}</span>
+      <span className="hidden md:inline text-primary-foreground/80">· {rank.name}</span>
     </span>
   );
 }

@@ -14,6 +14,7 @@ import {
   LogOut,
   ChevronRight,
   Palette,
+  Trophy,
 } from "lucide-react";
 import { useAccount } from "@/lib/account";
 import { useTheme } from "@/lib/theme";
@@ -67,7 +68,7 @@ function SettingsDropdown() {
       <button
         type="button"
         onClick={() => setOpen((prev) => !prev)}
-        className={`flex size-8 items-center justify-center rounded-xl border transition-all duration-200 cursor-pointer ${
+        className={`flex size-7.5 sm:size-8 items-center justify-center rounded-xl border transition-all duration-200 cursor-pointer shrink-0 ${
           open
             ? "border-primary/60 bg-[var(--theme-surface,#182608)] text-primary shadow-[0_0_12px_var(--glow-color,rgba(204,255,0,0.3))]"
             : "border-white/[0.08] bg-white/[0.03] text-[#8a8a8a] hover:border-white/20 hover:text-[#f5f5f5] hover:bg-white/[0.06]"
@@ -75,7 +76,7 @@ function SettingsDropdown() {
         aria-label="User Settings"
         aria-expanded={open}
       >
-        <Settings className="size-4 stroke-[2]" />
+        <Settings className="size-3.5 sm:size-4 stroke-[2]" />
       </button>
 
       {open && (
@@ -138,6 +139,7 @@ interface AppChromeProps {
 const MEMBER_NAV_ITEMS: NotchItemData[] = [
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
   { id: "arena", label: "Arena Centre", icon: Swords },
+  { id: "leaderboard", label: "Leaderboard", icon: Trophy },
   { id: "store", label: "Store", icon: ShoppingBag, badge: "RC" },
   { id: "profile", label: "Profile", icon: User },
 ];
@@ -155,6 +157,7 @@ export function AppChrome({ children }: AppChromeProps) {
 
   const isMemberRoute =
     pathname.startsWith("/dashboard") ||
+    pathname.startsWith("/leaderboard") ||
     pathname.startsWith("/cases/") || // dossiers gated; /cases catalog stays public
     pathname.startsWith("/store") ||
     pathname === "/profile" ||
@@ -165,6 +168,7 @@ export function AppChrome({ children }: AppChromeProps) {
   const activeId = useMemo(() => {
     if (pathname.startsWith("/profile")) return "profile";
     if (pathname.startsWith("/store")) return "store";
+    if (pathname.startsWith("/leaderboard")) return "leaderboard";
     if (pathname.startsWith("/cases")) return "arena";
     if (pathname.startsWith("/dashboard")) return "dashboard";
     if (pathname.startsWith("/method")) return "method";
@@ -181,6 +185,9 @@ export function AppChrome({ children }: AppChromeProps) {
         break;
       case "arena":
         router.navigate({ to: "/cases" });
+        break;
+      case "leaderboard":
+        router.navigate({ to: "/leaderboard" });
         break;
       case "store":
         router.navigate({ to: "/store" });
@@ -205,6 +212,9 @@ export function AppChrome({ children }: AppChromeProps) {
       case "arena":
         router.preloadRoute({ to: "/cases" });
         break;
+      case "leaderboard":
+        router.preloadRoute({ to: "/leaderboard" });
+        break;
       case "store":
         router.preloadRoute({ to: "/store" });
         break;
@@ -220,28 +230,28 @@ export function AppChrome({ children }: AppChromeProps) {
   const LogoSlot = (
     <Link
       to={isAuthenticated ? "/dashboard" : "/"}
-      className="flex items-center gap-2.5 group cursor-pointer"
+      className="flex items-center gap-1.5 sm:gap-2.5 group cursor-pointer shrink-0"
     >
       <img
         src="/logo.png"
         alt="KRUZZ Logo"
-        className="size-8 rounded-lg object-contain transition-transform duration-200 group-hover:scale-105"
+        className="size-7 sm:size-8 rounded-lg object-contain transition-transform duration-200 group-hover:scale-105"
       />
-      <span className="hidden sm:inline font-mono text-xs font-black tracking-widest text-[#f5f5f5] group-hover:text-primary transition-colors">
+      <span className="hidden md:inline font-mono text-xs font-black tracking-widest text-[#f5f5f5] group-hover:text-primary transition-colors">
         KRUZZ
       </span>
     </Link>
   );
 
   const RightContentSlot = (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
       <StreakBadge />
       <RCBadge />
 
       <SignedOut>
         <Link
           to="/sign-in"
-          className="rounded-lg bg-primary text-primary-foreground px-3 py-1.5 font-mono text-[10px] font-bold shadow-[0_0_10px_var(--glow-color,rgba(204,255,0,0.4))] transition-all hover:scale-105 active:scale-95 cursor-pointer"
+          className="rounded-lg bg-primary text-primary-foreground px-2.5 sm:px-3 py-1 sm:py-1.5 font-mono text-[9px] sm:text-[10px] font-bold shadow-[0_0_10px_var(--glow-color,rgba(204,255,0,0.4))] transition-all hover:scale-105 active:scale-95 cursor-pointer shrink-0"
         >
           Sign In
         </Link>

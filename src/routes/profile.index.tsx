@@ -6,7 +6,7 @@ import { useAccount, useWallet, useStreak } from "@/lib/account";
 import { isCaseCompleted, isLabCompleted, isStudyComplete, RANKS } from "@/lib/rc";
 import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
-import { BookOpen, CheckCircle2, ShieldCheck, Trophy } from "lucide-react";
+import { ArrowRight, Award, CheckCircle2, ShieldCheck } from "lucide-react";
 
 export const Route = createFileRoute("/profile/")({
   head: () => ({
@@ -27,7 +27,6 @@ function ProfilePage() {
   const { points, rank, awards } = useWallet();
   const { current: streakCurrent, longest: streakLongest, lastActive } = useStreak();
 
-  const globalLeaderboard = useQuery(api.leaderboard.getTopLearners);
   const cloudProgress = useQuery(
     api.caseProgress.getAllUserProgress,
     isAuthenticated ? {} : "skip",
@@ -88,7 +87,7 @@ function ProfilePage() {
             <StreakStrip current={streakCurrent} longest={streakLongest} lastActive={lastActive} />
           </div>
 
-          {/* Right Column (50%): System Thinking Rank Ladder & Global Standings */}
+          {/* Right Column (50%): System Thinking Rank Ladder & Engineering Milestones */}
           <div className="flex flex-col gap-6">
             {/* 1. System Thinking Rank Ladder */}
             <div className="glass-panel rounded-3xl p-6 border border-white/[0.08] shadow-[0_16px_32px_rgba(0,0,0,0.35)]">
@@ -161,153 +160,131 @@ function ProfilePage() {
               </div>
             </div>
 
-            {/* 2. Global Investigator Rankings */}
-            <div className="glass-panel rounded-3xl p-6 border border-white/[0.08] shadow-[0_16px_32px_rgba(0,0,0,0.35)] flex-1 flex flex-col">
-              <div className="flex items-center justify-between mb-4 pb-3 border-b border-white/[0.06]">
-                <div className="flex items-center gap-2">
-                  <Trophy className="size-4 text-primary" />
-                  <h3 className="font-bold text-sm text-[#f5f5f5]">Global Standings</h3>
+            {/* 2. Engineering Telemetry & Verified Milestones (Fills the gap cleanly) */}
+            <div className="glass-panel rounded-3xl p-6 border border-white/[0.08] shadow-[0_16px_32px_rgba(0,0,0,0.35)] flex-1 flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between mb-4 pb-3 border-b border-white/[0.06]">
+                  <div className="flex items-center gap-2">
+                    <Award className="size-4.5 text-primary" />
+                    <h3 className="font-bold text-sm text-[#f5f5f5]">
+                      Engineering Telemetry & Milestones
+                    </h3>
+                  </div>
+                  <span className="font-mono text-[10px] text-primary bg-[var(--theme-surface,#182608)] border border-primary/30 px-2.5 py-0.5 rounded-full font-bold">
+                    {completedCases.length} of {totalCases} Cleared
+                  </span>
                 </div>
-                <span className="font-mono text-[10px] text-[#8a8a8a] uppercase tracking-wider">
-                  Cases Solved
-                </span>
-              </div>
 
-              <div className="flex flex-col gap-2.5 flex-1">
-                {globalLeaderboard && globalLeaderboard.length > 0 ? (
-                  globalLeaderboard.slice(0, 6).map((userRank, idx) => (
-                    <div
-                      key={userRank._id}
-                      className="flex items-center justify-between rounded-xl bg-white/[0.02] border border-white/[0.05] p-3"
-                    >
-                      <div className="flex items-center gap-3">
-                        <span
-                          className={`grid size-6 place-items-center rounded-lg font-mono text-xs font-bold ${
-                            idx === 0
-                              ? "bg-primary text-primary-foreground"
-                              : idx === 1
-                                ? "bg-white/20 text-[#f5f5f5]"
-                                : idx === 2
-                                  ? "bg-primary/20 text-primary"
-                                  : "bg-white/5 text-[#8a8a8a]"
-                          }`}
-                        >
-                          {idx + 1}
-                        </span>
-                        <div>
-                          <p className="text-xs font-bold text-[#f5f5f5]">{userRank.name}</p>
-                          <p className="font-mono text-[10px] text-[#8a8a8a]">{userRank.rank}</p>
-                        </div>
-                      </div>
+                {/* 3 Telemetry metric boxes */}
+                <div className="grid grid-cols-3 gap-2.5 mb-5 text-center">
+                  <div className="rounded-2xl bg-white/[0.02] border border-white/[0.06] p-3">
+                    <p className="font-mono text-base font-bold text-[#f5f5f5]">
+                      {Math.round((completedCases.length / Math.max(1, totalCases)) * 100)}%
+                    </p>
+                    <p className="font-mono text-[9px] text-[#8a8a8a] uppercase tracking-wider mt-0.5">
+                      Curriculum
+                    </p>
+                  </div>
 
-                      <span className="font-mono text-xs font-bold text-primary flex items-center gap-1">
-                        <CheckCircle2 className="size-3" />
-                        {userRank.completedCasesCount === 1
-                          ? "1 solved"
-                          : `${userRank.completedCasesCount ?? 0} solved`}
+                  <div className="rounded-2xl bg-white/[0.02] border border-white/[0.06] p-3">
+                    <p className="font-mono text-base font-bold text-primary">
+                      {completedLabs.length}
+                    </p>
+                    <p className="font-mono text-[9px] text-[#8a8a8a] uppercase tracking-wider mt-0.5">
+                      Labs Passed
+                    </p>
+                  </div>
+
+                  <div className="rounded-2xl bg-white/[0.02] border border-white/[0.06] p-3">
+                    <p className="font-mono text-base font-bold text-[#f5f5f5]">{streakLongest}d</p>
+                    <p className="font-mono text-[9px] text-[#8a8a8a] uppercase tracking-wider mt-0.5">
+                      Max Streak
+                    </p>
+                  </div>
+                </div>
+
+                {/* Milestone verification pills */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between rounded-xl bg-white/[0.02] border border-white/[0.05] px-3.5 py-2.5 text-xs">
+                    <div className="flex items-center gap-2.5">
+                      <span
+                        className={`size-2 rounded-full ${
+                          completedCases.length >= 1
+                            ? "bg-primary shadow-[0_0_8px_var(--glow-color,rgba(204,255,0,0.5))]"
+                            : "bg-white/20"
+                        }`}
+                      />
+                      <span className="font-medium text-[#f5f5f5]">
+                        First Principles Investigation
                       </span>
                     </div>
-                  ))
-                ) : (
-                  <div className="rounded-xl bg-white/[0.02] border border-white/[0.05] p-4 text-center">
-                    <p className="text-xs text-[#8a8a8a]">
-                      Global standings are updating in real-time as investigators clear system
-                      cases.
-                    </p>
+                    <span
+                      className={`font-mono text-[10px] font-bold ${
+                        completedCases.length >= 1 ? "text-primary" : "text-[#8a8a8a]"
+                      }`}
+                    >
+                      {completedCases.length >= 1 ? "VERIFIED ✓" : "0/1 Cases"}
+                    </span>
                   </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
 
-        {/* =========================================================================
-            FULL-WIDTH ENGINEERING CASE SOLVED RECORDS
-           ========================================================================= */}
-        <div className="glass-panel rounded-3xl p-6 border border-white/[0.08] shadow-[0_16px_32px_rgba(0,0,0,0.35)]">
-          <div className="flex items-center justify-between mb-4 pb-3 border-b border-white/[0.06]">
-            <div className="flex items-center gap-2">
-              <BookOpen className="size-4 text-primary" />
-              <h3 className="font-bold text-sm text-[#f5f5f5]">
-                Engineering Case Solved Records ({completedCases.length} of {totalCases})
-              </h3>
-            </div>
-            <span className="font-mono text-xs text-[#8a8a8a]">
-              {Math.round((completedCases.length / totalCases) * 100)}% Complete
-            </span>
-          </div>
-
-          <div className="flex flex-col gap-3">
-            {caseStudies.map((c) => {
-              const progressDoc = cloudProgress?.find((p) => p.caseSlug === c.slug);
-              const isDone = isStudyComplete(awards, progressDoc, c.slug);
-              const labDone = isLabCompleted(awards, c.slug) || Boolean(progressDoc?.passed);
-              const viewedCount = progressDoc?.completedSections?.length ?? 0;
-              const labAccounted = labDone && !progressDoc?.completedSections?.includes(6);
-              const count = isDone ? 8 : Math.min(8, viewedCount + (labAccounted ? 1 : 0));
-
-              return (
-                <div
-                  key={c.slug}
-                  className={`flex flex-wrap items-center justify-between gap-4 rounded-2xl p-4 transition-all ${
-                    isDone
-                      ? "bg-[var(--theme-surface,#182608)]/80 border-2 border-primary/50 shadow-[0_0_24px_var(--glow-color,rgba(204,255,0,0.12))] hover:border-primary"
-                      : "bg-white/[0.02] border border-white/[0.06] hover:border-white/15"
-                  }`}
-                >
-                  <div className="min-w-[240px] flex-1">
-                    <div className="flex items-center gap-2 font-mono text-[10px] text-[#8a8a8a]">
-                      <span>Case {c.index}</span>
-                      <span>·</span>
-                      <span className="text-primary font-bold">{c.category}</span>
+                  <div className="flex items-center justify-between rounded-xl bg-white/[0.02] border border-white/[0.05] px-3.5 py-2.5 text-xs">
+                    <div className="flex items-center gap-2.5">
+                      <span
+                        className={`size-2 rounded-full ${
+                          streakCurrent >= 3 || streakLongest >= 3
+                            ? "bg-primary shadow-[0_0_8px_var(--glow-color,rgba(204,255,0,0.5))]"
+                            : "bg-white/20"
+                        }`}
+                      />
+                      <span className="font-medium text-[#f5f5f5]">3-Day Cadence Lock</span>
                     </div>
-                    <p
-                      className={`mt-1 font-bold text-sm transition-colors ${
-                        isDone ? "text-[#f5f5f5]" : "text-[#f5f5f5]"
+                    <span
+                      className={`font-mono text-[10px] font-bold ${
+                        streakCurrent >= 3 || streakLongest >= 3 ? "text-primary" : "text-[#8a8a8a]"
                       }`}
                     >
-                      {c.title}
-                    </p>
+                      {streakCurrent >= 3 || streakLongest >= 3
+                        ? "VERIFIED ✓"
+                        : `${streakCurrent}/3 Days`}
+                    </span>
                   </div>
 
-                  <div className="flex items-center gap-3 shrink-0">
+                  <div className="flex items-center justify-between rounded-xl bg-white/[0.02] border border-white/[0.05] px-3.5 py-2.5 text-xs">
+                    <div className="flex items-center gap-2.5">
+                      <span
+                        className={`size-2 rounded-full ${
+                          completedCases.length >= 5
+                            ? "bg-primary shadow-[0_0_8px_var(--glow-color,rgba(204,255,0,0.5))]"
+                            : "bg-white/20"
+                        }`}
+                      />
+                      <span className="font-medium text-[#f5f5f5]">Distributed Architect Tier</span>
+                    </div>
                     <span
-                      className={`font-mono text-[10px] px-2.5 py-1 rounded-lg border font-bold ${
-                        labDone
-                          ? "bg-[var(--theme-surface,#182608)] border-primary/40 text-primary"
-                          : "bg-white/[0.04] border-white/[0.08] text-[#8a8a8a]"
+                      className={`font-mono text-[10px] font-bold ${
+                        completedCases.length >= 5 ? "text-primary" : "text-[#8a8a8a]"
                       }`}
                     >
-                      CodeArena: {labDone ? "PASSED ✓" : "PENDING"}
+                      {completedCases.length >= 5
+                        ? "VERIFIED ✓"
+                        : `${completedCases.length}/5 Cases`}
                     </span>
-
-                    <span
-                      className={`font-mono text-[10px] font-bold px-2.5 py-1 rounded-lg border ${
-                        isDone
-                          ? "bg-primary text-primary-foreground font-black shadow-[0_0_12px_var(--glow-color,rgba(204,255,0,0.4))]"
-                          : count > 0
-                            ? "bg-[var(--theme-surface,#182608)] border-primary/30 text-primary"
-                            : "bg-white/[0.04] border-white/[0.08] text-[#8a8a8a]"
-                      }`}
-                    >
-                      {isDone ? "✓ 8/8 CLEARED" : count > 0 ? `${count}/8 SECTIONS` : "NOT STARTED"}
-                    </span>
-
-                    <Link
-                      to="/cases/$slug"
-                      params={{ slug: c.slug }}
-                      className={
-                        isDone
-                          ? "rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 px-3.5 py-1.5 font-mono text-xs font-bold transition-all shadow-[0_0_15px_var(--glow-color,rgba(204,255,0,0.35))]"
-                          : "rounded-xl bg-white/[0.04] hover:bg-primary hover:text-primary-foreground border border-white/10 px-3 py-1.5 font-mono text-xs font-semibold text-[#f5f5f5] transition-colors"
-                      }
-                    >
-                      {isDone ? "Review" : "Open"} →
-                    </Link>
                   </div>
                 </div>
-              );
-            })}
+              </div>
+
+              {/* Action row at bottom */}
+              <div className="mt-4 pt-3.5 border-t border-white/[0.06] flex items-center justify-between">
+                <span className="font-mono text-[10px] text-[#8a8a8a]">System Arena Dossier</span>
+                <Link
+                  to="/cases"
+                  className="inline-flex items-center gap-1.5 font-mono text-xs font-bold text-primary hover:underline"
+                >
+                  <span>Explore Cases</span>
+                  <ArrowRight className="size-3.5" />
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
       </div>

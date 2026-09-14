@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useMemo } from "react";
 import { AppChrome } from "@/components/AppChrome";
 import { UserProfileCard } from "@/components/UserProfileCard";
 import { StreakStrip } from "@/components/StreakStrip";
@@ -14,7 +15,7 @@ import {
 } from "@/lib/rc";
 import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
-import { ArrowRight, BookOpen, CheckCircle2, Cpu, Layers, Sparkles, Trophy } from "lucide-react";
+import { ArrowRight, BookOpen, CheckCircle2, Cpu, Layers } from "lucide-react";
 
 export const Route = createFileRoute("/dashboard")({
   head: () => ({
@@ -34,7 +35,6 @@ function DashboardPage() {
   const { points, rank, awards } = useWallet();
   const { current: streakCurrent, longest: streakLongest, lastActive } = useStreak();
 
-  const topLearners = useQuery(api.leaderboard.getTopLearners);
   const cloudProgress = useQuery(
     api.caseProgress.getAllUserProgress,
     isAuthenticated ? {} : "skip",
@@ -42,6 +42,13 @@ function DashboardPage() {
   const unlockedCases = useQuery(api.caseProgress.getUserUnlockedCases, {});
 
   const caseStudies = (useQuery(api.caseStudies.list, {}) ?? []) as any[];
+
+  const completedStudies = useMemo(() => {
+    return caseStudies.filter((c) => {
+      const progressDoc = cloudProgress?.find((p) => p.caseSlug === c.slug);
+      return isStudyComplete(awards, progressDoc, c.slug);
+    });
+  }, [caseStudies, cloudProgress, awards]);
 
   const displayName =
     user?.fullName || profile?.name || (isAuthenticated ? "Engineer" : "Investigator");
@@ -184,90 +191,72 @@ function DashboardPage() {
             {/* Streak Visualizer */}
             <StreakStrip current={streakCurrent} longest={streakLongest} lastActive={lastActive} />
 
-            {/* Curriculum Track */}
+            {/* Completed Investigations Track (Only completed cases shown) */}
             <div className="glass-panel rounded-3xl p-6 border border-white/[0.08] shadow-[0_20px_40px_rgba(0,0,0,0.5)]">
               <div className="flex items-center justify-between mb-4 border-b border-white/[0.06] pb-4">
                 <div className="flex items-center gap-2">
-                  <Layers className="size-4 text-primary" />
+                  <CheckCircle2 className="size-4 text-primary" />
                   <h3 className="font-bold text-sm text-[#f5f5f5]">
-                    Core Engineering Track ({caseStudies.length} Cases)
+                    Completed Investigations ({completedStudies.length} of {caseStudies.length})
                   </h3>
                 </div>
-                <Link to="/cases" className="font-mono text-xs text-primary hover:underline">
-                  View Library →
+                <Link
+                  to="/cases"
+                  className="font-mono text-xs text-primary hover:underline flex items-center gap-1"
+                >
+                  <span>Explore Arena</span>
+                  <ArrowRight className="size-3" />
                 </Link>
               </div>
 
-              <div className="grid gap-3 sm:grid-cols-2">
-                {caseStudies.map((c) => {
-                  const progressDoc = cloudProgress?.find((p) => p.caseSlug === c.slug);
-                  const isDone = isStudyComplete(awards, progressDoc, c.slug);
-                  const isCaseUnlocked = unlockedCases
-                    ? unlockedCases.includes(c.slug)
-                    : c.rcCost <= 0;
-                  const labPassed = isLabCompleted(awards, c.slug) || Boolean(progressDoc?.passed);
-                  const viewedCount = progressDoc?.completedSections?.length ?? 0;
-                  const labAccounted = labPassed && !progressDoc?.completedSections?.includes(6);
-                  const count = isDone ? 8 : Math.min(8, viewedCount + (labAccounted ? 1 : 0));
-
-                  return (
+              {completedStudies.length > 0 ? (
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {completedStudies.map((c) => (
                     <Link
                       key={c.slug}
                       to="/cases/$slug"
                       params={{ slug: c.slug }}
-                      className={
-                        isDone
-                          ? "group flex items-center justify-between rounded-2xl p-4 transition-all border-2 border-primary/60 bg-[var(--theme-surface,#182608)]/90 shadow-[0_0_20px_var(--glow-color,rgba(204,255,0,0.18))] hover:border-primary hover:shadow-[0_0_30px_var(--glow-color,rgba(204,255,0,0.3))]"
-                          : isCaseUnlocked
-                            ? "neu-btn group flex items-center justify-between rounded-2xl p-4 hover:border-primary/40 transition-all"
-                            : "neu-btn group flex items-center justify-between rounded-2xl p-4 opacity-75 hover:border-white/20 transition-all"
-                      }
+                      className="group flex items-center justify-between rounded-2xl p-4 transition-all border-2 border-primary/60 bg-[var(--theme-surface,#182608)]/90 shadow-[0_0_20px_var(--glow-color,rgba(204,255,0,0.18))] hover:border-primary hover:shadow-[0_0_30px_var(--glow-color,rgba(204,255,0,0.3))]"
                     >
                       <div>
                         <div className="flex items-center gap-1.5 font-mono text-[10px] text-[#8a8a8a]">
                           <span>{c.index}</span>
                           <span>·</span>
-                          <span className={isDone ? "text-primary font-bold" : "text-primary"}>
-                            {c.learnerLevel}
+                          <span className="text-primary font-bold">
+                            {c.learnerLevel || "Foundations"}
                           </span>
                         </div>
-                        <p
-                          className={`mt-1 text-xs font-bold transition-colors ${
-                            isDone
-                              ? "text-[#f5f5f5] group-hover:text-primary"
-                              : "text-[#f5f5f5] group-hover:text-primary"
-                          }`}
-                        >
-                          {c.shortTitle}
+                        <p className="mt-1 text-xs font-bold text-[#f5f5f5] group-hover:text-primary transition-colors">
+                          {c.shortTitle || c.title}
                         </p>
                       </div>
 
-                      {isDone ? (
-                        <span className="flex items-center gap-1.5 font-mono text-[10px] font-extrabold text-primary-foreground bg-primary px-2.5 py-1 rounded-lg shadow-[0_0_12px_var(--glow-color,rgba(204,255,0,0.4))]">
-                          <CheckCircle2 className="size-3.5 stroke-[2.5]" />
-                          Completed
-                        </span>
-                      ) : count > 0 ? (
-                        <span className="font-mono text-[10px] text-primary bg-[var(--theme-surface,#182608)] border border-primary/30 px-2 py-1 rounded-lg font-bold">
-                          {String(count).padStart(2, "0")} / 08
-                        </span>
-                      ) : isCaseUnlocked ? (
-                        <span className="font-mono text-[10px] text-primary bg-[var(--theme-surface,#182608)] border border-primary/30 px-2 py-1 rounded-lg">
-                          🔓 Available
-                        </span>
-                      ) : c.tier === "premium" ? (
-                        <span className="font-mono text-[10px] text-[#f59e0b] bg-[#1c1507] border border-[#f59e0b]/30 px-2 py-1 rounded-lg">
-                          🔒 Premium
-                        </span>
-                      ) : (
-                        <span className="font-mono text-[10px] text-[#8a8a8a] bg-white/[0.03] border border-white/[0.07] px-2 py-1 rounded-lg">
-                          🔒 Locked
-                        </span>
-                      )}
+                      <span className="flex items-center gap-1.5 font-mono text-[10px] font-extrabold text-primary-foreground bg-primary px-2.5 py-1 rounded-lg shadow-[0_0_12px_var(--glow-color,rgba(204,255,0,0.4))] shrink-0">
+                        <CheckCircle2 className="size-3.5 stroke-[2.5]" />
+                        Completed
+                      </span>
                     </Link>
-                  );
-                })}
-              </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="rounded-2xl bg-white/[0.02] border border-white/[0.06] p-6 text-center">
+                  <BookOpen className="size-6 text-primary mx-auto mb-2 opacity-70" />
+                  <p className="text-sm font-bold text-[#f5f5f5]">
+                    No completed investigations yet
+                  </p>
+                  <p className="text-xs text-[#8a8a8a] mt-1 max-w-sm mx-auto mb-4">
+                    Solve distributed systems cases in the Arena Centre to clear sections, pass
+                    CodeArena implementation labs, and track your achievements here.
+                  </p>
+                  <Link
+                    to="/cases"
+                    className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2 font-mono text-xs font-bold text-primary-foreground shadow-[0_0_15px_var(--glow-color,rgba(204,255,0,0.35))]"
+                  >
+                    <span>Enter Arena Centre</span>
+                    <ArrowRight className="size-3.5" />
+                  </Link>
+                </div>
+              )}
             </div>
           </div>
 
@@ -278,65 +267,6 @@ function DashboardPage() {
 
             {/* Wallet Panel */}
             <RCWalletPanel />
-
-            {/* Global Leaderboard */}
-            <div className="glass-panel rounded-3xl p-5 border border-white/[0.08] shadow-[0_20px_40px_rgba(0,0,0,0.5)]">
-              <div className="flex items-center justify-between mb-4 border-b border-white/[0.06] pb-3">
-                <div className="flex items-center gap-2">
-                  <Trophy className="size-4 text-primary" />
-                  <h3 className="font-mono text-xs font-bold uppercase tracking-wider text-[#f5f5f5]">
-                    Global Standings
-                  </h3>
-                </div>
-                <span className="font-mono text-[10px] text-[#8a8a8a]">By Cases Solved</span>
-              </div>
-
-              {topLearners && topLearners.length > 0 ? (
-                <div className="space-y-2">
-                  {topLearners.slice(0, 5).map((u, i) => (
-                    <div
-                      key={u._id}
-                      className="flex items-center justify-between rounded-xl bg-white/[0.02] border border-white/[0.05] px-3.5 py-2.5 text-xs transition-colors hover:border-white/10"
-                    >
-                      <div className="flex items-center gap-2.5">
-                        <span
-                          className={`font-mono text-xs font-bold w-4 ${
-                            i === 0
-                              ? "text-primary"
-                              : i === 1
-                                ? "text-primary/90"
-                                : i === 2
-                                  ? "text-[#f5f5f5]"
-                                  : "text-[#8a8a8a]"
-                          }`}
-                        >
-                          #{i + 1}
-                        </span>
-                        <span className="font-medium text-[#f5f5f5] truncate max-w-[130px]">
-                          {u.name}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-mono text-[10px] text-[#8a8a8a]">{u.rank}</span>
-                        <span className="font-mono text-xs font-bold text-primary flex items-center gap-1">
-                          <CheckCircle2 className="size-3" />
-                          {u.completedCasesCount === 1
-                            ? "1 solved"
-                            : `${u.completedCasesCount ?? 0} solved`}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="rounded-2xl bg-white/[0.02] border border-white/[0.06] p-4 text-center">
-                  <Sparkles className="size-5 text-primary mx-auto mb-1.5 opacity-80" />
-                  <p className="text-xs text-[#8a8a8a]">
-                    Complete case investigations to earn your ranking on the global telemetry board.
-                  </p>
-                </div>
-              )}
-            </div>
           </div>
         </div>
       </div>

@@ -1,6 +1,7 @@
 import { internalMutation, internalQuery, type MutationCtx } from "./_generated/server";
 import { v } from "convex/values";
 import { generateUniquePublicProfileId } from "./users";
+import { completeCaseInternal } from "./caseProgress";
 
 const PUBLIC_PROFILE_ID_REGEX = /^krz_[a-f0-9]{32}$/;
 
@@ -197,6 +198,141 @@ export const rollbackPrivateProfileDefault = internalMutation({
       status: errors.length === 0 ? "SUCCESS" : "COMPLETED_WITH_ERRORS",
       restoredCount,
       errors,
+    };
+  },
+});
+
+/**
+ * Diagnostic query to inspect user case study progress and awards.
+ */
+export const inspectTodayCaseCompletions = internalQuery({
+  args: {},
+  handler: async (ctx) => {
+    const users = await ctx.db.query("users").collect();
+    const progressList = await ctx.db.query("caseProgress").collect();
+    const awards = await ctx.db.query("awards").collect();
+    const caseStudies = await ctx.db.query("caseStudies").collect();
+
+    const caseMap = new Map(caseStudies.map((c) => [c.slug, c]));
+
+    const records = progressList.map((p) => {
+      const user = users.find((u) => u._id === p.userId);
+      const study = caseMap.get(p.caseSlug);
+      const userAwards = awards.filter((a) => a.userId === p.userId);
+      const hasCompleteAward = userAwards.some(
+        (a) =>
+          a.awardId === `case:${p.caseSlug}:complete` || a.awardId === `${p.caseSlug}:complete`,
+      );
+      const hasLabAward = userAwards.some(
+        (a) => a.awardId === `case:${p.caseSlug}:lab` || a.awardId === `${p.caseSlug}:lab`,
+      );
+
+      return {
+        userId: p.userId,
+        userName: user?.name,
+        userEmail: user?.email,
+        userPoints: user?.points,
+        caseSlug: p.caseSlug,
+        caseTitle: study?.title,
+        difficulty: study?.difficulty,
+        passed: p.passed,
+        bestScore: p.bestScore,
+        status: p.status,
+        completedSectionsCount: p.completedSections?.length ?? 0,
+        completedSections: p.completedSections,
+        reflectionLength: p.reflection?.length ?? 0,
+        updatedAt: p.updatedAt ? new Date(p.updatedAt).toISOString() : null,
+        completedAt: p.completedAt ? new Date(p.completedAt).toISOString() : null,
+        hasCompleteAward,
+        hasLabAward,
+      };
+    });
+
+    return {
+      totalUsers: users.length,
+      totalProgress: progressList.length,
+      totalAwards: awards.length,
+      records,
+    };
+  },
+});
+
+/**
+ * Mutation to award RC points and complete case studies for users who completed
+ * case studies today (2026-09-14) but haven't received their RC points yet.
+ */
+export const awardTodayCompletedCases = internalMutation({
+  args: {
+    sinceMs: v.optional(v.number()),
+  },
+  handler: async (ctx: MutationCtx, args) => {
+    // Midnight IST on 2026-09-14 is 2026-09-13T18:30:00.000Z
+    const defaultSince = new Date("2026-09-13T18:30:00.000Z").getTime();
+    const sinceTimestamp = args.sinceMs ?? defaultSince;
+
+    const allProgress = await ctx.db.query("caseProgress").collect();
+    const allUsers = await ctx.db.query("users").collect();
+    const userMap = new Map(allUsers.map((u) => [u._id, u]));
+
+    const awarded: Array<{
+      userId: string;
+      userEmail?: string | undefined;
+      userName?: string | undefined;
+      caseSlug: string;
+      bestScore: number;
+      awardedAt: string;
+    }> = [];
+
+    for (const p of allProgress) {
+      // Must be from today
+      const progressTime = p.updatedAt ?? p.completedAt ?? 0;
+      if (progressTime < sinceTimestamp) {
+        continue;
+      }
+
+      // Must have passed the practice lab
+      if (!p.passed) {
+        continue;
+      }
+
+      const user = userMap.get(p.userId);
+      if (!user) continue;
+
+      // Check if user already has the completion award
+      const awardKey = `case:${p.caseSlug}:complete`;
+      const existingAward = await ctx.db
+        .query("awards")
+        .withIndex("by_user_award", (q) => q.eq("userId", user._id).eq("awardId", awardKey))
+        .unique();
+
+      if (!existingAward) {
+        // Ensure all sections are marked complete
+        await ctx.db.patch(p._id, {
+          completedSections: [0, 1, 2, 3, 4, 5, 6, 7],
+          status: "completed",
+          completedAt: Date.now(),
+          updatedAt: Date.now(),
+        });
+
+        // Award completion bonus and unlock next case
+        await completeCaseInternal(ctx, user, p.caseSlug, p._id);
+
+        awarded.push({
+          userId: user._id,
+          userEmail: user.email,
+          userName: user.name,
+          caseSlug: p.caseSlug,
+          bestScore: p.bestScore ?? 100,
+          awardedAt: new Date().toISOString(),
+        });
+      }
+    }
+
+    return {
+      status: "SUCCESS",
+      since: new Date(sinceTimestamp).toISOString(),
+      awardedCount: awarded.length,
+      awarded,
     };
   },
 });
