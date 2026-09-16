@@ -15,6 +15,8 @@ import {
   Sparkles,
   ArrowRight,
   Crown,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 
 export const Route = createFileRoute("/leaderboard")({
@@ -39,12 +41,15 @@ function LeaderboardRoute() {
   );
 }
 
+const BATCH_SIZE = 30;
+
 function LeaderboardPage() {
   const { user } = useAccount();
   const { rank } = useWallet();
   const [searchQuery, setSearchQuery] = useState("");
+  const [currentBatch, setCurrentBatch] = useState(1);
 
-  const topLearners = useQuery(api.leaderboard.getTopLearners);
+  const topLearners = useQuery(api.leaderboard.getTopLearners, {});
   const rawCaseStudies = useQuery(api.caseStudies.list, {});
   const totalCases = (rawCaseStudies as any[])?.length || 40;
 
@@ -55,6 +60,15 @@ function LeaderboardPage() {
     const q = searchQuery.toLowerCase().trim();
     return topLearners.filter((u) => u.name.toLowerCase().includes(q));
   }, [topLearners, searchQuery]);
+
+  // Batching / pagination: strictly 30 per batch
+  const totalBatches = Math.max(1, Math.ceil(filteredLearners.length / BATCH_SIZE));
+  const currentBatchSafe = Math.min(currentBatch, totalBatches);
+  const startIndex = (currentBatchSafe - 1) * BATCH_SIZE;
+  const endIndex = Math.min(startIndex + BATCH_SIZE, filteredLearners.length);
+  const paginatedLearners = useMemo(() => {
+    return filteredLearners.slice(startIndex, startIndex + BATCH_SIZE);
+  }, [filteredLearners, startIndex]);
 
   // Current user's index in global leaderboard
   const userRankIndex = useMemo(() => {
@@ -198,6 +212,9 @@ function LeaderboardPage() {
               {filteredLearners.length}{" "}
               {filteredLearners.length === 1 ? "Investigator" : "Investigators"}
             </span>
+            <span className="font-mono text-[10px] text-primary bg-primary/10 border border-primary/30 px-2 py-0.5 rounded-full font-bold">
+              30 per batch
+            </span>
           </div>
 
           {/* Search bar */}
@@ -207,7 +224,10 @@ function LeaderboardPage() {
               type="text"
               placeholder="Search investigator..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setCurrentBatch(1);
+              }}
               className="w-full rounded-xl bg-white/[0.04] border border-white/[0.08] pl-8.5 pr-3 py-1.5 text-xs text-[#f5f5f5] placeholder-[#8a8a8a] outline-none focus:border-primary/50 transition-colors"
             />
           </div>
@@ -226,7 +246,8 @@ function LeaderboardPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-white/[0.04]">
-              {filteredLearners.map((u, idx) => {
+              {paginatedLearners.map((u, idx) => {
+                const rankNumber = startIndex + idx + 1;
                 const isCurrentUser =
                   (u.clerkId && u.clerkId === user?.id) || u.name === user?.fullName;
                 const masteryPercent = Math.min(
@@ -247,16 +268,16 @@ function LeaderboardPage() {
                     <td className="py-3.5 px-4 font-mono font-bold">
                       <span
                         className={`inline-grid size-7 place-items-center rounded-lg text-xs font-mono font-black ${
-                          idx === 0
+                          rankNumber === 1
                             ? "bg-yellow-500 text-black shadow-[0_0_10px_rgba(234,179,8,0.5)]"
-                            : idx === 1
+                            : rankNumber === 2
                               ? "bg-slate-300 text-black"
-                              : idx === 2
+                              : rankNumber === 3
                                 ? "bg-amber-600 text-white"
                                 : "bg-white/[0.05] text-[#8a8a8a]"
                         }`}
                       >
-                        {idx + 1}
+                        {rankNumber}
                       </span>
                     </td>
 
@@ -345,7 +366,8 @@ function LeaderboardPage() {
 
         {/* Mobile & Tablet View: Card Rows (Fluid & Responsive for Small Screens) */}
         <div className="lg:hidden space-y-2.5">
-          {filteredLearners.map((u, idx) => {
+          {paginatedLearners.map((u, idx) => {
+            const rankNumber = startIndex + idx + 1;
             const isCurrentUser =
               (u.clerkId && u.clerkId === user?.id) || u.name === user?.fullName;
 
@@ -362,16 +384,16 @@ function LeaderboardPage() {
                 <div className="flex items-center gap-2.5 min-w-0">
                   <span
                     className={`grid size-6 place-items-center rounded-lg text-[11px] font-mono font-black shrink-0 ${
-                      idx === 0
+                      rankNumber === 1
                         ? "bg-yellow-500 text-black"
-                        : idx === 1
+                        : rankNumber === 2
                           ? "bg-slate-300 text-black"
-                          : idx === 2
+                          : rankNumber === 3
                             ? "bg-amber-600 text-white"
                             : "bg-white/[0.06] text-[#8a8a8a]"
                     }`}
                   >
-                    {idx + 1}
+                    {rankNumber}
                   </span>
 
                   <div className="relative size-8 rounded-full bg-white/[0.06] overflow-hidden border border-white/[0.1] shrink-0">
@@ -424,6 +446,73 @@ function LeaderboardPage() {
             );
           })}
         </div>
+
+        {/* Batch Pagination Controls */}
+        {filteredLearners.length > 0 && (
+          <div className="mt-6 pt-4 border-t border-white/[0.06] flex flex-col sm:flex-row items-center justify-between gap-4">
+            {/* Batch Info */}
+            <div className="flex items-center gap-2 font-mono text-xs text-[#8a8a8a]">
+              <span>
+                Showing{" "}
+                <strong className="text-[#f5f5f5]">
+                  {filteredLearners.length > 0 ? startIndex + 1 : 0}–{endIndex}
+                </strong>{" "}
+                of <strong className="text-[#f5f5f5]">{filteredLearners.length}</strong> Investigators
+              </span>
+              <span className="rounded-md bg-white/[0.04] border border-white/[0.08] px-2 py-0.5 text-[10px] text-primary font-bold">
+                30 per batch
+              </span>
+              {totalBatches > 1 && (
+                <span className="hidden sm:inline text-[#8a8a8a]">
+                  · Batch {currentBatchSafe} of {totalBatches}
+                </span>
+              )}
+            </div>
+
+            {/* Navigation Buttons */}
+            {totalBatches > 1 && (
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => setCurrentBatch((prev) => Math.max(1, prev - 1))}
+                  disabled={currentBatchSafe === 1}
+                  className="flex items-center gap-1 rounded-xl bg-white/[0.04] border border-white/[0.08] hover:border-white/20 hover:text-[#f5f5f5] px-3 py-1.5 font-mono text-xs font-semibold text-[#8a8a8a] transition-colors disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
+                >
+                  <ChevronLeft className="size-3.5" />
+                  <span>Prev Batch</span>
+                </button>
+
+                {/* Page pills */}
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: totalBatches }, (_, i) => i + 1).map((batchNum) => (
+                    <button
+                      key={batchNum}
+                      type="button"
+                      onClick={() => setCurrentBatch(batchNum)}
+                      className={`size-8 rounded-xl font-mono text-xs font-bold transition-all cursor-pointer ${
+                        batchNum === currentBatchSafe
+                          ? "bg-primary text-primary-foreground border border-primary shadow-[0_0_12px_rgba(204,255,0,0.3)]"
+                          : "bg-white/[0.03] border border-white/[0.06] text-[#8a8a8a] hover:text-[#f5f5f5] hover:border-white/20"
+                      }`}
+                    >
+                      {batchNum}
+                    </button>
+                  ))}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setCurrentBatch((prev) => Math.min(totalBatches, prev + 1))}
+                  disabled={currentBatchSafe === totalBatches}
+                  className="flex items-center gap-1 rounded-xl bg-white/[0.04] border border-white/[0.08] hover:border-white/20 hover:text-[#f5f5f5] px-3 py-1.5 font-mono text-xs font-semibold text-[#8a8a8a] transition-colors disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
+                >
+                  <span>Next Batch</span>
+                  <ChevronRight className="size-3.5" />
+                </button>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Empty State */}
         {(!filteredLearners || filteredLearners.length === 0) && (

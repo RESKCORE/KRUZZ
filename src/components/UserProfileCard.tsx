@@ -9,7 +9,9 @@ import {
   BookOpen,
   Camera,
   Flame,
+  Globe,
   ImagePlus,
+  Loader2,
   Lock,
   Share2,
   ShieldCheck,
@@ -31,10 +33,32 @@ export function UserProfileCard({ className = "" }: UserProfileCardProps) {
   const { points, rank, awards } = useWallet();
   const { current: streakCurrent } = useStreak();
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [isUpdatingPrivacy, setIsUpdatingPrivacy] = useState(false);
   const picInputRef = useRef<HTMLInputElement>(null);
   const bannerInputRef = useRef<HTMLInputElement>(null);
   const generateUploadUrl = useMutation(api.users.generateProfileUploadUrl);
   const setProfileMedia = useMutation(api.users.setProfileMedia);
+  const updateProfilePrivacy = useMutation(api.users.updateProfilePrivacy);
+
+  const isPublic = Boolean(profile?.isPublic);
+
+  async function handleTogglePrivacy(nextState?: boolean) {
+    if (!isAuthenticated) return;
+    const target = typeof nextState === "boolean" ? nextState : !isPublic;
+    setIsUpdatingPrivacy(true);
+    try {
+      await updateProfilePrivacy({ isPublic: target });
+      toast.success(
+        target
+          ? "Profile is now Public! Anyone with your link or QR code can view your dossier."
+          : "Profile is now Private. Your dossier and QR code are hidden from the public.",
+      );
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to update profile privacy");
+    } finally {
+      setIsUpdatingPrivacy(false);
+    }
+  }
 
   const cloudProgress = useQuery(
     api.caseProgress.getAllUserProgress,
@@ -172,9 +196,25 @@ export function UserProfileCard({ className = "" }: UserProfileCardProps) {
             {rank.name}
           </span>
 
-          <span className="rounded-full bg-[#080808]/70 backdrop-blur-md px-2.5 py-1 font-mono text-[10px] text-[#8a8a8a] border border-white/[0.08]">
-            {isAuthenticated ? `UID: #${handle.slice(0, 7)}` : "GUEST SEAT"}
-          </span>
+          <div className="flex items-center gap-1.5">
+            {isAuthenticated && (
+              <span
+                className={`inline-flex items-center gap-1 rounded-full backdrop-blur-md px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-wider border ${
+                  isPublic
+                    ? "bg-[#080808]/80 border-primary/30 text-primary"
+                    : "bg-[#080808]/80 border-amber-500/30 text-amber-400"
+                }`}
+              >
+                <span
+                  className={`size-1.5 rounded-full ${isPublic ? "bg-primary animate-pulse" : "bg-amber-400"}`}
+                />
+                {isPublic ? "Public" : "Private"}
+              </span>
+            )}
+            <span className="rounded-full bg-[#080808]/70 backdrop-blur-md px-2.5 py-1 font-mono text-[10px] text-[#8a8a8a] border border-white/[0.08]">
+              {isAuthenticated ? `UID: #${handle.slice(0, 7)}` : "GUEST SEAT"}
+            </span>
+          </div>
         </div>
 
         {/* Banner edit control */}
@@ -224,14 +264,42 @@ export function UserProfileCard({ className = "" }: UserProfileCardProps) {
           {/* Action Buttons */}
           <div className="flex items-center gap-2 mb-1">
             {isAuthenticated ? (
-              <button
-                type="button"
-                onClick={() => setIsShareModalOpen(true)}
-                className="neu-btn flex items-center gap-1.5 rounded-full px-4 py-1.5 font-mono text-xs font-semibold text-[#f5f5f5] hover:border-primary/40 hover:text-primary active:scale-95 transition-all cursor-pointer"
-              >
-                <Share2 className="size-3.5 text-primary" />
-                <span>Share</span>
-              </button>
+              <>
+                {/* Quick Privacy Toggle Pill Button */}
+                <button
+                  type="button"
+                  onClick={() => handleTogglePrivacy()}
+                  disabled={isUpdatingPrivacy}
+                  title={
+                    isPublic
+                      ? "Profile is Public. Click to switch to Private."
+                      : "Profile is Private. Click to switch to Public."
+                  }
+                  className={`flex items-center gap-1.5 rounded-full px-3.5 py-1.5 font-mono text-xs font-semibold transition-all cursor-pointer border ${
+                    isPublic
+                      ? "border-primary/40 bg-primary/10 text-primary hover:bg-primary/20 shadow-[0_0_12px_rgba(204,255,0,0.15)]"
+                      : "border-amber-500/30 bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 shadow-[0_0_12px_rgba(245,158,11,0.15)]"
+                  }`}
+                >
+                  {isUpdatingPrivacy ? (
+                    <Loader2 className="size-3.5 animate-spin" />
+                  ) : isPublic ? (
+                    <Globe className="size-3.5 text-primary" />
+                  ) : (
+                    <Lock className="size-3.5 text-amber-400" />
+                  )}
+                  <span>{isPublic ? "Public" : "Private"}</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setIsShareModalOpen(true)}
+                  className="neu-btn flex items-center gap-1.5 rounded-full px-4 py-1.5 font-mono text-xs font-semibold text-[#f5f5f5] hover:border-primary/40 hover:text-primary active:scale-95 transition-all cursor-pointer"
+                >
+                  <Share2 className="size-3.5 text-primary" />
+                  <span>Share</span>
+                </button>
+              </>
             ) : (
               <Link
                 to="/sign-in"
@@ -255,6 +323,59 @@ export function UserProfileCard({ className = "" }: UserProfileCardProps) {
           </div>
           <p className="font-mono text-xs text-[#8a8a8a]">@{handle}</p>
         </div>
+
+        {/* Profile Visibility Control Bar */}
+        {isAuthenticated && (
+          <div className="mt-3 flex items-center justify-between rounded-2xl bg-white/[0.02] border border-white/[0.06] p-2.5 px-3">
+            <div className="flex items-center gap-2.5">
+              <div
+                className={`p-1.5 rounded-xl border ${
+                  isPublic
+                    ? "bg-primary/10 border-primary/30 text-primary"
+                    : "bg-amber-500/10 border-amber-500/30 text-amber-400"
+                }`}
+              >
+                {isPublic ? <Globe className="size-3.5" /> : <Lock className="size-3.5" />}
+              </div>
+              <div>
+                <div className="flex items-center gap-1.5">
+                  <span className="font-mono text-xs font-bold text-[#f5f5f5]">
+                    {isPublic ? "Public Profile" : "Private Profile"}
+                  </span>
+                  <span
+                    className={`size-1.5 rounded-full ${
+                      isPublic ? "bg-primary animate-pulse" : "bg-amber-400"
+                    }`}
+                  />
+                </div>
+                <p className="font-mono text-[10px] text-[#8a8a8a]">
+                  {isPublic
+                    ? "Visible to anyone via link or QR code"
+                    : "Hidden from public · QR disabled"}
+                </p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => handleTogglePrivacy()}
+              disabled={isUpdatingPrivacy}
+              className={`flex items-center gap-1 rounded-xl px-2.5 py-1 font-mono text-[11px] font-bold transition-all cursor-pointer border ${
+                isPublic
+                  ? "bg-white/[0.04] border-white/10 text-[#8a8a8a] hover:text-[#f5f5f5] hover:border-white/20"
+                  : "bg-primary text-primary-foreground border-primary hover:scale-105 shadow-[0_0_10px_rgba(204,255,0,0.3)]"
+              }`}
+            >
+              {isUpdatingPrivacy ? (
+                <Loader2 className="size-3 animate-spin" />
+              ) : isPublic ? (
+                <span>Make Private</span>
+              ) : (
+                <span>Turn Public</span>
+              )}
+            </button>
+          </div>
+        )}
       </div>
 
       {/* 3. Three-Metric Stats Bar */}
@@ -346,6 +467,7 @@ export function UserProfileCard({ className = "" }: UserProfileCardProps) {
       <ShareProfileModal
         isOpen={isShareModalOpen}
         onClose={() => setIsShareModalOpen(false)}
+        onTogglePrivacy={handleTogglePrivacy}
         user={{
           profileId: profile?.publicProfileId || "",
           name: displayName,
@@ -357,6 +479,7 @@ export function UserProfileCard({ className = "" }: UserProfileCardProps) {
           totalCases: caseStudies.length,
           avatarUrl,
           bannerUrl,
+          isPublic,
         }}
       />
     </div>

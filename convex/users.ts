@@ -146,7 +146,7 @@ export const getCurrentUserProfile = query({
       bannerUrl: user.bannerUrl,
       points: user.points,
       rank: user.rank,
-      isPublic: user.isPublic ?? true,
+      isPublic: user.isPublic ?? false,
       createdAt: user.createdAt,
       streak: {
         current: streak?.current ?? 0,

@@ -436,6 +436,7 @@ function PublicProfilePage() {
           totalCases: stats.totalCasesCount,
           avatarUrl: imageUrl,
           bannerUrl: bannerUrl || "/Observer.jpg",
+          isPublic: true,
         }}
       />
     </AppChrome>

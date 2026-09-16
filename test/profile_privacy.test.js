@@ -238,3 +238,37 @@ test("Profile Privacy 10: Orphan storage cleanup identifies and cleans unreferen
   assert.equal(metric.user, undefined);
   assert.equal(metric.email, undefined);
 });
+
+test("Profile Privacy 11: User can toggle profile privacy between public and private", () => {
+  const db = createMockUsersDb();
+  const user = db.users.find((u) => u._id === "user_doc_67890");
+  assert.equal(user.isPublic, false, "Initial state should be private");
+
+  // Initial query returns null
+  assert.equal(getPublicProfile(db, { publicProfileId: user.publicProfileId }), null);
+
+  // Toggle to public
+  user.isPublic = true;
+  const publicProfile = getPublicProfile(db, { publicProfileId: user.publicProfileId });
+  assert.notEqual(publicProfile, null, "Query should resolve once made public");
+  assert.equal(publicProfile.publicProfileId, user.publicProfileId);
+
+  // Toggle back to private
+  user.isPublic = false;
+  assert.equal(getPublicProfile(db, { publicProfileId: user.publicProfileId }), null);
+});
+
+test("Profile Privacy 12: Share feature suppresses QR code generation when profile is private", () => {
+  // Pure predicate matching ShareProfileModal's generation guard
+  function shouldGenerateQR(modalIsOpen, isPublic) {
+    return Boolean(modalIsOpen && isPublic === true);
+  }
+
+  // Private profile: modal opened -> must NOT generate QR
+  assert.equal(shouldGenerateQR(true, false), false, "Private profile must suppress QR generation");
+  assert.equal(shouldGenerateQR(true, undefined), false, "Undefined isPublic must suppress QR generation");
+  assert.equal(shouldGenerateQR(false, true), false, "Closed modal must not generate QR");
+
+  // Public profile: modal opened -> must generate QR
+  assert.equal(shouldGenerateQR(true, true), true, "Public profile must generate QR");
+});

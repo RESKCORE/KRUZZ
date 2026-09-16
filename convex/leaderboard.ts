@@ -1,4 +1,5 @@
 import { query } from "./_generated/server";
+import { v } from "convex/values";
 
 /**
  * Global Leaderboard:
@@ -8,8 +9,10 @@ import { query } from "./_generated/server";
  * Strictly returns `completedCasesCount` instead of user points.
  */
 export const getTopLearners = query({
-  args: {},
-  handler: async (ctx) => {
+  args: {
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
     const users = await ctx.db.query("users").collect();
 
     const results = await Promise.all(
@@ -50,7 +53,8 @@ export const getTopLearners = query({
       return a.createdAt - b.createdAt;
     });
 
-    return results.slice(0, 50).map((u) => ({
+    const limit = args.limit ?? 300;
+    return results.slice(0, limit).map((u) => ({
       _id: u._id,
       name: u.name,
       completedCasesCount: u.completedCasesCount,
