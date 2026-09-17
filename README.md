@@ -1,5 +1,7 @@
 <p align="center">
-  <img src="public/logo.png" alt="KRUZZ Logo" width="160" style="border-radius: 24px;" />
+  <a href="https://kruzz.indevs.in">
+    <img src="public/Banner.png" alt="KRUZZ — Interactive Real-World System Architecture" width="100%" style="border-radius: 14px;" />
+  </a>
 </p>
 
 <h1 align="center">KRUZZ</h1>

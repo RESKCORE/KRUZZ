@@ -45,7 +45,7 @@ websockets
 
 1. In repository **Settings** $\rightarrow$ **General**.
 2. Scroll to **Social preview**.
-3. Upload [`public/kruzz-linkedin-launch.png`](../public/kruzz-linkedin-launch.png) (or export an image from [`public/linkedin_launch.html`](../public/linkedin_launch.html)).
+3. Upload [`public/Banner.png`](../public/Banner.png) or [`public/kruzz-linkedin-launch.png`](../public/kruzz-linkedin-launch.png).
 4. This ensures that whenever someone shares your GitHub link on X, LinkedIn, Discord, or Reddit, it unfurls with a sleek dark-mode preview card.
 
 ---
