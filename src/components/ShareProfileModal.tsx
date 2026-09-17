@@ -592,7 +592,9 @@ export function ShareProfileModal({
         <DialogHeader>
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
-              <span className={`size-2 rounded-full ${isPublic ? "recording-dot" : "bg-amber-400"}`} />
+              <span
+                className={`size-2 rounded-full ${isPublic ? "recording-dot" : "bg-amber-400"}`}
+              />
               <p
                 className={`font-mono text-[10px] uppercase tracking-widest font-bold ${
                   isPublic ? "text-[#ccff00]" : "text-amber-400"

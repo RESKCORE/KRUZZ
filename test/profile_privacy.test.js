@@ -266,7 +266,11 @@ test("Profile Privacy 12: Share feature suppresses QR code generation when profi
 
   // Private profile: modal opened -> must NOT generate QR
   assert.equal(shouldGenerateQR(true, false), false, "Private profile must suppress QR generation");
-  assert.equal(shouldGenerateQR(true, undefined), false, "Undefined isPublic must suppress QR generation");
+  assert.equal(
+    shouldGenerateQR(true, undefined),
+    false,
+    "Undefined isPublic must suppress QR generation",
+  );
   assert.equal(shouldGenerateQR(false, true), false, "Closed modal must not generate QR");
 
   // Public profile: modal opened -> must generate QR

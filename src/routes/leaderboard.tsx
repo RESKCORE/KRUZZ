@@ -457,7 +457,8 @@ function LeaderboardPage() {
                 <strong className="text-[#f5f5f5]">
                   {filteredLearners.length > 0 ? startIndex + 1 : 0}–{endIndex}
                 </strong>{" "}
-                of <strong className="text-[#f5f5f5]">{filteredLearners.length}</strong> Investigators
+                of <strong className="text-[#f5f5f5]">{filteredLearners.length}</strong>{" "}
+                Investigators
               </span>
               <span className="rounded-md bg-white/[0.04] border border-white/[0.08] px-2 py-0.5 text-[10px] text-primary font-bold">
                 30 per batch
