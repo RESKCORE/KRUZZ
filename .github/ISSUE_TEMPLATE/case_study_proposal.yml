@@ -1,0 +1,70 @@
+name: "💡 Propose a New System Design Case Study"
+description: "Suggest a real-world system architecture, distributed algorithm, or high-scale case study to add to KRUZZ"
+title: "[Case Proposal]: "
+labels: ["curriculum", "enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ### Thanks for proposing a new case study for KRUZZ!
+        We prioritize case studies that unpack real-world engineering challenges, distributed systems, and scalable architectures.
+
+  - type: input
+    id: system_name
+    attributes:
+      label: System or Pattern Name
+      description: What system or architecture pattern do you want to break down?
+      placeholder: "e.g., How Does Netflix CDN Route Video Traffic?, How Does Stripe Ensure Idempotency?"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Proposed Track / Category
+      options:
+        - "Web Systems"
+        - "Distributed Data & Storage"
+        - "Security & Identity"
+        - "Realtime & Communication"
+        - "Reliability & Scalability"
+        - "Advanced Distributed Architectures"
+        - "Foundations (OOP)"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: difficulty
+    attributes:
+      label: Difficulty Level
+      options:
+        - "Beginner"
+        - "Intermediate"
+        - "Advanced"
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem_statement
+    attributes:
+      label: The Real-World Crisis or Driving Problem
+      description: What is the relatable crisis or real-world problem statement? (Section 01)
+      placeholder: "e.g., Millions of users request the same 4K movie at 8 PM on Friday night. A single origin server would melt in milliseconds..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: core_concepts
+    attributes:
+      label: Core Architectural Concepts & Invariants
+      description: What engineering principles does this teach?
+      placeholder: "e.g., Consistent hashing, edge caching, DNS Geo-steering, Cache warming"
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: authoring_interest
+    attributes:
+      label: Contribution Willingness
+      options:
+        - label: "I would like to author or co-author this case study using the KRUZZ prompt template!"
