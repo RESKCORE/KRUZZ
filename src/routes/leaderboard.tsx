@@ -88,18 +88,18 @@ function LeaderboardPage() {
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 flex flex-col gap-8">
       {/* 1. Header Telemetry & Title */}
-      <div className="border-b border-white/[0.08] pb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
+      <div className="border-b-2 border-black pb-6 flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2 font-mono text-xs text-primary">
-            <span className="size-2 rounded-full bg-primary animate-pulse" />
-            <span className="tracking-widest uppercase font-semibold">
+          <div className="flex items-center gap-2 font-mono text-xs text-black">
+            <span className="size-2.5 rounded-full bg-black ring-2 ring-black/20" />
+            <span className="tracking-widest uppercase font-black">
               GLOBAL TELEMETRY · MERITOCRACY STANDINGS
             </span>
           </div>
-          <h1 className="mt-2 text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-[#f5f5f5]">
+          <h1 className="mt-2 text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-black">
             Investigator Leaderboard
           </h1>
-          <p className="mt-1.5 text-xs sm:text-sm text-[#8a8a8a] max-w-2xl">
+          <p className="mt-1.5 text-xs sm:text-sm text-black font-medium max-w-2xl">
             Ranked strictly by verified distributed system engineering cases completed.
             Investigation badges and curriculum completion determine global standings.
           </p>
@@ -107,16 +107,18 @@ function LeaderboardPage() {
 
         {/* User Standing Pill */}
         {user && (
-          <div className="flex items-center gap-3 rounded-2xl bg-white/[0.03] border border-white/[0.08] p-3.5 backdrop-blur-md">
-            <div className="grid size-10 place-items-center rounded-xl bg-primary/10 border border-primary/30 text-primary font-mono font-black text-sm">
+          <div className="flex items-center gap-3 rounded-2xl bg-white border-2 border-black p-3.5 shadow-xs">
+            <div className="grid size-10 place-items-center rounded-xl bg-black border-2 border-black text-white font-mono font-black text-sm">
               {userRankIndex >= 0 ? `#${userRankIndex + 1}` : "—"}
             </div>
             <div>
               <div className="flex items-center gap-1.5">
-                <span className="text-xs font-bold text-[#f5f5f5]">Your Standing</span>
-                <span className="text-[10px] font-mono text-primary font-bold">{rank.name}</span>
+                <span className="text-xs font-black text-black">Your Standing</span>
+                <span className="text-[10px] font-mono text-black font-black underline">
+                  {rank.name}
+                </span>
               </div>
-              <p className="font-mono text-[11px] text-[#8a8a8a]">
+              <p className="font-mono text-[11px] text-black font-bold">
                 {userLeaderboardEntry
                   ? `${userLeaderboardEntry.completedCasesCount} of ${totalCases} cases cleared`
                   : "Solve cases to enter rankings"}
@@ -124,7 +126,7 @@ function LeaderboardPage() {
             </div>
             <Link
               to="/cases"
-              className="ml-2 hidden sm:inline-flex items-center gap-1 text-xs font-mono text-primary hover:underline"
+              className="ml-2 hidden sm:inline-flex items-center gap-1 text-xs font-mono text-black font-black hover:underline"
             >
               <span>Arena</span>
               <ArrowRight className="size-3" />
@@ -137,8 +139,8 @@ function LeaderboardPage() {
       {topLearners && topLearners.length > 0 && (
         <div className="space-y-4">
           <div className="flex items-center gap-2">
-            <Crown className="size-4 text-primary" />
-            <h2 className="text-sm font-bold uppercase tracking-wider text-[#f5f5f5]">
+            <Crown className="size-4 text-black" />
+            <h2 className="text-sm font-black uppercase tracking-wider text-black">
               Curriculum Vanguard · Top 3
             </h2>
           </div>
@@ -152,9 +154,7 @@ function LeaderboardPage() {
                   badgeLabel="2ND PLACE"
                   user={top2}
                   totalCases={totalCases}
-                  accentClass="from-slate-400/15 via-slate-400/5 to-transparent border-slate-300/30 text-slate-200"
-                  ringClass="ring-slate-300/60"
-                  icon={<Medal className="size-5 text-slate-300" />}
+                  icon={<Medal className="size-4 text-white" />}
                 />
               ) : (
                 <EmptyPodiumSlot position={2} label="Unclaimed Silver" />
@@ -170,9 +170,7 @@ function LeaderboardPage() {
                   user={top1}
                   totalCases={totalCases}
                   isFirst={true}
-                  accentClass="from-yellow-500/20 via-yellow-500/5 to-transparent border-yellow-500/40 text-yellow-400 shadow-[0_0_30px_rgba(234,179,8,0.15)]"
-                  ringClass="ring-yellow-400/80"
-                  icon={<Trophy className="size-6 text-yellow-400" />}
+                  icon={<Trophy className="size-5 text-white" />}
                 />
               ) : (
                 <EmptyPodiumSlot position={1} label="Unclaimed Champion" />
@@ -187,9 +185,7 @@ function LeaderboardPage() {
                   badgeLabel="3RD PLACE"
                   user={top3}
                   totalCases={totalCases}
-                  accentClass="from-amber-700/15 via-amber-700/5 to-transparent border-amber-600/30 text-amber-300"
-                  ringClass="ring-amber-500/60"
-                  icon={<Award className="size-5 text-amber-500" />}
+                  icon={<Award className="size-4 text-white" />}
                 />
               ) : (
                 <EmptyPodiumSlot position={3} label="Unclaimed Bronze" />
@@ -200,26 +196,26 @@ function LeaderboardPage() {
       )}
 
       {/* 3. Global Standings Table / List */}
-      <div className="glass-panel rounded-3xl p-4 sm:p-6 border border-white/[0.08] shadow-[0_20px_40px_rgba(0,0,0,0.5)]">
+      <div className="glass-panel rounded-3xl p-4 sm:p-6 border-2 border-black bg-white text-black shadow-xs">
         {/* Controls Row */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 pb-4 border-b border-white/[0.06]">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 pb-4 border-b-2 border-black">
           <div className="flex items-center gap-2">
-            <Trophy className="size-4.5 text-primary" />
-            <h3 className="font-bold text-sm sm:text-base text-[#f5f5f5]">
+            <Trophy className="size-4.5 text-black" />
+            <h3 className="font-black text-sm sm:text-base text-black">
               Global Meritocracy Standings
             </h3>
-            <span className="font-mono text-xs text-[#8a8a8a] bg-white/[0.04] px-2 py-0.5 rounded-full">
+            <span className="font-mono text-xs text-black font-black bg-neutral-100 border border-black px-2 py-0.5 rounded-full">
               {filteredLearners.length}{" "}
               {filteredLearners.length === 1 ? "Investigator" : "Investigators"}
             </span>
-            <span className="font-mono text-[10px] text-primary bg-primary/10 border border-primary/30 px-2 py-0.5 rounded-full font-bold">
+            <span className="font-mono text-[10px] text-white bg-black border-2 border-black px-2 py-0.5 rounded-full font-black">
               30 per batch
             </span>
           </div>
 
           {/* Search bar */}
           <div className="relative w-full sm:w-64">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-[#8a8a8a]" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-black font-bold" />
             <input
               type="text"
               placeholder="Search investigator..."
@@ -228,7 +224,7 @@ function LeaderboardPage() {
                 setSearchQuery(e.target.value);
                 setCurrentBatch(1);
               }}
-              className="w-full rounded-xl bg-white/[0.04] border border-white/[0.08] pl-8.5 pr-3 py-1.5 text-xs text-[#f5f5f5] placeholder-[#8a8a8a] outline-none focus:border-primary/50 transition-colors"
+              className="w-full rounded-xl bg-white border-2 border-black pl-8.5 pr-3 py-1.5 text-xs text-black placeholder:text-neutral-500 font-medium outline-none focus:ring-2 focus:ring-black transition-colors"
             />
           </div>
         </div>
@@ -237,7 +233,7 @@ function LeaderboardPage() {
         <div className="hidden lg:block overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead>
-              <tr className="border-b border-white/[0.06] text-[#8a8a8a] font-mono uppercase tracking-wider text-[10px]">
+              <tr className="border-b-2 border-black text-black font-mono uppercase tracking-wider text-[10px] font-black">
                 <th className="py-3 px-4 w-16">Rank</th>
                 <th className="py-3 px-4">Investigator</th>
                 <th className="py-3 px-4 w-44">System Tier</th>
@@ -245,7 +241,7 @@ function LeaderboardPage() {
                 <th className="py-3 px-4 w-28 text-right">Dossier</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/[0.04]">
+            <tbody className="divide-y divide-black/10">
               {paginatedLearners.map((u, idx) => {
                 const rankNumber = startIndex + idx + 1;
                 const isCurrentUser =
@@ -258,23 +254,21 @@ function LeaderboardPage() {
                 return (
                   <tr
                     key={u._id}
-                    className={`transition-colors hover:bg-white/[0.02] ${
-                      isCurrentUser
-                        ? "bg-[var(--theme-surface,#182608)]/40 border-l-2 border-primary"
-                        : ""
+                    className={`transition-colors hover:bg-neutral-50 ${
+                      isCurrentUser ? "bg-neutral-100 font-bold border-l-4 border-black" : ""
                     }`}
                   >
                     {/* Rank */}
                     <td className="py-3.5 px-4 font-mono font-bold">
                       <span
-                        className={`inline-grid size-7 place-items-center rounded-lg text-xs font-mono font-black ${
+                        className={`inline-grid size-7 place-items-center rounded-lg text-xs font-mono font-black border border-black ${
                           rankNumber === 1
-                            ? "bg-yellow-500 text-black shadow-[0_0_10px_rgba(234,179,8,0.5)]"
+                            ? "bg-black text-white"
                             : rankNumber === 2
-                              ? "bg-slate-300 text-black"
+                              ? "bg-neutral-800 text-white"
                               : rankNumber === 3
-                                ? "bg-amber-600 text-white"
-                                : "bg-white/[0.05] text-[#8a8a8a]"
+                                ? "bg-neutral-700 text-white"
+                                : "bg-neutral-100 text-black"
                         }`}
                       >
                         {rankNumber}
@@ -284,30 +278,30 @@ function LeaderboardPage() {
                     {/* Investigator */}
                     <td className="py-3.5 px-4">
                       <div className="flex items-center gap-3">
-                        <div className="relative size-8.5 rounded-full bg-white/[0.06] overflow-hidden border border-white/[0.1] shrink-0">
+                        <div className="relative size-8.5 rounded-full bg-white overflow-hidden border-2 border-black shrink-0">
                           {u.imageUrl ? (
                             <img src={u.imageUrl} alt={u.name} className="size-full object-cover" />
                           ) : (
-                            <div className="flex size-full items-center justify-center font-mono text-xs font-bold text-primary">
+                            <div className="flex size-full items-center justify-center font-mono text-xs font-black text-black">
                               {u.name.slice(0, 2).toUpperCase()}
                             </div>
                           )}
                         </div>
                         <div>
                           <div className="flex items-center gap-1.5">
-                            <span className="font-bold text-[#f5f5f5]">{u.name}</span>
+                            <span className="font-black text-black">{u.name}</span>
                             {isCurrentUser && (
-                              <span className="rounded bg-primary/20 border border-primary/40 px-1 py-0.2 font-mono text-[9px] font-black uppercase text-primary">
+                              <span className="rounded bg-black text-white px-1.5 py-0.2 font-mono text-[9px] font-black uppercase border border-black">
                                 YOU
                               </span>
                             )}
                           </div>
                           {u.publicProfileId ? (
-                            <span className="font-mono text-[10px] text-[#8a8a8a]">
+                            <span className="font-mono text-[10px] text-neutral-600 font-bold">
                               @{u.publicProfileId}
                             </span>
                           ) : (
-                            <span className="font-mono text-[10px] text-[#8a8a8a]">
+                            <span className="font-mono text-[10px] text-neutral-600 font-bold">
                               Investigator
                             </span>
                           )}
@@ -317,8 +311,8 @@ function LeaderboardPage() {
 
                     {/* System Tier */}
                     <td className="py-3.5 px-4">
-                      <span className="inline-flex items-center gap-1 rounded-full bg-white/[0.04] border border-white/[0.08] px-2.5 py-1 font-mono text-[11px] text-[#f5f5f5]">
-                        <ShieldCheck className="size-3 text-primary" />
+                      <span className="inline-flex items-center gap-1 rounded-full bg-neutral-100 border-2 border-black px-2.5 py-1 font-mono text-[11px] text-black font-black">
+                        <ShieldCheck className="size-3 text-black stroke-[2.5]" />
                         <span>{u.rank || "Systems Thinker"}</span>
                       </span>
                     </td>
@@ -326,16 +320,16 @@ function LeaderboardPage() {
                     {/* Curriculum Mastery */}
                     <td className="py-3.5 px-4 text-right">
                       <div className="flex flex-col items-end gap-1">
-                        <span className="font-mono text-xs font-bold text-primary flex items-center gap-1">
-                          <CheckCircle2 className="size-3.5" />
+                        <span className="font-mono text-xs font-black text-black flex items-center gap-1">
+                          <CheckCircle2 className="size-3.5 stroke-[2.5]" />
                           <span>{u.completedCasesCount ?? 0}</span>
-                          <span className="text-[#8a8a8a] font-normal text-[11px]">
+                          <span className="text-black font-normal text-[11px]">
                             / {totalCases} solved
                           </span>
                         </span>
-                        <div className="h-1.5 w-28 bg-white/[0.06] rounded-full overflow-hidden">
+                        <div className="h-1.5 w-28 bg-neutral-200 border border-black rounded-full overflow-hidden">
                           <div
-                            className="h-full bg-primary rounded-full"
+                            className="h-full bg-black rounded-full"
                             style={{ width: `${masteryPercent}%` }}
                           />
                         </div>
@@ -348,13 +342,13 @@ function LeaderboardPage() {
                         <Link
                           to="/profile/$profileId"
                           params={{ profileId: u.publicProfileId }}
-                          className="inline-flex items-center gap-1 rounded-lg bg-white/[0.04] border border-white/[0.08] px-2.5 py-1 font-mono text-[10px] font-semibold text-[#b8b8b8] hover:text-[#f5f5f5] hover:border-primary/40 transition-colors"
+                          className="inline-flex items-center gap-1.5 rounded-lg bg-white border-2 border-black px-3 py-1 font-mono text-[11px] font-black text-black hover:bg-black hover:text-white transition-colors shadow-xs cursor-pointer"
                         >
                           <span>Dossier</span>
                           <ExternalLink className="size-3" />
                         </Link>
                       ) : (
-                        <span className="font-mono text-[10px] text-[#8a8a8a]">—</span>
+                        <span className="font-mono text-[10px] text-black font-bold">—</span>
                       )}
                     </td>
                   </tr>
@@ -364,7 +358,7 @@ function LeaderboardPage() {
           </table>
         </div>
 
-        {/* Mobile & Tablet View: Card Rows (Fluid & Responsive for Small Screens) */}
+        {/* Mobile & Tablet View: Card Rows */}
         <div className="lg:hidden space-y-2.5">
           {paginatedLearners.map((u, idx) => {
             const rankNumber = startIndex + idx + 1;
@@ -374,33 +368,31 @@ function LeaderboardPage() {
             return (
               <div
                 key={u._id}
-                className={`flex items-center justify-between rounded-2xl p-3 border transition-colors ${
-                  isCurrentUser
-                    ? "bg-[var(--theme-surface,#182608)]/60 border-primary/50 shadow-[0_0_15px_rgba(204,255,0,0.15)]"
-                    : "bg-white/[0.02] border-white/[0.06] hover:border-white/10"
+                className={`flex items-center justify-between rounded-2xl p-3 border-2 border-black bg-white transition-all shadow-xs ${
+                  isCurrentUser ? "bg-neutral-100" : "hover:bg-neutral-50"
                 }`}
               >
                 {/* Left: Rank & Avatar & Name */}
                 <div className="flex items-center gap-2.5 min-w-0">
                   <span
-                    className={`grid size-6 place-items-center rounded-lg text-[11px] font-mono font-black shrink-0 ${
+                    className={`grid size-6 place-items-center rounded-lg text-[11px] font-mono font-black shrink-0 border border-black ${
                       rankNumber === 1
-                        ? "bg-yellow-500 text-black"
+                        ? "bg-black text-white"
                         : rankNumber === 2
-                          ? "bg-slate-300 text-black"
+                          ? "bg-neutral-800 text-white"
                           : rankNumber === 3
-                            ? "bg-amber-600 text-white"
-                            : "bg-white/[0.06] text-[#8a8a8a]"
+                            ? "bg-neutral-700 text-white"
+                            : "bg-neutral-100 text-black"
                     }`}
                   >
                     {rankNumber}
                   </span>
 
-                  <div className="relative size-8 rounded-full bg-white/[0.06] overflow-hidden border border-white/[0.1] shrink-0">
+                  <div className="relative size-8 rounded-full bg-white overflow-hidden border-2 border-black shrink-0">
                     {u.imageUrl ? (
                       <img src={u.imageUrl} alt={u.name} className="size-full object-cover" />
                     ) : (
-                      <div className="flex size-full items-center justify-center font-mono text-[10px] font-bold text-primary">
+                      <div className="flex size-full items-center justify-center font-mono text-[10px] font-black text-black">
                         {u.name.slice(0, 2).toUpperCase()}
                       </div>
                     )}
@@ -408,14 +400,14 @@ function LeaderboardPage() {
 
                   <div className="min-w-0">
                     <div className="flex items-center gap-1.5">
-                      <p className="truncate text-xs font-bold text-[#f5f5f5]">{u.name}</p>
+                      <p className="truncate text-xs font-black text-black">{u.name}</p>
                       {isCurrentUser && (
-                        <span className="rounded bg-primary/20 border border-primary/40 px-1 font-mono text-[8px] font-black uppercase text-primary shrink-0">
+                        <span className="rounded bg-black text-white border border-black px-1 font-mono text-[8px] font-black uppercase shrink-0">
                           YOU
                         </span>
                       )}
                     </div>
-                    <p className="font-mono text-[10px] text-[#8a8a8a] truncate">
+                    <p className="font-mono text-[10px] text-neutral-600 font-bold truncate">
                       {u.rank || "Systems Thinker"}
                     </p>
                   </div>
@@ -423,19 +415,19 @@ function LeaderboardPage() {
 
                 {/* Right: Solved Count & Optional Dossier link */}
                 <div className="flex items-center gap-2 shrink-0 ml-2">
-                  <div className="rounded-xl bg-primary/10 border border-primary/30 px-2.5 py-1 text-right">
-                    <div className="flex items-center gap-1 font-mono text-xs font-bold text-primary">
-                      <CheckCircle2 className="size-3" />
+                  <div className="rounded-xl bg-neutral-100 border-2 border-black px-2.5 py-1 text-right">
+                    <div className="flex items-center gap-1 font-mono text-xs font-black text-black">
+                      <CheckCircle2 className="size-3 stroke-[2.5]" />
                       <span>{u.completedCasesCount ?? 0}</span>
                     </div>
-                    <p className="font-mono text-[9px] text-[#8a8a8a]">solved</p>
+                    <p className="font-mono text-[9px] text-black font-bold">solved</p>
                   </div>
 
                   {u.publicProfileId && (
                     <Link
                       to="/profile/$profileId"
                       params={{ profileId: u.publicProfileId }}
-                      className="grid size-7 place-items-center rounded-lg bg-white/[0.05] border border-white/[0.08] text-[#8a8a8a] hover:text-[#f5f5f5]"
+                      className="grid size-7 place-items-center rounded-lg bg-white border-2 border-black text-black hover:bg-black hover:text-white transition-colors shadow-xs"
                       title="View Dossier"
                     >
                       <ExternalLink className="size-3" />
@@ -449,22 +441,22 @@ function LeaderboardPage() {
 
         {/* Batch Pagination Controls */}
         {filteredLearners.length > 0 && (
-          <div className="mt-6 pt-4 border-t border-white/[0.06] flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="mt-6 pt-4 border-t-2 border-black flex flex-col sm:flex-row items-center justify-between gap-4">
             {/* Batch Info */}
-            <div className="flex items-center gap-2 font-mono text-xs text-[#8a8a8a]">
+            <div className="flex items-center gap-2 font-mono text-xs text-black">
               <span>
                 Showing{" "}
-                <strong className="text-[#f5f5f5]">
+                <strong className="text-black font-black">
                   {filteredLearners.length > 0 ? startIndex + 1 : 0}–{endIndex}
                 </strong>{" "}
-                of <strong className="text-[#f5f5f5]">{filteredLearners.length}</strong>{" "}
+                of <strong className="text-black font-black">{filteredLearners.length}</strong>{" "}
                 Investigators
               </span>
-              <span className="rounded-md bg-white/[0.04] border border-white/[0.08] px-2 py-0.5 text-[10px] text-primary font-bold">
+              <span className="rounded-md bg-white border-2 border-black px-2 py-0.5 text-[10px] text-black font-black">
                 30 per batch
               </span>
               {totalBatches > 1 && (
-                <span className="hidden sm:inline text-[#8a8a8a]">
+                <span className="hidden sm:inline text-black font-bold">
                   · Batch {currentBatchSafe} of {totalBatches}
                 </span>
               )}
@@ -477,7 +469,7 @@ function LeaderboardPage() {
                   type="button"
                   onClick={() => setCurrentBatch((prev) => Math.max(1, prev - 1))}
                   disabled={currentBatchSafe === 1}
-                  className="flex items-center gap-1 rounded-xl bg-white/[0.04] border border-white/[0.08] hover:border-white/20 hover:text-[#f5f5f5] px-3 py-1.5 font-mono text-xs font-semibold text-[#8a8a8a] transition-colors disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
+                  className="flex items-center gap-1 rounded-xl bg-white border-2 border-black hover:bg-neutral-100 px-3 py-1.5 font-mono text-xs font-black text-black transition-colors disabled:opacity-30 disabled:pointer-events-none cursor-pointer shadow-xs"
                 >
                   <ChevronLeft className="size-3.5" />
                   <span>Prev Batch</span>
@@ -490,10 +482,10 @@ function LeaderboardPage() {
                       key={batchNum}
                       type="button"
                       onClick={() => setCurrentBatch(batchNum)}
-                      className={`size-8 rounded-xl font-mono text-xs font-bold transition-all cursor-pointer ${
+                      className={`size-8 rounded-xl font-mono text-xs font-black border-2 border-black transition-all cursor-pointer ${
                         batchNum === currentBatchSafe
-                          ? "bg-primary text-primary-foreground border border-primary shadow-[0_0_12px_rgba(204,255,0,0.3)]"
-                          : "bg-white/[0.03] border border-white/[0.06] text-[#8a8a8a] hover:text-[#f5f5f5] hover:border-white/20"
+                          ? "bg-black text-white shadow-xs"
+                          : "bg-white text-black hover:bg-neutral-100"
                       }`}
                     >
                       {batchNum}
@@ -505,7 +497,7 @@ function LeaderboardPage() {
                   type="button"
                   onClick={() => setCurrentBatch((prev) => Math.min(totalBatches, prev + 1))}
                   disabled={currentBatchSafe === totalBatches}
-                  className="flex items-center gap-1 rounded-xl bg-white/[0.04] border border-white/[0.08] hover:border-white/20 hover:text-[#f5f5f5] px-3 py-1.5 font-mono text-xs font-semibold text-[#8a8a8a] transition-colors disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
+                  className="flex items-center gap-1 rounded-xl bg-white border-2 border-black hover:bg-neutral-100 px-3 py-1.5 font-mono text-xs font-black text-black transition-colors disabled:opacity-30 disabled:pointer-events-none cursor-pointer shadow-xs"
                 >
                   <span>Next Batch</span>
                   <ChevronRight className="size-3.5" />
@@ -518,13 +510,13 @@ function LeaderboardPage() {
         {/* Empty State */}
         {(!filteredLearners || filteredLearners.length === 0) && (
           <div className="py-12 text-center">
-            <Sparkles className="size-8 text-primary mx-auto mb-2 opacity-60" />
-            <p className="text-sm font-bold text-[#f5f5f5]">
+            <Sparkles className="size-8 text-black mx-auto mb-2 opacity-60" />
+            <p className="text-sm font-black text-black">
               {searchQuery
                 ? "No investigators found matching query"
                 : "No ranked investigators yet"}
             </p>
-            <p className="mt-1 text-xs text-[#8a8a8a] max-w-sm mx-auto">
+            <p className="mt-1 text-xs text-black font-medium max-w-sm mx-auto">
               Complete engineering investigations in the Arena Centre to establish your placement on
               the global leaderboard.
             </p>
@@ -548,27 +540,15 @@ interface PodiumCardProps {
   };
   totalCases: number;
   isFirst?: boolean;
-  accentClass: string;
-  ringClass: string;
   icon: React.ReactNode;
 }
 
-function PodiumCard({
-  badgeLabel,
-  user,
-  totalCases,
-  isFirst = false,
-  accentClass,
-  ringClass,
-  icon,
-}: PodiumCardProps) {
+function PodiumCard({ badgeLabel, user, totalCases, isFirst = false, icon }: PodiumCardProps) {
   return (
-    <div
-      className={`relative rounded-3xl bg-gradient-to-b ${accentClass} border p-5 sm:p-6 backdrop-blur-xl transition-transform hover:-translate-y-1`}
-    >
+    <div className="relative rounded-3xl bg-white border-2 border-black p-5 sm:p-6 shadow-xs transition-transform hover:-translate-y-1 text-black">
       {/* Top Badge & Icon */}
       <div className="flex items-center justify-between mb-4">
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-black/40 border border-white/[0.1] px-2.5 py-1 font-mono text-[10px] font-black uppercase tracking-wider">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-black text-white border-2 border-black px-3 py-1 font-mono text-[10px] font-black uppercase tracking-wider">
           {icon}
           <span>{badgeLabel}</span>
         </span>
@@ -577,7 +557,7 @@ function PodiumCard({
           <Link
             to="/profile/$profileId"
             params={{ profileId: user.publicProfileId }}
-            className="flex items-center gap-1 font-mono text-[10px] text-[#8a8a8a] hover:text-[#f5f5f5] transition-colors"
+            className="flex items-center gap-1 font-mono text-[11px] font-black text-black hover:underline"
           >
             <span>Dossier</span>
             <ExternalLink className="size-3" />
@@ -590,12 +570,12 @@ function PodiumCard({
         <div
           className={`relative ${
             isFirst ? "size-16" : "size-13"
-          } rounded-full bg-[#121212] overflow-hidden ring-2 ${ringClass} shrink-0`}
+          } rounded-full bg-white border-2 border-black overflow-hidden ring-2 ring-black shrink-0`}
         >
           {user.imageUrl ? (
             <img src={user.imageUrl} alt={user.name} className="size-full object-cover" />
           ) : (
-            <div className="flex size-full items-center justify-center font-mono text-base font-black text-primary">
+            <div className="flex size-full items-center justify-center font-mono text-base font-black text-black">
               {user.name.slice(0, 2).toUpperCase()}
             </div>
           )}
@@ -603,34 +583,36 @@ function PodiumCard({
 
         <div className="min-w-0">
           <h4
-            className={`font-black tracking-tight text-[#f5f5f5] truncate ${
+            className={`font-black tracking-tight text-black truncate ${
               isFirst ? "text-base sm:text-lg" : "text-sm sm:text-base"
             }`}
           >
             {user.name}
           </h4>
-          <p className="font-mono text-xs text-[#8a8a8a] truncate">
+          <p className="font-mono text-xs text-neutral-600 font-bold truncate">
             {user.rank || "Systems Thinker"}
           </p>
         </div>
       </div>
 
       {/* Stats Block */}
-      <div className="rounded-2xl bg-black/50 border border-white/[0.06] p-3 flex items-center justify-between">
+      <div className="rounded-2xl bg-neutral-50 border-2 border-black p-3 flex items-center justify-between">
         <div>
-          <p className="font-mono text-[10px] text-[#8a8a8a] uppercase tracking-wider">
+          <p className="font-mono text-[10px] text-black font-black uppercase tracking-wider">
             Verified Solved
           </p>
-          <div className="flex items-center gap-1.5 font-mono text-base font-black text-[#f5f5f5]">
-            <CheckCircle2 className="size-4 text-primary" />
+          <div className="flex items-center gap-1.5 font-mono text-base font-black text-black">
+            <CheckCircle2 className="size-4 text-black stroke-[2.5]" />
             <span>{user.completedCasesCount}</span>
-            <span className="text-xs font-normal text-[#8a8a8a]">/ {totalCases}</span>
+            <span className="text-xs font-bold text-black">/ {totalCases}</span>
           </div>
         </div>
 
         <div className="text-right">
-          <p className="font-mono text-[10px] text-[#8a8a8a] uppercase tracking-wider">Mastery</p>
-          <p className="font-mono text-sm font-bold text-primary">
+          <p className="font-mono text-[10px] text-black font-black uppercase tracking-wider">
+            Mastery
+          </p>
+          <p className="font-mono text-sm font-black text-black">
             {Math.min(100, Math.round(((user.completedCasesCount ?? 0) / totalCases) * 100))}%
           </p>
         </div>
@@ -641,11 +623,11 @@ function PodiumCard({
 
 function EmptyPodiumSlot({ position, label }: { position: number; label: string }) {
   return (
-    <div className="rounded-3xl bg-white/[0.02] border border-white/[0.06] border-dashed p-6 text-center">
-      <div className="grid size-10 place-items-center rounded-full bg-white/[0.04] mx-auto mb-2 font-mono text-xs text-[#8a8a8a]">
+    <div className="rounded-3xl bg-white border-2 border-dashed border-black p-6 text-center text-black">
+      <div className="grid size-10 place-items-center rounded-full bg-neutral-100 border border-black mx-auto mb-2 font-mono text-xs font-black text-black">
         #{position}
       </div>
-      <p className="font-mono text-xs text-[#8a8a8a]">{label}</p>
+      <p className="font-mono text-xs font-bold text-black">{label}</p>
     </div>
   );
 }

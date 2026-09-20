@@ -42,9 +42,9 @@ interface ShareProfileModalProps {
   onTogglePrivacy?: (isPublic: boolean) => Promise<void>;
 }
 
-const LIME = "#ccff00";
-const WHITE = "#f5f5f5";
-const MUTED = "#8a8a8a";
+const LIME = "#000000";
+const WHITE = "#ffffff";
+const MUTED = "#666666";
 const MONO = "'JetBrains Mono', monospace";
 const SANS = "-apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', Roboto, sans-serif";
 
@@ -588,36 +588,24 @@ export function ShareProfileModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-md rounded-3xl border border-white/[0.1] bg-[#090c09] p-5 text-[#f5f5f5] shadow-[0_24px_64px_rgba(0,0,0,0.85)] max-h-[92vh] overflow-y-auto">
-        <DialogHeader>
-          <div className="flex items-center justify-between gap-2">
+      <DialogContent className="w-[calc(100%-1.5rem)] max-w-2xl rounded-[1.75rem] border-2 border-black bg-white p-4 text-black shadow-2xl max-h-[90vh] overflow-y-auto sm:p-5">
+        <DialogHeader className="space-y-2">
+          <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2">
-              <span
-                className={`size-2 rounded-full ${isPublic ? "recording-dot" : "bg-amber-400"}`}
-              />
-              <p
-                className={`font-mono text-[10px] uppercase tracking-widest font-bold ${
-                  isPublic ? "text-[#ccff00]" : "text-amber-400"
-                }`}
-              >
+              <span className={`size-2 rounded-full ${isPublic ? "bg-black" : "bg-neutral-400"}`} />
+              <p className="font-mono text-[10px] uppercase tracking-widest font-black text-black">
                 {isPublic ? "Investigator QR Clearance" : "Private Profile Clearance"}
               </p>
             </div>
-            <span
-              className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 font-mono text-[10px] font-bold border ${
-                isPublic
-                  ? "bg-primary/10 border-primary/30 text-primary"
-                  : "bg-amber-500/10 border-amber-500/30 text-amber-400"
-              }`}
-            >
+            <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 font-mono text-[10px] font-black border-2 border-black bg-neutral-100 text-black">
               {isPublic ? <Globe className="size-3" /> : <Lock className="size-3" />}
               <span>{isPublic ? "Public" : "Private"}</span>
             </span>
           </div>
-          <DialogTitle className="text-lg font-bold tracking-tight text-[#f5f5f5] mt-1">
+          <DialogTitle className="text-xl font-black tracking-tight text-black mt-1">
             Share Your Investigator Profile
           </DialogTitle>
-          <DialogDescription className="text-xs text-[#8a8a8a]">
+          <DialogDescription className="text-xs text-neutral-600 font-medium">
             {isPublic
               ? "Anyone who scans this QR code will directly open your public profile and case studies without signing in."
               : "Your profile is currently private. Turn your profile to public to generate a scannable QR code and shareable badge."}
@@ -625,41 +613,26 @@ export function ShareProfileModal({
         </DialogHeader>
 
         {/* Dynamic Cyber QR Credential Card Preview */}
-        <div className="relative mt-3 overflow-hidden rounded-2xl border border-[#ccff00]/20 bg-[#060906] shadow-2xl">
-          {/* Subtle lime or amber glow in background */}
-          <div
-            className={`pointer-events-none absolute -top-16 left-1/2 -translate-x-1/2 size-44 rounded-full blur-3xl ${
-              isPublic ? "bg-[#ccff00]/10" : "bg-amber-500/10"
-            }`}
-          />
-
+        <div className="relative mt-3 overflow-hidden rounded-[1.35rem] border-2 border-black bg-white shadow-[0_8px_0_0_#000]">
           {/* Top Banner Cover Header */}
-          <div className="relative h-20 w-full overflow-hidden border-b border-white/[0.08] bg-[#080808]">
+          <div className="relative h-20 w-full overflow-hidden border-b-2 border-black bg-neutral-100 sm:h-24">
             <img
               src={user.bannerUrl || "/Observer.jpg"}
               alt="Profile Banner"
-              className="size-full object-cover opacity-85"
+              className="size-full object-cover"
             />
-            <div className="absolute inset-0 bg-gradient-to-b from-black/35 via-black/25 to-[#060906]/95 pointer-events-none" />
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(204,255,0,0.15)_0%,transparent_70%)] pointer-events-none" />
-
-            <div className="absolute top-2.5 right-3 z-10 rounded-full bg-black/60 backdrop-blur-md border border-white/10 px-2.5 py-0.5 font-mono text-[9px] text-[#8a8a8a]">
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+            <div className="absolute top-2.5 right-3 z-10 rounded-full bg-white border-2 border-black px-2.5 py-0.5 font-mono text-[9px] text-black font-black shadow-xs">
               UID: #{user.profileId ? user.profileId.slice(0, 8) : user.handle.slice(0, 8)}
             </div>
           </div>
 
-          <div className="p-5 pt-0">
+          <div className="p-3 pt-0 sm:p-4 sm:pt-0">
             {/* Card Top: Identity */}
-            <div className="relative z-10 flex items-center justify-between gap-3 border-b border-white/[0.06] pb-3 -mt-6">
-              <div className="flex items-center gap-3">
-                {/* Avatar with glowing ring */}
-                <div
-                  className={`relative size-12 shrink-0 rounded-full border-2 p-0.5 bg-[#090c09] ${
-                    isPublic
-                      ? "border-[#ccff00] shadow-[0_0_12px_rgba(204,255,0,0.3)]"
-                      : "border-amber-400 shadow-[0_0_12px_rgba(245,158,11,0.2)]"
-                  }`}
-                >
+            <div className="relative z-10 flex items-end justify-between gap-3 border-b-2 border-black/10 pb-3">
+              <div className="flex min-w-0 items-end gap-3">
+                {/* Avatar with ring */}
+                <div className="relative -mt-6 size-14 shrink-0 rounded-full border-2 border-black bg-white p-0.5 shadow-md">
                   {user.avatarUrl ? (
                     <img
                       src={user.avatarUrl}
@@ -667,31 +640,25 @@ export function ShareProfileModal({
                       className="size-full rounded-full object-cover"
                     />
                   ) : (
-                    <div
-                      className={`flex size-full items-center justify-center rounded-full bg-[#141b14] font-mono text-xs font-bold ${
-                        isPublic ? "text-[#ccff00]" : "text-amber-400"
-                      }`}
-                    >
+                    <div className="flex size-full items-center justify-center rounded-full bg-neutral-100 font-mono text-xs font-black text-black">
                       {(user.name || "K").charAt(0).toUpperCase()}
                     </div>
                   )}
                 </div>
 
-                <div className="pt-4">
-                  <div className="flex items-center gap-1.5">
-                    <h4 className="text-sm font-bold text-[#f5f5f5] leading-tight line-clamp-1">
+                <div className="min-w-0 pb-0.5">
+                  <div className="flex min-w-0 items-center gap-1.5">
+                    <h4 className="min-w-0 truncate text-base font-black leading-tight text-black">
                       {user.name}
                     </h4>
-                    <ShieldCheck
-                      className={`size-3.5 shrink-0 ${isPublic ? "text-[#ccff00]" : "text-amber-400"}`}
-                    />
+                    <ShieldCheck className="size-3.5 shrink-0 text-black" />
                   </div>
-                  <p className="font-mono text-[11px] text-[#8a8a8a]">@{user.handle}</p>
+                  <p className="font-mono text-[11px] text-neutral-600 font-bold">@{user.handle}</p>
                 </div>
               </div>
 
               {/* Rank Pill */}
-              <span className="mt-4 rounded-full bg-[#162409] border border-[#ccff00]/30 px-2.5 py-1 font-mono text-[10px] font-bold text-[#ccff00] shrink-0">
+              <span className="rounded-full bg-black px-3 py-1.5 font-mono text-[10px] font-black text-white shrink-0 shadow-xs mb-0.5">
                 {user.rank || "OBSERVER"}
               </span>
             </div>
@@ -699,53 +666,53 @@ export function ShareProfileModal({
             {/* Card Center: Dynamic state based on isPublic */}
             {isPublic ? (
               /* Public: High-contrast Scannable QR Code */
-              <div className="relative z-10 my-4 flex flex-col items-center justify-center">
-                <div className="relative rounded-2xl bg-white p-3 shadow-[0_0_32px_rgba(0,0,0,0.6)] group">
-                  {/* Corner Cyber Brackets */}
-                  <div className="pointer-events-none absolute -top-1.5 -left-1.5 size-4 border-t-2 border-l-2 border-[#ccff00]" />
-                  <div className="pointer-events-none absolute -top-1.5 -right-1.5 size-4 border-t-2 border-r-2 border-[#ccff00]" />
-                  <div className="pointer-events-none absolute -bottom-1.5 -left-1.5 size-4 border-b-2 border-l-2 border-[#ccff00]" />
-                  <div className="pointer-events-none absolute -bottom-1.5 -right-1.5 size-4 border-b-2 border-r-2 border-[#ccff00]" />
+              <div className="relative z-10 my-3 flex flex-col items-center justify-center rounded-2xl bg-neutral-50 p-3 sm:p-4">
+                <div className="relative rounded-2xl bg-white p-2.5 border-2 border-black shadow-[4px_4px_0_0_#000] group">
+                  {/* Corner Brackets */}
+                  <div className="pointer-events-none absolute -top-1.5 -left-1.5 size-4 border-t-2 border-l-2 border-black" />
+                  <div className="pointer-events-none absolute -top-1.5 -right-1.5 size-4 border-t-2 border-r-2 border-black" />
+                  <div className="pointer-events-none absolute -bottom-1.5 -left-1.5 size-4 border-b-2 border-l-2 border-black" />
+                  <div className="pointer-events-none absolute -bottom-1.5 -right-1.5 size-4 border-b-2 border-r-2 border-black" />
 
                   {isGenerating ? (
-                    <div className="flex size-48 items-center justify-center bg-[#f5f5f5]">
-                      <div className="size-6 animate-spin rounded-full border-2 border-[#ccff00] border-t-transparent" />
+                    <div className="flex size-40 items-center justify-center bg-neutral-50 sm:size-44">
+                      <div className="size-6 animate-spin rounded-full border-2 border-black border-t-transparent" />
                     </div>
                   ) : qrDataUrl ? (
                     <img
                       src={qrDataUrl}
                       alt={`QR Code for @${user.handle}`}
-                      className="size-48 rounded-lg object-contain"
+                      className="size-40 rounded-lg object-contain sm:size-44"
                     />
                   ) : (
-                    <div className="flex size-48 items-center justify-center text-xs text-[#8a8a8a] font-mono">
+                    <div className="flex size-40 items-center justify-center text-xs text-neutral-500 font-mono sm:size-44">
                       Failed to generate QR
                     </div>
                   )}
                 </div>
 
                 {/* Scanner Helper Label */}
-                <div className="mt-3 flex items-center gap-1.5 rounded-full bg-[#0c120c] border border-white/[0.08] px-3 py-1 text-[10px] font-mono text-[#8a8a8a]">
-                  <QrCode className="size-3 text-[#ccff00]" />
+                <div className="mt-3 flex items-center gap-1.5 rounded-full bg-white border-2 border-black px-3 py-1.5 text-[10px] font-mono text-black font-bold">
+                  <QrCode className="size-3 text-black" />
                   <span>Point camera to inspect dossier</span>
                 </div>
               </div>
             ) : (
               /* Private: QR Suppressed & Turn-to-Public Prompt */
-              <div className="relative z-10 my-4 flex flex-col items-center justify-center text-center p-6 rounded-2xl border border-amber-500/20 bg-[#0c100c]/95 shadow-[0_0_24px_rgba(0,0,0,0.7)]">
+              <div className="relative z-10 my-4 flex flex-col items-center justify-center text-center p-6 rounded-2xl border-2 border-black bg-neutral-50 shadow-xs">
                 <div className="relative mb-3.5">
-                  <div className="size-14 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 shadow-[0_0_16px_rgba(245,158,11,0.2)]">
+                  <div className="size-14 rounded-2xl bg-neutral-200 border-2 border-black flex items-center justify-center text-black shadow-xs">
                     <Lock className="size-7" />
                   </div>
-                  <span className="absolute -bottom-1 -right-1 size-4 rounded-full bg-[#0c100c] border border-amber-500/40 flex items-center justify-center">
-                    <EyeOff className="size-2.5 text-amber-400" />
+                  <span className="absolute -bottom-1 -right-1 size-4 rounded-full bg-white border border-black flex items-center justify-center">
+                    <EyeOff className="size-2.5 text-black" />
                   </span>
                 </div>
 
-                <h4 className="text-sm font-bold text-[#f5f5f5] tracking-tight">
+                <h4 className="text-sm font-black text-black tracking-tight">
                   QR Code Disabled for Private Profile
                 </h4>
-                <p className="mt-1.5 max-w-xs font-mono text-[11px] text-[#8a8a8a] leading-relaxed">
+                <p className="mt-1.5 max-w-xs font-mono text-[11px] text-neutral-600 leading-relaxed">
                   QR codes and credentials are not generated for private dossiers. Turn your profile
                   to public to generate a scannable QR code and shareable badge.
                 </p>
@@ -754,11 +721,11 @@ export function ShareProfileModal({
                   type="button"
                   onClick={handleMakePublic}
                   disabled={isUpdatingPrivacy}
-                  className="mt-4 flex items-center gap-2 rounded-xl bg-gradient-to-r from-[#d4ff00] to-[#ccff00] px-4 py-2.5 font-mono text-xs font-bold text-[#080808] shadow-[0_0_20px_rgba(204,255,0,0.35)] hover:scale-105 active:scale-95 transition-all cursor-pointer disabled:opacity-50"
+                  className="mt-4 flex items-center gap-2 rounded-xl bg-black px-4 py-2.5 font-mono text-xs font-black text-white hover:bg-neutral-800 shadow-xs transition-all cursor-pointer disabled:opacity-50"
                 >
                   {isUpdatingPrivacy ? (
                     <>
-                      <Loader2 className="size-3.5 animate-spin text-[#080808]" />
+                      <Loader2 className="size-3.5 animate-spin text-white" />
                       <span>Turning Public...</span>
                     </>
                   ) : (
@@ -772,26 +739,26 @@ export function ShareProfileModal({
             )}
 
             {/* Quick Target URL Bar with 1-click Copy */}
-            <div className="relative z-10 flex items-center justify-between gap-2 rounded-xl border border-white/[0.08] bg-[#0c120c] px-3 py-2">
+            <div className="relative z-10 flex items-center justify-between gap-3 rounded-xl border-2 border-black bg-neutral-50 px-3 py-2.5">
               <div className="flex items-center gap-1.5 truncate">
-                {!isPublic && <Lock className="size-3 text-amber-400 shrink-0" />}
-                <span className="truncate font-mono text-[11px] text-[#8a8a8a]">
+                {!isPublic && <Lock className="size-3 text-black shrink-0" />}
+                <span className="truncate font-mono text-[11px] text-neutral-700 font-bold">
                   {targetUrl.replace(/^https?:\/\//, "")}
                 </span>
               </div>
               <button
                 type="button"
                 onClick={handleCopyLink}
-                className="flex items-center gap-1 rounded-lg bg-white/[0.06] hover:bg-[#ccff00]/20 hover:text-[#ccff00] px-2 py-1 font-mono text-[10px] font-bold text-[#f5f5f5] transition-colors cursor-pointer shrink-0"
+                className="flex items-center gap-1 rounded-lg border border-black bg-white hover:bg-black hover:text-white px-2 py-1 font-mono text-[10px] font-black text-black transition-colors cursor-pointer shrink-0 shadow-xs"
               >
                 {isCopied ? (
                   <>
-                    <Check className="size-3 text-[#ccff00]" />
-                    <span className="text-[#ccff00]">Copied</span>
+                    <Check className="size-3 text-black" />
+                    <span>Copied</span>
                   </>
                 ) : (
                   <>
-                    <LinkIcon className="size-3 text-[#8a8a8a]" />
+                    <LinkIcon className="size-3 text-black" />
                     <span>Copy</span>
                   </>
                 )}
@@ -801,13 +768,13 @@ export function ShareProfileModal({
         </div>
 
         {/* Modal Action Buttons */}
-        <div className="mt-4 flex flex-wrap items-center justify-between gap-2">
+        <div className="mt-5 grid grid-cols-1 gap-2 sm:grid-cols-[1fr_auto]">
           {isPublic ? (
             <button
               type="button"
               onClick={handleDownloadBadge}
               disabled={isGenerating || !qrDataUrl}
-              className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#d4ff00] to-[#ccff00] px-4 py-2.5 font-mono text-xs font-bold text-[#080808] shadow-[0_0_16px_rgba(204,255,0,0.35)] hover:scale-[1.02] active:scale-95 transition-all cursor-pointer disabled:opacity-50"
+              className="flex min-h-11 items-center justify-center gap-2 rounded-xl bg-black px-4 py-2 font-mono text-xs font-black text-white hover:bg-neutral-800 shadow-xs transition-all cursor-pointer disabled:opacity-50"
             >
               <Download className="size-4 stroke-[2.5]" />
               <span>Download QR Badge</span>
@@ -817,10 +784,10 @@ export function ShareProfileModal({
               type="button"
               onClick={handleMakePublic}
               disabled={isUpdatingPrivacy}
-              className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#d4ff00] to-[#ccff00] px-4 py-2.5 font-mono text-xs font-bold text-[#080808] shadow-[0_0_16px_rgba(204,255,0,0.35)] hover:scale-[1.02] active:scale-95 transition-all cursor-pointer disabled:opacity-50"
+              className="flex min-h-11 items-center justify-center gap-2 rounded-xl bg-black px-4 py-2 font-mono text-xs font-black text-white hover:bg-neutral-800 shadow-xs transition-all cursor-pointer disabled:opacity-50"
             >
               {isUpdatingPrivacy ? (
-                <Loader2 className="size-4 animate-spin text-[#080808]" />
+                <Loader2 className="size-4 animate-spin text-white" />
               ) : (
                 <Globe className="size-4 stroke-[2.5]" />
               )}
@@ -831,9 +798,9 @@ export function ShareProfileModal({
           <button
             type="button"
             onClick={handleShareTwitter}
-            className="neu-btn flex items-center gap-1.5 rounded-xl px-4 py-2.5 font-mono text-xs font-semibold text-[#f5f5f5] hover:border-white/20 active:scale-95 transition-all cursor-pointer"
+            className="flex min-h-11 items-center justify-center gap-1.5 rounded-xl border-2 border-black bg-white px-4 py-2 font-mono text-xs font-black text-black hover:bg-neutral-100 transition-all cursor-pointer shadow-xs"
           >
-            <Share2 className="size-3.5 text-[#ccff00]" />
+            <Share2 className="size-3.5 text-black" />
             <span>Share on X</span>
           </button>
         </div>
@@ -845,7 +812,7 @@ export function ShareProfileModal({
               type="button"
               onClick={handleMakePrivate}
               disabled={isUpdatingPrivacy}
-              className="font-mono text-[10px] text-[#8a8a8a] hover:text-[#f5f5f5] underline cursor-pointer transition-colors"
+              className="font-mono text-[10px] text-neutral-600 hover:text-black font-bold underline cursor-pointer transition-colors"
             >
               {isUpdatingPrivacy ? "Updating..." : "Switch profile to Private"}
             </button>

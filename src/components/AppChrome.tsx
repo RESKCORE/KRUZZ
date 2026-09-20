@@ -70,8 +70,8 @@ function SettingsDropdown() {
         onClick={() => setOpen((prev) => !prev)}
         className={`flex size-7.5 sm:size-8 items-center justify-center rounded-xl border transition-all duration-200 cursor-pointer shrink-0 ${
           open
-            ? "border-primary/60 bg-[var(--theme-surface,#182608)] text-primary shadow-[0_0_12px_var(--glow-color,rgba(204,255,0,0.3))]"
-            : "border-white/[0.08] bg-white/[0.03] text-[#8a8a8a] hover:border-white/20 hover:text-[#f5f5f5] hover:bg-white/[0.06]"
+            ? "border-white/60 bg-white/20 text-white shadow-none"
+            : "border-white/[0.08] bg-white/[0.03] text-white/70 hover:border-white/20 hover:text-white hover:bg-white/[0.06]"
         }`}
         aria-label="User Settings"
         aria-expanded={open}
@@ -95,7 +95,7 @@ function SettingsDropdown() {
               className="flex items-center justify-between rounded-xl px-3 py-2 text-xs font-medium text-[#b8b8b8] transition-colors hover:bg-white/[0.06] hover:text-[#f5f5f5]"
             >
               <span className="flex items-center gap-2">
-                <User className="size-3.5 text-primary" />
+                <User className="size-3.5 text-white" />
                 Profile
               </span>
               <ChevronRight className="size-3 text-[#555]" />
@@ -107,10 +107,10 @@ function SettingsDropdown() {
               className="flex items-center justify-between rounded-xl px-3 py-2 text-xs font-medium text-[#b8b8b8] transition-colors hover:bg-white/[0.06] hover:text-[#f5f5f5]"
             >
               <span className="flex items-center gap-2">
-                <Palette className="size-3.5 text-primary" />
+                <Palette className="size-3.5 text-white" />
                 Themes & Perks
               </span>
-              <span className="font-mono text-[9px] rounded bg-[var(--theme-surface,#182608)] border border-primary/30 px-1.5 py-0.5 text-primary">
+              <span className="font-mono text-[9px] rounded bg-white/10 border border-white/30 px-1.5 py-0.5 text-white">
                 {activeThemeMeta?.name?.split(" ")[0] ?? "Theme"}
               </span>
             </Link>
@@ -237,7 +237,7 @@ export function AppChrome({ children }: AppChromeProps) {
         alt="KRUZZ Logo"
         className="size-7 sm:size-8 rounded-lg object-contain transition-transform duration-200 group-hover:scale-105"
       />
-      <span className="hidden md:inline font-mono text-xs font-black tracking-widest text-[#f5f5f5] group-hover:text-primary transition-colors">
+      <span className="hidden md:inline font-mono text-xs font-black tracking-widest text-[#f5f5f5] group-hover:text-white transition-colors">
         KRUZZ
       </span>
     </Link>
@@ -251,7 +251,7 @@ export function AppChrome({ children }: AppChromeProps) {
       <SignedOut>
         <Link
           to="/sign-in"
-          className="rounded-lg bg-primary text-primary-foreground px-2.5 sm:px-3 py-1 sm:py-1.5 font-mono text-[9px] sm:text-[10px] font-bold shadow-[0_0_10px_var(--glow-color,rgba(204,255,0,0.4))] transition-all hover:scale-105 active:scale-95 cursor-pointer shrink-0"
+          className="rounded-lg bg-white text-black px-2.5 sm:px-3 py-1 sm:py-1.5 font-mono text-[9px] sm:text-[10px] font-bold transition-all hover:scale-105 active:scale-95 cursor-pointer shrink-0 shadow-xs"
         >
           Sign In
         </Link>

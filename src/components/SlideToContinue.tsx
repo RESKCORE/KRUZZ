@@ -100,12 +100,12 @@ export function SlideToContinue({
           handleTriggerKeyboard();
         }
       }}
-      className={`relative h-12 w-full select-none rounded-full bg-[#121212] p-1 border border-white/[0.08] overflow-hidden focus:outline-none focus:border-primary/40 transition-colors ${className}`}
+      className={`relative h-12 w-full select-none rounded-full bg-neutral-100 p-1 border-2 border-black overflow-hidden focus:outline-none focus:ring-2 focus:ring-black transition-colors ${className}`}
     >
       {/* Dynamic Progress Fill */}
       <motion.div
         style={{ width: progressWidth }}
-        className="absolute inset-y-1 left-1 rounded-full bg-gradient-to-r from-primary/10 to-primary/25 pointer-events-none"
+        className="absolute inset-y-1 left-1 rounded-full bg-neutral-300 pointer-events-none"
       />
 
       {/* Label Text with Subtle Shimmer */}
@@ -113,13 +113,13 @@ export function SlideToContinue({
         style={{ opacity: textOpacity }}
         className="absolute inset-0 flex items-center justify-center pl-8 pointer-events-none"
       >
-        <span className="font-semibold text-xs text-[#f5f5f5] tracking-wide flex items-center gap-1.5">
+        <span className="font-black text-xs text-black tracking-wide flex items-center gap-1.5">
           {isCompleted ? successLabel : label}
           {!isCompleted && (
             <motion.span
               animate={{ x: [0, 4, 0] }}
               transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
-              className="text-primary font-mono font-bold"
+              className="text-black font-mono font-black"
             >
               →
             </motion.span>
@@ -136,7 +136,7 @@ export function SlideToContinue({
         onDragStart={() => setIsDragging(true)}
         onDragEnd={handleDragEnd}
         style={{ x }}
-        className={`relative z-10 size-10 rounded-full bg-primary text-primary-foreground font-bold flex items-center justify-center shadow-[0_0_12px_var(--glow-color,rgba(204,255,0,0.4))] transition-transform ${
+        className={`relative z-10 size-10 rounded-full bg-black text-white font-bold flex items-center justify-center border-2 border-black shadow-xs transition-transform ${
           isDragging ? "cursor-grabbing scale-105" : "cursor-grab hover:scale-105"
         }`}
       >

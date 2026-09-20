@@ -43,22 +43,19 @@ export function HeroArchitectureVisual() {
   ];
 
   return (
-    <div className="glass-panel relative overflow-hidden rounded-3xl border border-white/[0.08] p-6 shadow-[0_24px_48px_rgba(0,0,0,0.6)]">
-      {/* Ambient lighting inside visual (Acid Lime) */}
-      <div className="absolute -top-16 -right-16 size-48 rounded-full bg-[#ccff00]/15 blur-3xl pointer-events-none" />
-
+    <div className="relative overflow-hidden rounded-3xl border-2 border-black bg-white p-6 shadow-xs text-black">
       {/* Terminal Title Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/[0.06] pb-4">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b-2 border-black/10 pb-4">
         <div className="flex items-center gap-2">
-          <span className="size-1.5 rounded-full recording-dot" />
-          <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-[#ccff00]">
+          <span className="size-2 rounded-full bg-black" />
+          <span className="font-mono text-[10px] font-black uppercase tracking-wider text-black">
             Live Packet Traversal
           </span>
         </div>
-        <div className="flex items-center gap-3 font-mono text-[11px] text-[#8a8a8a]">
+        <div className="flex items-center gap-3 font-mono text-[11px] text-neutral-600">
           <span>RTT: 12ms</span>
           <span>·</span>
-          <span className="text-[#ccff00] font-medium">HTTP 200 OK</span>
+          <span className="text-black font-black">HTTP 200 OK</span>
         </div>
       </div>
 
@@ -72,32 +69,32 @@ export function HeroArchitectureVisual() {
               key={node.id}
               className={`relative rounded-2xl p-3.5 transition-all duration-300 ${
                 isActive
-                  ? "bg-gradient-to-b from-[#162208] to-[#0c1204] border border-[#ccff00]/60 shadow-[0_0_20px_rgba(204,255,0,0.25)]"
-                  : "bg-white/[0.02] border border-white/[0.06]"
+                  ? "bg-neutral-100 border-2 border-black shadow-xs"
+                  : "bg-white border-2 border-black/20"
               }`}
             >
               <div className="flex items-center justify-between">
                 <div
                   className={`flex size-8 items-center justify-center rounded-xl transition-colors ${
                     isActive
-                      ? "bg-[#ccff00] text-[#080808] shadow-[0_0_12px_rgba(204,255,0,0.6)]"
-                      : "bg-white/[0.04] text-[#8a8a8a]"
+                      ? "bg-black text-white shadow-xs"
+                      : "bg-neutral-100 text-neutral-600 border border-neutral-300"
                   }`}
                 >
                   <Icon className="size-4" />
                 </div>
-                <span className="font-mono text-[10px] text-white/30">0{i + 1}</span>
+                <span className="font-mono text-[10px] text-neutral-400 font-bold">0{i + 1}</span>
               </div>
 
               <div className="mt-3">
-                <p className="text-xs font-bold text-[#f5f5f5]">{node.title}</p>
-                <p className="text-[11px] text-[#8a8a8a]">{node.subtitle}</p>
+                <p className="text-xs font-black text-black">{node.title}</p>
+                <p className="text-[11px] text-neutral-600">{node.subtitle}</p>
               </div>
 
-              <div className="mt-3 pt-2 border-t border-white/[0.05]">
+              <div className="mt-3 pt-2 border-t border-black/10">
                 <p
                   className={`font-mono text-[9px] transition-colors truncate ${
-                    isActive ? "text-[#ccff00] font-semibold" : "text-white/30"
+                    isActive ? "text-black font-black" : "text-neutral-500 font-medium"
                   }`}
                 >
                   {isActive ? `▶ ${node.status}` : node.status}
@@ -109,13 +106,13 @@ export function HeroArchitectureVisual() {
       </div>
 
       {/* Code Request Stream Line */}
-      <div className="mt-5 rounded-2xl bg-[#080808] border border-white/[0.06] p-3.5 font-mono text-[11px] text-[#b8b8b8] flex flex-wrap items-center justify-between gap-3">
+      <div className="mt-5 rounded-2xl bg-neutral-50 border-2 border-black p-3.5 font-mono text-[11px] text-black flex flex-wrap items-center justify-between gap-3 shadow-xs">
         <div className="flex items-center gap-2 overflow-x-hidden">
-          <span className="text-[#ccff00] font-bold">GET</span>
-          <span className="text-[#f5f5f5]">/api/v1/investigations/client-server</span>
-          <span className="text-[#8a8a8a]">HTTP/1.1</span>
+          <span className="text-black font-black">GET</span>
+          <span className="text-neutral-800 font-medium">/api/v1/investigations/client-server</span>
+          <span className="text-neutral-500 font-bold">HTTP/1.1</span>
         </div>
-        <div className="flex items-center gap-2 text-[10px] text-[#8a8a8a]">
+        <div className="flex items-center gap-2 text-[10px] text-neutral-600">
           <span>Connection: keep-alive</span>
           <span>·</span>
           <span>1.4 KB</span>

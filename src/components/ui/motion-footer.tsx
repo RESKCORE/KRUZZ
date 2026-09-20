@@ -31,10 +31,10 @@ const STYLES = `
   --pill-inset-shadow: color-mix(in oklch, var(--background, #0d0d0d) 80%, transparent);
   --pill-border: color-mix(in oklch, var(--foreground, #f5f5f5) 8%, transparent);
   
-  --pill-bg-1-hover: color-mix(in oklch, #ccff00 15%, transparent);
-  --pill-bg-2-hover: color-mix(in oklch, #ccff00 5%, transparent);
-  --pill-border-hover: color-mix(in oklch, #ccff00 40%, transparent);
-  --pill-shadow-hover: color-mix(in oklch, #ccff00 25%, transparent);
+  --pill-bg-1-hover: color-mix(in oklch, #ffffff 15%, transparent);
+  --pill-bg-2-hover: color-mix(in oklch, #ffffff 5%, transparent);
+  --pill-border-hover: color-mix(in oklch, #ffffff 40%, transparent);
+  --pill-shadow-hover: color-mix(in oklch, #ffffff 25%, transparent);
   --pill-highlight-hover: color-mix(in oklch, var(--foreground, #f5f5f5) 20%, transparent);
 }
 
@@ -49,8 +49,8 @@ const STYLES = `
 }
 
 @keyframes footer-heartbeat {
-  0%, 100% { transform: scale(1); filter: drop-shadow(0 0 5px color-mix(in oklch, #ccff00 50%, transparent)); }
-  15%, 45% { transform: scale(1.2); filter: drop-shadow(0 0 10px color-mix(in oklch, #ccff00 80%, transparent)); }
+  0%, 100% { transform: scale(1); filter: drop-shadow(0 0 5px color-mix(in oklch, #ffffff 50%, transparent)); }
+  15%, 45% { transform: scale(1.2); filter: drop-shadow(0 0 10px color-mix(in oklch, #ffffff 80%, transparent)); }
   30% { transform: scale(1); }
 }
 
@@ -62,26 +62,35 @@ const STYLES = `
   animation: footer-scroll-marquee 40s linear infinite;
 }
 
-.animate-footer-heartbeat {
-  animation: footer-heartbeat 2s cubic-bezier(0.25, 1, 0.5, 1) infinite;
+.animate-footer-scroll-marquee:hover {
+  animation-play-state: paused;
 }
 
-/* Theme-adaptive Grid Background */
-.footer-bg-grid {
-  background-size: 60px 60px;
+.animate-footer-heartbeat {
+  animation: footer-heartbeat 2.4s ease-in-out infinite;
+}
+
+/* Perspective Floor / Infinite Grid with Depth Fade */
+.footer-perspective-container {
+  perspective: 900px;
+}
+
+.footer-infinite-grid {
+  transform: rotateX(65deg) translateY(-20px);
   background-image: 
-    linear-gradient(to right, color-mix(in oklch, var(--foreground, #f5f5f5) 3%, transparent) 1px, transparent 1px),
-    linear-gradient(to bottom, color-mix(in oklch, var(--foreground, #f5f5f5) 3%, transparent) 1px, transparent 1px);
+    linear-gradient(to right, color-mix(in oklch, var(--foreground, #f5f5f5) 5%, transparent) 1px, transparent 1px),
+    linear-gradient(to bottom, color-mix(in oklch, var(--foreground, #f5f5f5) 5%, transparent) 1px, transparent 1px);
+  background-size: 50px 50px;
   mask-image: linear-gradient(to bottom, transparent, black 30%, black 70%, transparent);
   -webkit-mask-image: linear-gradient(to bottom, transparent, black 30%, black 70%, transparent);
 }
 
-/* Theme-adaptive Aurora Glow (Electric Acid Lime) */
+/* Theme-adaptive Aurora Glow (Clean Monochrome) */
 .footer-aurora {
   background: radial-gradient(
-    circle at 50% 50%, 
-    color-mix(in oklch, #ccff00 18%, transparent) 0%, 
-    color-mix(in oklch, #a3e635 12%, transparent) 40%, 
+    circle at 50% 50%,
+    color-mix(in oklch, #ffffff 14%, transparent) 0%,
+    color-mix(in oklch, #ffffff 7%, transparent) 40%,
     transparent 70%
   );
 }
@@ -116,7 +125,7 @@ const STYLES = `
   letter-spacing: -0.05em;
   color: transparent;
   -webkit-text-stroke: 1px color-mix(in oklch, var(--foreground, #f5f5f5) 5%, transparent);
-  background: linear-gradient(180deg, color-mix(in oklch, #ccff00 12%, transparent) 0%, transparent 60%);
+  background: linear-gradient(180deg, color-mix(in oklch, #ffffff 15%, transparent) 0%, transparent 60%);
   -webkit-background-clip: text;
   background-clip: text;
 }
@@ -127,7 +136,7 @@ const STYLES = `
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  filter: drop-shadow(0px 0px 20px color-mix(in oklch, #ccff00 25%, transparent));
+  filter: drop-shadow(0px 0px 20px color-mix(in oklch, #ffffff 20%, transparent));
 }
 `;
 
@@ -218,11 +227,11 @@ MagneticButton.displayName = "MagneticButton";
 // -------------------------------------------------------------------------
 const MarqueeItem = () => (
   <div className="flex items-center space-x-12 px-6">
-    <span>System Architecture Decoded</span> <span className="text-[#ccff00]/80">✦</span>
-    <span>Convex Cloud Persistence</span> <span className="text-[#d4ff00]/80">✦</span>
-    <span>8-Section Progressive Method</span> <span className="text-[#ccff00]/80">✦</span>
-    <span>Interactive Code Sandbox</span> <span className="text-[#d4ff00]/80">✦</span>
-    <span>Zero Syntax Trivia</span> <span className="text-[#ccff00]/80">✦</span>
+    <span>System Architecture Decoded</span> <span className="text-white/80">✦</span>
+    <span>Convex Cloud Persistence</span> <span className="text-white/80">✦</span>
+    <span>8-Section Progressive Method</span> <span className="text-white/80">✦</span>
+    <span>Interactive Code Sandbox</span> <span className="text-white/80">✦</span>
+    <span>Zero Syntax Trivia</span> <span className="text-white/80">✦</span>
   </div>
 );
 
@@ -359,9 +368,9 @@ export function CinematicFooter() {
                 <MagneticButton
                   as={Link}
                   to="/cases"
-                  className="footer-glass-pill px-8 py-4.5 rounded-full text-white font-bold text-sm md:text-base flex items-center gap-3 border border-white/20 hover:border-[#ccff00]/60 group hover:scale-105 transition-all shadow-[0_0_20px_rgba(204,255,0,0.15)]"
+                  className="footer-glass-pill px-8 py-4.5 rounded-full text-white font-bold text-sm md:text-base flex items-center gap-3 border border-white/20 hover:border-white/60 group hover:scale-105 transition-all shadow-[0_0_20px_rgba(255,255,255,0.15)]"
                 >
-                  <Compass className="size-5 text-[#ccff00] group-hover:rotate-45 transition-transform" />
+                  <Compass className="size-5 text-white group-hover:rotate-45 transition-transform" />
                   <span className="text-white font-bold tracking-tight">Enter Arena Centre</span>
                 </MagneticButton>
 
@@ -370,7 +379,7 @@ export function CinematicFooter() {
                   to="/dashboard"
                   className="footer-glass-pill px-8 py-4.5 rounded-full text-[#f5f5f5] font-bold text-sm md:text-base flex items-center gap-3 border border-white/10 hover:border-white/30 group hover:scale-105 transition-all"
                 >
-                  <LayoutDashboard className="size-5 text-[#8a8a8a] group-hover:text-[#ccff00] transition-colors" />
+                  <LayoutDashboard className="size-5 text-[#8a8a8a] group-hover:text-white transition-colors" />
                   <span>Open Dashboard</span>
                 </MagneticButton>
               </div>
@@ -422,9 +431,7 @@ export function CinematicFooter() {
               <span className="text-[#8a8a8a] text-[10px] md:text-xs font-bold uppercase tracking-widest">
                 Crafted with
               </span>
-              <span className="animate-footer-heartbeat text-sm md:text-base text-[#ccff00]">
-                ❤
-              </span>
+              <span className="animate-footer-heartbeat text-sm md:text-base text-white">❤</span>
               <span className="text-[#8a8a8a] text-[10px] md:text-xs font-bold uppercase tracking-widest">
                 by
               </span>
@@ -438,7 +445,7 @@ export function CinematicFooter() {
               as="button"
               type="button"
               onClick={scrollToTop}
-              className="size-12 rounded-full footer-glass-pill flex items-center justify-center text-[#8a8a8a] hover:text-[#ccff00] hover:border-[#ccff00]/50 group order-3 cursor-pointer"
+              className="size-12 rounded-full footer-glass-pill flex items-center justify-center text-[#8a8a8a] hover:text-white hover:border-white/50 group order-3 cursor-pointer"
               title="Back to top"
               aria-label="Back to top"
             >

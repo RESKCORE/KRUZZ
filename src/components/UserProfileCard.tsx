@@ -175,10 +175,10 @@ export function UserProfileCard({ className = "" }: UserProfileCardProps) {
 
   return (
     <div
-      className={`glass-panel relative w-full rounded-3xl p-6 border border-white/[0.08] shadow-[0_24px_48px_rgba(0,0,0,0.6)] ${className}`}
+      className={`glass-panel relative w-full rounded-3xl p-6 border-2 border-black bg-white text-black shadow-xs ${className}`}
     >
       {/* 1. Top Cover Banner */}
-      <div className="relative h-32 w-full overflow-hidden rounded-[24px] bg-[#080808] border border-white/[0.08] p-4 group/banner">
+      <div className="relative h-32 w-full overflow-hidden rounded-[24px] bg-white border-2 border-black p-4 group/banner">
         {/* Background Banner Image */}
         <img
           src={bannerUrl || "/Observer.jpg"}
@@ -186,32 +186,29 @@ export function UserProfileCard({ className = "" }: UserProfileCardProps) {
           className="absolute inset-0 size-full object-cover object-center opacity-90 transition-transform duration-700 group-hover/banner:scale-105"
         />
         {/* Subtle Darkening & Glow Overlay to keep badges and avatar seamless */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-black/20 to-[#080808]/90 pointer-events-none" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,var(--grid-glow,rgba(204,255,0,0.18))_0%,transparent_70%)] pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-black/20 to-black/80 pointer-events-none" />
 
         {/* Top Badges */}
         <div className="relative z-10 flex items-center justify-between">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-[#080808]/80 backdrop-blur-md px-3 py-1 font-mono text-[10px] font-bold uppercase tracking-wider text-primary border border-primary/30">
-            <span className="size-1.5 rounded-full recording-dot" />
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-white text-black px-3 py-1 font-mono text-[10px] font-black uppercase tracking-wider border-2 border-black shadow-xs">
+            <span className="size-2 rounded-full bg-black ring-1 ring-black/20" />
             {rank.name}
           </span>
 
           <div className="flex items-center gap-1.5">
             {isAuthenticated && (
               <span
-                className={`inline-flex items-center gap-1 rounded-full backdrop-blur-md px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-wider border ${
-                  isPublic
-                    ? "bg-[#080808]/80 border-primary/30 text-primary"
-                    : "bg-[#080808]/80 border-amber-500/30 text-amber-400"
+                className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 font-mono text-[10px] font-black uppercase tracking-wider border-2 ${
+                  isPublic ? "bg-white border-black text-black" : "bg-white border-black text-black"
                 }`}
               >
                 <span
-                  className={`size-1.5 rounded-full ${isPublic ? "bg-primary animate-pulse" : "bg-amber-400"}`}
+                  className={`size-1.5 rounded-full ${isPublic ? "bg-black animate-pulse" : "bg-black"}`}
                 />
                 {isPublic ? "Public" : "Private"}
               </span>
             )}
-            <span className="rounded-full bg-[#080808]/70 backdrop-blur-md px-2.5 py-1 font-mono text-[10px] text-[#8a8a8a] border border-white/[0.08]">
+            <span className="rounded-full bg-white px-2.5 py-1 font-mono text-[10px] font-black text-black border-2 border-black">
               {isAuthenticated ? `UID: #${handle.slice(0, 7)}` : "GUEST SEAT"}
             </span>
           </div>
@@ -223,9 +220,9 @@ export function UserProfileCard({ className = "" }: UserProfileCardProps) {
             type="button"
             onClick={() => bannerInputRef.current?.click()}
             title="Change banner"
-            className="absolute bottom-2 right-2 z-20 flex items-center gap-1.5 rounded-full bg-[#080808]/80 backdrop-blur-md px-2.5 py-1 font-mono text-[10px] font-semibold text-[#f5f5f5] border border-white/[0.12] hover:border-primary/50 hover:text-primary transition-colors cursor-pointer"
+            className="absolute bottom-2 right-2 z-20 flex items-center gap-1.5 rounded-full bg-white px-2.5 py-1 font-mono text-[10px] font-black text-black border-2 border-black hover:bg-neutral-100 transition-colors cursor-pointer"
           >
-            <ImagePlus className="size-3.5" />
+            <ImagePlus className="size-3.5 text-black" />
             <span>Banner</span>
           </button>
         )}
@@ -236,16 +233,16 @@ export function UserProfileCard({ className = "" }: UserProfileCardProps) {
         <div className="flex items-end justify-between">
           {/* Avatar with refined ring */}
           <div className="relative">
-            <div className="size-20 rounded-full border-[3.5px] border-[#101010] bg-[#161616] overflow-hidden ring-2 ring-primary/70 shadow-[0_0_15px_var(--glow-color,rgba(204,255,0,0.3))]">
+            <div className="size-20 rounded-full border-[3.5px] border-black bg-white overflow-hidden shadow-xs">
               {avatarUrl ? (
                 <img src={avatarUrl} alt={displayName} className="size-full object-cover" />
               ) : isAuthenticated ? (
-                <div className="flex size-full items-center justify-center bg-[var(--theme-surface,#182608)] font-mono text-base font-black text-primary">
+                <div className="flex size-full items-center justify-center bg-white font-mono text-base font-black text-black">
                   {initials || "RC"}
                 </div>
               ) : (
-                <div className="flex size-full items-center justify-center bg-gradient-to-br from-[#161616] to-[#0a0a0a] text-[#8a8a8a]">
-                  <User className="size-8" />
+                <div className="flex size-full items-center justify-center bg-white text-black">
+                  <User className="size-8 text-black" />
                 </div>
               )}
             </div>
@@ -254,9 +251,9 @@ export function UserProfileCard({ className = "" }: UserProfileCardProps) {
                 type="button"
                 onClick={() => picInputRef.current?.click()}
                 title="Change profile picture"
-                className="absolute -bottom-1 -right-1 grid size-7 place-items-center rounded-full bg-primary text-primary-foreground border-2 border-[#101010] hover:scale-110 active:scale-95 transition-transform cursor-pointer shadow-[0_0_10px_var(--glow-color,rgba(204,255,0,0.4))]"
+                className="absolute -bottom-1 -right-1 grid size-7 place-items-center rounded-full bg-black text-white border-2 border-white hover:scale-110 active:scale-95 transition-transform cursor-pointer shadow-xs"
               >
-                <Camera className="size-3.5" />
+                <Camera className="size-3.5 text-white" />
               </button>
             )}
           </div>
@@ -275,18 +272,14 @@ export function UserProfileCard({ className = "" }: UserProfileCardProps) {
                       ? "Profile is Public. Click to switch to Private."
                       : "Profile is Private. Click to switch to Public."
                   }
-                  className={`flex items-center gap-1.5 rounded-full px-3.5 py-1.5 font-mono text-xs font-semibold transition-all cursor-pointer border ${
-                    isPublic
-                      ? "border-primary/40 bg-primary/10 text-primary hover:bg-primary/20 shadow-[0_0_12px_rgba(204,255,0,0.15)]"
-                      : "border-amber-500/30 bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 shadow-[0_0_12px_rgba(245,158,11,0.15)]"
-                  }`}
+                  className="flex items-center gap-1.5 rounded-full px-3.5 py-1.5 font-mono text-xs font-black transition-all cursor-pointer border-2 border-black bg-white text-black hover:bg-neutral-100"
                 >
                   {isUpdatingPrivacy ? (
-                    <Loader2 className="size-3.5 animate-spin" />
+                    <Loader2 className="size-3.5 animate-spin text-black" />
                   ) : isPublic ? (
-                    <Globe className="size-3.5 text-primary" />
+                    <Globe className="size-3.5 text-black" />
                   ) : (
-                    <Lock className="size-3.5 text-amber-400" />
+                    <Lock className="size-3.5 text-black" />
                   )}
                   <span>{isPublic ? "Public" : "Private"}</span>
                 </button>
@@ -294,16 +287,16 @@ export function UserProfileCard({ className = "" }: UserProfileCardProps) {
                 <button
                   type="button"
                   onClick={() => setIsShareModalOpen(true)}
-                  className="neu-btn flex items-center gap-1.5 rounded-full px-4 py-1.5 font-mono text-xs font-semibold text-[#f5f5f5] hover:border-primary/40 hover:text-primary active:scale-95 transition-all cursor-pointer"
+                  className="neu-btn flex items-center gap-1.5 rounded-full px-4 py-1.5 font-mono text-xs font-black text-black border-2 border-black hover:bg-neutral-100 active:scale-95 transition-all cursor-pointer"
                 >
-                  <Share2 className="size-3.5 text-primary" />
+                  <Share2 className="size-3.5 text-black" />
                   <span>Share</span>
                 </button>
               </>
             ) : (
               <Link
                 to="/sign-in"
-                className="rounded-full bg-primary text-primary-foreground px-3.5 py-1.5 font-mono text-xs font-bold hover:scale-105 transition-all inline-block shadow-[0_0_12px_var(--glow-color,rgba(204,255,0,0.35))]"
+                className="rounded-full bg-black text-white border-2 border-black px-3.5 py-1.5 font-mono text-xs font-black hover:scale-105 transition-all inline-block shadow-xs"
               >
                 Sign In
               </Link>
@@ -314,41 +307,35 @@ export function UserProfileCard({ className = "" }: UserProfileCardProps) {
         {/* Name & Handle */}
         <div className="mt-3">
           <div className="flex items-center gap-1.5">
-            <h3 className="text-lg font-bold tracking-tight text-[#f5f5f5]">{displayName}</h3>
+            <h3 className="text-lg font-black tracking-tight text-black">{displayName}</h3>
             {isAuthenticated && (
-              <span className="text-primary text-xs font-bold" title="Verified Investigator">
-                <ShieldCheck className="size-4 inline text-primary" />
+              <span className="text-black text-xs font-bold" title="Verified Investigator">
+                <ShieldCheck className="size-4 inline text-black" />
               </span>
             )}
           </div>
-          <p className="font-mono text-xs text-[#8a8a8a]">@{handle}</p>
+          <p className="font-mono text-xs text-black font-bold">@{handle}</p>
         </div>
 
         {/* Profile Visibility Control Bar */}
         {isAuthenticated && (
-          <div className="mt-3 flex items-center justify-between rounded-2xl bg-white/[0.02] border border-white/[0.06] p-2.5 px-3">
+          <div className="mt-3 flex items-center justify-between rounded-2xl bg-neutral-50 border-2 border-black p-2.5 px-3">
             <div className="flex items-center gap-2.5">
-              <div
-                className={`p-1.5 rounded-xl border ${
-                  isPublic
-                    ? "bg-primary/10 border-primary/30 text-primary"
-                    : "bg-amber-500/10 border-amber-500/30 text-amber-400"
-                }`}
-              >
-                {isPublic ? <Globe className="size-3.5" /> : <Lock className="size-3.5" />}
+              <div className="p-1.5 rounded-xl border border-black bg-white text-black">
+                {isPublic ? (
+                  <Globe className="size-3.5 text-black" />
+                ) : (
+                  <Lock className="size-3.5 text-black" />
+                )}
               </div>
               <div>
                 <div className="flex items-center gap-1.5">
-                  <span className="font-mono text-xs font-bold text-[#f5f5f5]">
+                  <span className="font-mono text-xs font-black text-black">
                     {isPublic ? "Public Profile" : "Private Profile"}
                   </span>
-                  <span
-                    className={`size-1.5 rounded-full ${
-                      isPublic ? "bg-primary animate-pulse" : "bg-amber-400"
-                    }`}
-                  />
+                  <span className="size-1.5 rounded-full bg-black animate-pulse" />
                 </div>
-                <p className="font-mono text-[10px] text-[#8a8a8a]">
+                <p className="font-mono text-[10px] text-black font-semibold">
                   {isPublic
                     ? "Visible to anyone via link or QR code"
                     : "Hidden from public · QR disabled"}
@@ -360,10 +347,10 @@ export function UserProfileCard({ className = "" }: UserProfileCardProps) {
               type="button"
               onClick={() => handleTogglePrivacy()}
               disabled={isUpdatingPrivacy}
-              className={`flex items-center gap-1 rounded-xl px-2.5 py-1 font-mono text-[11px] font-bold transition-all cursor-pointer border ${
+              className={`flex items-center gap-1 rounded-xl px-2.5 py-1 font-mono text-[11px] font-black transition-all cursor-pointer border-2 border-black ${
                 isPublic
-                  ? "bg-white/[0.04] border-white/10 text-[#8a8a8a] hover:text-[#f5f5f5] hover:border-white/20"
-                  : "bg-primary text-primary-foreground border-primary hover:scale-105 shadow-[0_0_10px_rgba(204,255,0,0.3)]"
+                  ? "bg-white text-black hover:bg-neutral-100"
+                  : "bg-black text-white hover:bg-neutral-800"
               }`}
             >
               {isUpdatingPrivacy ? (
@@ -379,39 +366,39 @@ export function UserProfileCard({ className = "" }: UserProfileCardProps) {
       </div>
 
       {/* 3. Three-Metric Stats Bar */}
-      <div className="mt-5 border-y border-white/[0.08] py-3.5">
+      <div className="mt-5 border-y-2 border-black py-3.5">
         <div className="grid grid-cols-3 text-center">
           {/* Metric 1 */}
-          <div className="border-r border-white/[0.08] px-1">
-            <div className="flex items-center justify-center gap-1 font-mono text-base font-bold text-[#f5f5f5]">
-              <Star className="size-3.5 fill-primary text-primary" />
+          <div className="border-r-2 border-black px-1">
+            <div className="flex items-center justify-center gap-1 font-mono text-base font-black text-black">
+              <Star className="size-3.5 fill-black text-black" />
               <span>{points}</span>
             </div>
-            <p className="mt-1 font-mono text-[10px] text-[#8a8a8a] uppercase tracking-wider">
+            <p className="mt-1 font-mono text-[10px] text-black font-black uppercase tracking-wider">
               RC Points
             </p>
           </div>
 
           {/* Metric 2 */}
-          <div className="border-r border-white/[0.08] px-1">
-            <div className="flex items-center justify-center gap-1 font-mono text-base font-bold text-[#f5f5f5]">
-              <BookOpen className="size-3.5 text-primary" />
+          <div className="border-r-2 border-black px-1">
+            <div className="flex items-center justify-center gap-1 font-mono text-base font-black text-black">
+              <BookOpen className="size-3.5 text-black stroke-[2.5]" />
               <span>
                 {clearedCasesCount}/{caseStudies.length || 35}
               </span>
             </div>
-            <p className="mt-1 font-mono text-[10px] text-[#8a8a8a] uppercase tracking-wider">
+            <p className="mt-1 font-mono text-[10px] text-black font-black uppercase tracking-wider">
               Cases Solved
             </p>
           </div>
 
           {/* Metric 3 */}
           <div className="px-1">
-            <div className="flex items-center justify-center gap-1 font-mono text-base font-bold text-[#f5f5f5]">
-              <Flame className="size-3.5 text-primary fill-primary/30" />
+            <div className="flex items-center justify-center gap-1 font-mono text-base font-black text-black">
+              <Flame className="size-3.5 text-black fill-black" />
               <span>{streakCurrent}d</span>
             </div>
-            <p className="mt-1 font-mono text-[10px] text-[#8a8a8a] uppercase tracking-wider">
+            <p className="mt-1 font-mono text-[10px] text-black font-black uppercase tracking-wider">
               Day Streak
             </p>
           </div>

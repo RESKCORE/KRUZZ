@@ -48,10 +48,10 @@ export function SocialButtons({ mode = "sign-in", onError }: SocialButtonsProps)
         type="button"
         disabled={!isReady || loadingProvider !== null}
         onClick={() => handleOAuth("oauth_google")}
-        className="group relative flex w-full items-center justify-center gap-3 rounded-xl border border-white/10 bg-[#161616]/80 px-4 py-2.5 font-sans text-sm font-medium text-[#f5f5f5] shadow-[0_2px_8px_rgba(0,0,0,0.3)] backdrop-blur-sm transition-all duration-200 hover:border-white/25 hover:bg-[#1f1f1f] hover:scale-[1.01] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
+        className="group relative flex w-full items-center justify-center gap-3 rounded-xl border-2 border-black bg-white px-4 py-2.5 font-sans text-sm font-bold text-black shadow-xs transition-all duration-200 hover:bg-neutral-100 hover:scale-[1.01] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
       >
         {loadingProvider === "oauth_google" ? (
-          <Loader2 className="size-4 animate-spin text-[#ccff00]" />
+          <Loader2 className="size-4 animate-spin text-black" />
         ) : (
           <svg className="size-4 shrink-0" viewBox="0 0 24 24">
             <path
@@ -80,12 +80,12 @@ export function SocialButtons({ mode = "sign-in", onError }: SocialButtonsProps)
         type="button"
         disabled={!isReady || loadingProvider !== null}
         onClick={() => handleOAuth("oauth_github")}
-        className="group relative flex w-full items-center justify-center gap-3 rounded-xl border border-white/10 bg-[#161616]/80 px-4 py-2.5 font-sans text-sm font-medium text-[#f5f5f5] shadow-[0_2px_8px_rgba(0,0,0,0.3)] backdrop-blur-sm transition-all duration-200 hover:border-white/25 hover:bg-[#1f1f1f] hover:scale-[1.01] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
+        className="group relative flex w-full items-center justify-center gap-3 rounded-xl border-2 border-black bg-white px-4 py-2.5 font-sans text-sm font-bold text-black shadow-xs transition-all duration-200 hover:bg-neutral-100 hover:scale-[1.01] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
       >
         {loadingProvider === "oauth_github" ? (
-          <Loader2 className="size-4 animate-spin text-[#ccff00]" />
+          <Loader2 className="size-4 animate-spin text-black" />
         ) : (
-          <svg className="size-4 shrink-0 fill-current text-[#f5f5f5]" viewBox="0 0 24 24">
+          <svg className="size-4 shrink-0 fill-current text-black" viewBox="0 0 24 24">
             <path
               fillRule="evenodd"
               clipRule="evenodd"

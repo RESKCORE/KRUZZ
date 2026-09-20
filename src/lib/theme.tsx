@@ -23,30 +23,24 @@ const ThemeContext = createContext<ThemeContextType | null>(null);
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [currentTheme, setCurrentThemeState] = useState<string>(DEFAULT_THEME);
 
-  // Initialize theme on client mount
+  // Initialize theme on client mount - always enforce single light theme
   useEffect(() => {
     try {
-      const stored = window.localStorage.getItem(STORAGE_KEY);
-      if (stored && THEMES.some((t) => t.id === stored)) {
-        setCurrentThemeState(stored);
-        document.documentElement.setAttribute("data-theme", stored);
-      } else {
-        document.documentElement.setAttribute("data-theme", DEFAULT_THEME);
-      }
+      window.localStorage.removeItem(STORAGE_KEY);
+      document.documentElement.setAttribute("data-theme", DEFAULT_THEME);
+      setCurrentThemeState(DEFAULT_THEME);
     } catch {
-      // localStorage disabled or SSR fallback
       document.documentElement.setAttribute("data-theme", DEFAULT_THEME);
     }
   }, []);
 
-  const setTheme = useCallback((themeId: string) => {
-    if (!THEMES.some((t) => t.id === themeId)) return;
-    setCurrentThemeState(themeId);
+  const setTheme = useCallback((_themeId: string) => {
+    // Single light theme enforced
+    setCurrentThemeState(DEFAULT_THEME);
     try {
-      window.localStorage.setItem(STORAGE_KEY, themeId);
-      document.documentElement.setAttribute("data-theme", themeId);
+      document.documentElement.setAttribute("data-theme", DEFAULT_THEME);
     } catch {
-      // ignore storage failure
+      // ignore
     }
   }, []);
 

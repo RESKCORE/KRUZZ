@@ -32,25 +32,27 @@ export function StreakStrip({
   }
 
   return (
-    <section className="glass-panel relative overflow-hidden rounded-3xl p-6 border border-white/[0.08] shadow-[0_20px_40px_rgba(0,0,0,0.45)]">
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/[0.06] pb-5">
+    <section className="bg-white relative overflow-hidden rounded-3xl p-6 border-2 border-black text-black shadow-xs">
+      <div className="flex flex-wrap items-center justify-between gap-4 border-b-2 border-black pb-5">
         <div>
           <div className="flex items-center gap-2">
-            <span className="size-2 rounded-full recording-dot" />
-            <p className="font-mono text-[10px] font-bold uppercase tracking-[0.2em] text-primary">
+            <span className="size-2.5 rounded-full bg-black ring-2 ring-black/20" />
+            <p className="font-mono text-[10px] font-black uppercase tracking-[0.2em] text-black">
               Consistency Matrix
             </p>
           </div>
           <div className="mt-1 flex items-baseline gap-3">
-            <h3 className="text-2xl font-bold tracking-tight text-[#f5f5f5]">
+            <h3 className="text-2xl font-black tracking-tight text-black">
               {current} Day{current === 1 ? "" : "s"} Consecutive
             </h3>
-            <span className="font-mono text-xs text-[#8a8a8a]">(Personal Record: {longest}d)</span>
+            <span className="font-mono text-xs font-bold text-black">
+              (Personal Record: {longest}d)
+            </span>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 rounded-2xl bg-white/[0.03] border border-white/[0.08] px-3.5 py-1.5 text-xs font-mono text-[#b8b8b8]">
-          <Shield className="size-3.5 text-primary" />
+        <div className="flex items-center gap-2 rounded-2xl bg-white border-2 border-black px-3.5 py-1.5 text-xs font-mono font-black text-black">
+          <Shield className="size-3.5 text-black stroke-[2.5]" />
           <span>Daily Cadence Active</span>
         </div>
       </div>
@@ -65,17 +67,17 @@ export function StreakStrip({
           return (
             <div
               key={key}
-              className={`group relative flex flex-col items-center justify-between rounded-2xl p-2.5 transition-all duration-300 ${
+              className={`group relative flex flex-col items-center justify-between rounded-2xl p-2.5 transition-all duration-300 border-2 border-black ${
                 on
-                  ? "bg-[var(--theme-surface,#182608)] border border-primary/50 shadow-[0_0_12px_var(--glow-color,rgba(204,255,0,0.2))]"
+                  ? "bg-black text-white shadow-xs"
                   : isToday
-                    ? "bg-[#181818] border border-primary/30"
-                    : "bg-[#121212] border border-white/[0.05]"
+                    ? "bg-neutral-100 text-black shadow-xs"
+                    : "bg-white text-black"
               }`}
             >
               <span
-                className={`font-mono text-[10px] font-medium uppercase ${
-                  on ? "text-primary" : isToday ? "text-[#f5f5f5]" : "text-[#8a8a8a]"
+                className={`font-mono text-[10px] uppercase font-black ${
+                  on ? "text-white" : "text-black"
                 }`}
               >
                 {DAY_NAMES[d.getDay()]}
@@ -83,15 +85,15 @@ export function StreakStrip({
 
               <div className="my-2 flex size-7 items-center justify-center rounded-xl">
                 {on ? (
-                  <Flame className="size-4.5 text-primary fill-primary" />
+                  <Flame className="size-4.5 text-white fill-white" />
                 ) : (
-                  <span className="font-mono text-xs text-[#8a8a8a]">{d.getDate()}</span>
+                  <span className="font-mono text-xs font-black text-black">{d.getDate()}</span>
                 )}
               </div>
 
               <span
-                className={`font-mono text-[9px] font-bold ${
-                  on ? "text-primary" : isToday ? "text-[#8a8a8a]" : "text-white/20"
+                className={`font-mono text-[9px] font-black tracking-wider ${
+                  on ? "text-white" : "text-black"
                 }`}
               >
                 {on ? "LOGGED" : isToday ? "TODAY" : "REST"}

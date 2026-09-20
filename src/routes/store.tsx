@@ -43,51 +43,6 @@ interface StoreItem {
 
 const STORE_ITEMS: StoreItem[] = [
   {
-    id: "theme-acid-lime",
-    themeId: "theme-acid-lime",
-    name: "Electric Acid Lime UI",
-    category: "Theme",
-    cost: 0,
-    description:
-      "Signature KRUZZ aesthetic: deep matte obsidian surfaces with high-energy electric acid lime accents. Default active theme.",
-    icon: Palette,
-    unlocked: true,
-    paletteChips: ["#ccff00", "#d4ff00", "#182608"],
-  },
-  {
-    id: "theme-cyberpunk",
-    themeId: "theme-cyberpunk",
-    name: "Cyberpunk Neon UI",
-    category: "Theme",
-    cost: 35,
-    description:
-      "Night-city architecture: vivid electric cyan highlights, hot magenta glows, and midnight obsidian cards across all pages.",
-    icon: Palette,
-    paletteChips: ["#00f0ff", "#ff007f", "#040810"],
-  },
-  {
-    id: "theme-matrix",
-    themeId: "theme-matrix",
-    name: "Matrix Phosphor UI",
-    category: "Theme",
-    cost: 35,
-    description:
-      "Hacker systems console: high-intensity terminal phosphor green glowing against deep onyx void surfaces.",
-    icon: Palette,
-    paletteChips: ["#00ff66", "#10b981", "#020a04"],
-  },
-  {
-    id: "theme-monochrome",
-    themeId: "theme-monochrome",
-    name: "Monolith Slate UI",
-    category: "Theme",
-    cost: 25,
-    description:
-      "Minimalist architectural palette: crisp stark white contrast with cold titanium shadows and dark slate accents.",
-    icon: Palette,
-    paletteChips: ["#ffffff", "#e2e8f0", "#1e1e1e"],
-  },
-  {
     id: "pdf-architecture-blueprints",
     name: "System Architecture Cheat-Sheet & Roadmap",
     category: "Download",
@@ -124,7 +79,7 @@ const STORE_ITEMS: StoreItem[] = [
   },
 ];
 
-const CATEGORIES = ["All", "Theme", "Download", "Tooling", "Credential"] as const;
+const CATEGORIES = ["All", "Download", "Tooling", "Credential", "Utility"] as const;
 
 function StorePage() {
   const { points, redeemStoreItem, has, isAuthenticated } = useWallet();
@@ -206,7 +161,7 @@ System Design is the discipline of defining components, modules, interfaces, and
         ? "#00FF66"
         : isMono
           ? "#FFFFFF"
-          : "#CCFF00";
+          : "#000000";
 
     const bgColor = isCyber ? "#070614" : isMatrix ? "#010802" : isMono ? "#0A0A0A" : "#080808";
 
@@ -296,32 +251,32 @@ System Design is the discipline of defining components, modules, interfaces, and
 
     // Glow
     const grad = ctx.createRadialGradient(800, 500, 50, 800, 500, 600);
-    grad.addColorStop(0, "rgba(204, 255, 0, 0.08)");
+    grad.addColorStop(0, "rgba(0, 0, 0, 0.05)");
     grad.addColorStop(1, "rgba(0, 0, 0, 0)");
     ctx.fillStyle = grad;
     ctx.fillRect(70, 70, 1460, 860);
 
     // Title
-    ctx.fillStyle = "#ccff00";
+    ctx.fillStyle = "#000000";
     ctx.font = "bold 24px 'JetBrains Mono', monospace";
     ctx.textAlign = "center";
     ctx.fillText("KRUZZ · COUNCIL OF DISTRIBUTED ARCHITECTURE", 800, 180);
 
-    ctx.fillStyle = "#ffffff";
+    ctx.fillStyle = "#000000";
     ctx.font = "900 64px 'Inter', sans-serif";
     ctx.fillText("CERTIFICATE OF SYSTEMS REASONING", 800, 280);
 
-    ctx.fillStyle = "#8a8a8a";
+    ctx.fillStyle = "#555555";
     ctx.font = "20px 'JetBrains Mono', monospace";
     ctx.fillText("THIS DIGITAL CREDENTIAL FORMALLY ATTESTS THAT", 800, 360);
 
     // Recipient Name
     const name = user?.fullName || profile?.name || "Systems Investigator";
-    ctx.fillStyle = "#ccff00";
+    ctx.fillStyle = "#000000";
     ctx.font = "900 54px 'Inter', sans-serif";
     ctx.fillText(name.toUpperCase(), 800, 450);
 
-    ctx.fillStyle = "#b8b8b8";
+    ctx.fillStyle = "#333333";
     ctx.font = "20px 'Inter', sans-serif";
     ctx.fillText(
       "has demonstrated mastery in decomposing distributed trade-offs, state synchronization,",
@@ -335,15 +290,15 @@ System Design is the discipline of defining components, modules, interfaces, and
     );
 
     // Seal
-    ctx.fillStyle = "rgba(204, 255, 0, 0.1)";
+    ctx.fillStyle = "rgba(0, 0, 0, 0.04)";
     ctx.beginPath();
     ctx.arc(800, 720, 70, 0, Math.PI * 2);
     ctx.fill();
-    ctx.strokeStyle = "#ccff00";
+    ctx.strokeStyle = "#000000";
     ctx.lineWidth = 2;
     ctx.stroke();
 
-    ctx.fillStyle = "#ccff00";
+    ctx.fillStyle = "#000000";
     ctx.font = "bold 16px 'JetBrains Mono', monospace";
     ctx.fillText("VERIFIED", 800, 715);
     ctx.fillText("REASONING", 800, 735);
@@ -446,89 +401,27 @@ System Design is the discipline of defining components, modules, interfaces, and
     <AppChrome>
       <div className="mx-auto max-w-[1240px] px-4 py-8 md:px-6">
         {/* Store Header */}
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-4 border-b-2 border-black pb-6">
           <div>
             <div className="flex items-center gap-2">
-              <span className="size-2 rounded-full recording-dot" />
-              <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-primary font-bold">
-                RC Exchange & Perks
+              <span className="size-2.5 rounded-full bg-black ring-2 ring-black/20" />
+              <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-black font-black">
+                RC Exchange & Deliverables
               </p>
             </div>
-            <h1 className="mt-1.5 text-2xl md:text-3xl font-bold tracking-tight text-[#f5f5f5]">
-              Perks & Themes Store
+            <h1 className="mt-1.5 text-2xl md:text-3xl font-black tracking-tight text-black">
+              Perks & Deliverables Store
             </h1>
-            <p className="mt-1 text-xs text-[#8a8a8a]">
-              Redeem Reasoning Credits (RC) for real-time in-app website themes, architecture
-              blueprints, and credentials.
+            <p className="mt-1 text-xs text-black font-medium">
+              Redeem Reasoning Credits (RC) for architecture blueprints, deliverables, and verified
+              credentials.
             </p>
           </div>
 
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2.5 rounded-2xl bg-[var(--theme-surface,#141a05)] border border-primary/30 px-4 py-2.5 shadow-[0_0_15px_var(--glow-color,rgba(204,255,0,0.2))]">
-              <span className="font-mono text-xs text-[#8a8a8a]">Your Balance:</span>
-              <span className="font-mono text-base font-bold text-primary">{points} RC</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Active Theme Quick-Bar Banner */}
-        <div className="mb-8 rounded-2xl border border-white/[0.08] bg-gradient-to-r from-white/[0.03] to-white/[0.01] p-4 sm:p-5 shadow-lg backdrop-blur-md">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div className="flex items-center gap-3.5">
-              <div className="flex size-10 items-center justify-center rounded-xl bg-[var(--theme-surface,#182608)] border border-primary/30 text-primary shadow-[0_0_10px_var(--glow-color,rgba(204,255,0,0.2))]">
-                <Palette className="size-5" />
-              </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="font-mono text-[10px] uppercase tracking-wider text-[#8a8a8a]">
-                    Active In-App Theme
-                  </span>
-                  <span className="rounded-full bg-primary/15 px-2 py-0.5 font-mono text-[10px] font-bold text-primary border border-primary/30">
-                    Live
-                  </span>
-                </div>
-                <h3 className="text-sm font-bold text-[#f5f5f5]">
-                  {activeThemeMeta?.name ?? "Electric Acid Lime"} —{" "}
-                  <span className="text-xs font-normal text-[#b8b8b8]">
-                    {activeThemeMeta?.subtitle ?? "Deep Obsidian & Neon Lime"}
-                  </span>
-                </h3>
-              </div>
-            </div>
-
-            {/* Quick-equip pills for all unlocked themes */}
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="font-mono text-[11px] text-[#8a8a8a] hidden sm:inline">
-                Quick Switch:
-              </span>
-              {THEMES.map((theme) => {
-                const isUnlocked = isThemeUnlocked(theme.id, has);
-                const isActive = currentTheme === theme.id;
-                if (!isUnlocked) return null;
-
-                return (
-                  <button
-                    key={theme.id}
-                    type="button"
-                    onClick={() => {
-                      setTheme(theme.id);
-                      toast.success(`Switched theme to ${theme.name}`);
-                    }}
-                    className={`flex items-center gap-2 rounded-xl px-3 py-1.5 font-mono text-xs font-semibold transition-all cursor-pointer ${
-                      isActive
-                        ? "bg-[var(--theme-surface,#182608)] border border-primary/60 text-primary shadow-[0_0_12px_var(--glow-color,rgba(204,255,0,0.25))]"
-                        : "bg-white/[0.04] border border-white/[0.08] text-[#8a8a8a] hover:text-[#f5f5f5] hover:bg-white/[0.08]"
-                    }`}
-                  >
-                    <span
-                      className="size-2 rounded-full"
-                      style={{ backgroundColor: theme.palette.primary }}
-                    />
-                    {theme.name.split(" ")[0]}
-                    {isActive && <Check className="size-3 text-primary" />}
-                  </button>
-                );
-              })}
+            <div className="flex items-center gap-2.5 rounded-2xl bg-white border-2 border-black px-4 py-2.5 shadow-xs">
+              <span className="font-mono text-xs text-black font-bold">Your Balance:</span>
+              <span className="font-mono text-base font-black text-black">{points} RC</span>
             </div>
           </div>
         </div>
@@ -542,13 +435,13 @@ System Design is the discipline of defining components, modules, interfaces, and
                 key={cat}
                 type="button"
                 onClick={() => setSelectedCategory(cat)}
-                className={`rounded-xl px-3.5 py-1.5 font-mono text-xs font-semibold transition-all cursor-pointer ${
+                className={`rounded-xl px-3.5 py-1.5 font-mono text-xs font-black transition-all cursor-pointer border-2 border-black ${
                   isSelected
-                    ? "bg-primary text-primary-foreground font-bold shadow-[0_0_12px_var(--glow-color,rgba(204,255,0,0.3))]"
-                    : "bg-white/[0.04] border border-white/[0.08] text-[#8a8a8a] hover:text-[#f5f5f5] hover:bg-white/[0.08]"
+                    ? "bg-black text-white shadow-xs"
+                    : "bg-white text-black hover:bg-neutral-100"
                 }`}
               >
-                {cat === "All" ? "All Items" : cat === "Theme" ? "Website Themes" : cat}
+                {cat === "All" ? "All Deliverables" : cat}
               </button>
             );
           })}
@@ -557,107 +450,63 @@ System Design is the discipline of defining components, modules, interfaces, and
         {/* Store Grid */}
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {filteredItems.map((item) => {
-            const isTheme = item.category === "Theme";
-            const isOwned =
-              item.unlocked ||
-              has(`store:${item.id}`) ||
-              (isTheme && isThemeUnlocked(item.id, has));
-            const isActiveTheme = isTheme && currentTheme === item.id;
+            const isOwned = item.unlocked || has(`store:${item.id}`);
             const canAfford = points >= item.cost;
             const Icon = item.icon;
 
             return (
               <div
                 key={item.id}
-                className={`glass-panel group relative flex flex-col justify-between rounded-3xl p-6 border shadow-[0_20px_40px_rgba(0,0,0,0.45)] transition-all hover:-translate-y-1 ${
-                  isActiveTheme
-                    ? "border-primary/60 shadow-[0_0_25px_var(--glow-color,rgba(204,255,0,0.15))]"
-                    : "border-white/[0.08] hover:border-primary/40"
-                }`}
+                className="glass-panel group relative flex flex-col justify-between rounded-3xl p-6 border-2 border-black bg-white text-black shadow-xs transition-all hover:-translate-y-1"
               >
                 <div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className="font-mono text-[10px] uppercase tracking-widest text-[#8a8a8a]">
-                        {item.category === "Theme" ? "In-App Theme" : item.category}
-                      </span>
-                      {isActiveTheme && (
-                        <span className="flex items-center gap-1 rounded-md bg-[var(--theme-surface,#182608)] border border-primary/40 px-2 py-0.5 font-mono text-[9px] font-bold text-primary">
-                          <CheckCircle2 className="size-2.5" /> ACTIVE
-                        </span>
-                      )}
-                    </div>
-                    <span
-                      className={`font-mono text-xs font-bold ${
-                        isOwned ? "text-primary" : "text-primary/90"
-                      }`}
-                    >
+                  <div className="flex items-center justify-between border-b-2 border-black pb-3">
+                    <span className="font-mono text-[10px] uppercase tracking-widest text-black font-black">
+                      {item.category}
+                    </span>
+                    <span className="font-mono text-xs font-black text-black">
                       {isOwned ? "UNLOCKED" : `${item.cost} RC`}
                     </span>
                   </div>
 
                   <div className="mt-4 flex items-center gap-3">
-                    <div className="flex size-11 items-center justify-center rounded-2xl bg-[var(--theme-surface,#182608)] border border-primary/30 text-primary shadow-[0_0_10px_var(--glow-color,rgba(204,255,0,0.2))]">
-                      <Icon className="size-5" />
+                    <div className="flex size-11 items-center justify-center rounded-2xl bg-white border-2 border-black text-black shadow-xs">
+                      <Icon className="size-5 text-black" />
                     </div>
                     <div>
-                      <h3 className="text-sm font-bold text-[#f5f5f5] group-hover:text-primary transition-colors">
+                      <h3 className="text-sm font-black text-black transition-colors">
                         {item.name}
                       </h3>
                     </div>
                   </div>
 
-                  <p className="mt-3 text-xs leading-relaxed text-[#b8b8b8]">{item.description}</p>
-
-                  {/* Visual palette chips for theme items */}
-                  {item.paletteChips && (
-                    <div className="mt-4 flex items-center gap-2 rounded-xl bg-black/40 border border-white/[0.06] p-2.5">
-                      <span className="font-mono text-[10px] text-[#8a8a8a] mr-1">Palette:</span>
-                      {item.paletteChips.map((color, idx) => (
-                        <div key={idx} className="flex items-center gap-1.5" title={color}>
-                          <span
-                            className="size-3.5 rounded-full border border-white/20 shadow-sm"
-                            style={{ backgroundColor: color }}
-                          />
-                          <span className="font-mono text-[10px] text-[#8a8a8a]">
-                            {idx === 0 ? "Accent" : idx === 1 ? "Glow" : "Surface"}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                  <p className="mt-3 text-xs leading-relaxed text-black font-medium">
+                    {item.description}
+                  </p>
                 </div>
 
-                <div className="mt-6 pt-4 border-t border-white/[0.08]">
+                <div className="mt-6 pt-4 border-t-2 border-black">
                   <button
                     type="button"
                     onClick={() => handleRedeem(item)}
-                    disabled={!isTheme && !isOwned && !canAfford}
-                    className={`w-full rounded-xl py-2.5 font-mono text-xs font-bold transition-all ${
-                      isActiveTheme
-                        ? "bg-[var(--theme-surface,#182608)] border border-primary/60 text-primary cursor-default shadow-[0_0_15px_var(--glow-color,rgba(204,255,0,0.2))]"
-                        : isTheme && isOwned
-                          ? "bg-primary text-primary-foreground hover:bg-primary/90 shadow-[0_0_15px_var(--glow-color,rgba(204,255,0,0.3))] cursor-pointer"
-                          : isOwned
-                            ? "bg-[var(--theme-surface,#182608)] border border-primary/40 text-primary hover:brightness-110 shadow-[0_0_12px_var(--glow-color,rgba(204,255,0,0.2))] cursor-pointer"
-                            : canAfford
-                              ? "bg-primary text-primary-foreground shadow-[0_0_15px_var(--glow-color,rgba(204,255,0,0.4))] hover:shadow-[0_0_20px_var(--glow-color,rgba(204,255,0,0.6))] cursor-pointer"
-                              : "neu-btn text-[#8a8a8a] opacity-50 cursor-not-allowed"
+                    disabled={!isOwned && !canAfford}
+                    className={`w-full rounded-xl py-2.5 font-mono text-xs font-black transition-all border-2 border-black ${
+                      isOwned
+                        ? "bg-white text-black hover:bg-neutral-100 cursor-pointer"
+                        : canAfford
+                          ? "bg-black text-white hover:bg-neutral-800 cursor-pointer shadow-xs"
+                          : "bg-neutral-100 text-neutral-600 cursor-not-allowed"
                     }`}
                   >
-                    {isActiveTheme
-                      ? "✓ Active In-App Theme"
-                      : isTheme && isOwned
-                        ? "Equip In-App Theme"
-                        : isOwned
-                          ? item.category === "Download" || item.category === "Tooling"
-                            ? "↓ Download Deliverable"
-                            : item.category === "Credential"
-                              ? "↓ Download Certificate"
-                              : "✓ Active in Account"
-                          : canAfford
-                            ? `Unlock for ${item.cost} RC`
-                            : `Need ${item.cost - points} more RC`}
+                    {isOwned
+                      ? item.category === "Download" || item.category === "Tooling"
+                        ? "↓ Download Deliverable"
+                        : item.category === "Credential"
+                          ? "↓ Download Certificate"
+                          : "✓ Active in Account"
+                      : canAfford
+                        ? `Unlock for ${item.cost} RC`
+                        : `Need ${item.cost - points} more RC`}
                   </button>
                 </div>
               </div>

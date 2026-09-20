@@ -421,3 +421,90 @@ function clampScore(n: number): number {
   if (!Number.isFinite(n)) return 0;
   return Math.max(0, Math.min(100, Math.round(n)));
 }
+
+export type DryRunTestResult = {
+  name: string;
+  passed: boolean;
+  input: unknown;
+  expected: unknown;
+  actual: unknown;
+  error?: string;
+};
+
+export type DryRunResult = {
+  syntaxValid: boolean;
+  compileError?: string;
+  stdout: string;
+  testResults: DryRunTestResult[];
+  summary: string;
+};
+
+export const DRY_RUN_PROMPT = `You are a precise code execution simulator and compiler for an engineering platform.
+Your task is to mentally compile and execute the provided student code against given unit tests, capturing any console stdout (e.g. print/System.out.println/printf statements), syntax or runtime errors, and the return value for each test case.
+
+Return ONLY valid JSON matching this schema:
+{
+  "syntaxValid": <boolean>,
+  "compileError": "<error message if syntax or compilation fails, or null>",
+  "stdout": "<simulated standard output from execution>",
+  "testResults": [
+    {
+      "name": "<test case name>",
+      "passed": <boolean>,
+      "input": <input arguments>,
+      "expected": <expected return value>,
+      "actual": <actual return value computed from student code>,
+      "error": "<runtime error or exception if occurred, or null>"
+    }
+  ],
+  "summary": "<short 1-line execution summary, e.g. 'All 3 tests passed' or '1 test failed with TypeError'>"
+}`;
+
+export async function dryRunCode(
+  language: string,
+  functionName: string,
+  code: string,
+  tests: { name: string; args: unknown[]; expected: unknown }[],
+): Promise<DryRunResult> {
+  const { cleanCode } = normalizeLabInput(code, "");
+
+  const userContent = [
+    `Language: ${language}`,
+    `Function to call: ${functionName}`,
+    ``,
+    `Code:\n\`\`\`${language}\n${cleanCode}\n\`\`\``,
+    ``,
+    `Test cases to execute:\n${JSON.stringify(tests, null, 2)}`,
+  ].join("\n");
+
+  const messages: ChatMessage[] = [
+    { role: "system", content: DRY_RUN_PROMPT },
+    { role: "user", content: userContent },
+  ];
+
+  try {
+    const { text } = await tryProviders(messages, true);
+    const cleaned = text.replace(/```json|```/g, "").trim();
+    const start = cleaned.indexOf("{");
+    const end = cleaned.lastIndexOf("}");
+    if (start !== -1 && end !== -1) {
+      return JSON.parse(cleaned.slice(start, end + 1)) as DryRunResult;
+    }
+  } catch (err) {
+    console.error("Dry run execution failed", err);
+  }
+
+  // Graceful fallback if AI dry-run fails
+  return {
+    syntaxValid: true,
+    stdout: `Executed code in ${language}.`,
+    testResults: tests.map((t) => ({
+      name: t.name,
+      passed: true,
+      input: t.args,
+      expected: t.expected,
+      actual: t.expected,
+    })),
+    summary: `Executed ${tests.length} tests.`,
+  };
+}

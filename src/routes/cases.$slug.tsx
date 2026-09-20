@@ -40,7 +40,11 @@ import {
   BookOpen,
   Lightbulb,
   ChevronDown,
+  ChevronRight,
   X,
+  FileText,
+  GitBranch,
+  FolderOpen,
 } from "lucide-react";
 
 export const Route = createFileRoute("/cases/$slug")({
@@ -63,18 +67,16 @@ function CaseNotFound() {
   return (
     <AppChrome>
       <div className="mx-auto max-w-[1240px] px-5 py-24 text-center">
-        <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-[#ccff00] font-bold">
+        <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-black font-black">
           Case Index
         </p>
-        <h1 className="mt-2 text-3xl font-bold tracking-tight text-[#f5f5f5]">
-          No such case study
-        </h1>
-        <p className="mt-3 text-sm text-[#8a8a8a]">
+        <h1 className="mt-2 text-3xl font-black tracking-tight text-black">No such case study</h1>
+        <p className="mt-3 text-sm text-black font-medium">
           That investigation isn&rsquo;t on the board yet.
         </p>
         <Link
           to="/cases"
-          className="mt-6 inline-flex rounded-xl bg-gradient-to-r from-[#d4ff00] to-[#ccff00] px-5 py-2.5 font-mono text-xs font-black text-[#080808] shadow-[0_0_15px_rgba(204,255,0,0.4)]"
+          className="mt-6 inline-flex rounded-xl bg-black px-5 py-2.5 font-mono text-xs font-black text-white border-2 border-black hover:bg-neutral-800 transition-all shadow-xs"
         >
           Back to the Arena Centre
         </Link>
@@ -84,7 +86,10 @@ function CaseNotFound() {
 }
 
 const H2 = ({ children }: { children: React.ReactNode }) => (
-  <h2 className="mt-2 max-w-[34ch] text-balance text-2xl font-semibold tracking-tight">
+  <h2
+    className="mt-2 w-full font-extrabold tracking-tight leading-none"
+    style={{ fontSize: "clamp(1.6rem, 4.2vw, 3rem)" }}
+  >
     {children}
   </h2>
 );
@@ -108,85 +113,327 @@ function ArrowChain({ steps }: { steps: string[] }) {
   );
 }
 
-function StepperList({
+const SECTION_FILES = [
+  { name: "01_discover.md", label: "01 Discover", ext: "md" },
+  { name: "02_understand.md", label: "02 Understand", ext: "md" },
+  { name: "03_principles.md", label: "03 Principles", ext: "md" },
+  { name: "04_architecture.md", label: "04 Architecture", ext: "md" },
+  { name: "05_decisions.md", label: "05 Decisions", ext: "md" },
+  { name: "06_implementation.md", label: "06 Implementation", ext: "md" },
+  { name: "07_practice.py", label: "07 Practice", ext: "py" },
+  { name: "08_reflection.md", label: "08 Reflection", ext: "md" },
+] as const;
+
+function VSCodeExplorerSidebar({
   step,
   setStep,
   sectionsDone,
   prerequisites,
+  companionTab,
+  setCompanionTab,
+  primer,
+  techNotesList,
+  engineeringConceptsList,
+  caseRewarded,
+  caseRc,
+  doneCount,
+  labEarned,
+  points,
   onSelect,
 }: {
   step: number;
   setStep: (step: number) => void;
   sectionsDone: boolean[];
   prerequisites?: string[] | undefined;
-  onSelect?: (() => void) | undefined;
+  companionTab: "primer" | "principles" | "concepts";
+  setCompanionTab: (tab: "primer" | "principles" | "concepts") => void;
+  primer?: Primer | undefined;
+  techNotesList: TechNote[];
+  engineeringConceptsList: string[];
+  caseRewarded: boolean;
+  caseRc: number;
+  doneCount: number;
+  labEarned: boolean;
+  points: number;
+  onSelect?: () => void;
 }) {
+  const [sectionsOpen, setSectionsOpen] = useState(true);
+  const [prereqsOpen, setPrereqsOpen] = useState(true);
+  const [companionOpen, setCompanionOpen] = useState(false);
+  const [walletOpen, setWalletOpen] = useState(false);
+
   return (
-    <>
-      <p className="mb-3 font-mono text-[10px] uppercase tracking-[0.18em] text-[#8a8a8a]">
-        Sections
-      </p>
-      <ol className="space-y-1.5">
-        {SECTION_LABELS.map((label, i) => {
-          const done = sectionsDone[i] ?? false;
-          const current = i === step;
-          return (
-            <li key={label}>
-              <button
-                type="button"
-                onClick={() => {
-                  setStep(i);
-                  onSelect?.();
-                }}
-                className={`flex w-full items-center gap-2 rounded-xl px-2.5 py-2 text-left transition-all ${
-                  current
-                    ? "bg-[#182608] text-[#ccff00] border border-[#ccff00]/40 shadow-[0_0_12px_rgba(204,255,0,0.25)]"
-                    : done
-                      ? "bg-[#182608]/70 text-[#ccff00] border border-[#ccff00]/25"
-                      : "text-[#8a8a8a] hover:bg-white/[0.04] hover:text-[#f5f5f5]"
-                }`}
-              >
-                <span
-                  className={`font-mono text-[10px] font-bold ${current ? "text-[#ccff00]" : ""}`}
-                >
-                  {String(i + 1).padStart(2, "0")}
-                </span>
-                <span
-                  className={`text-xs ${
-                    current
-                      ? "font-bold text-[#ccff00]"
-                      : done
-                        ? "font-medium text-[#ccff00]"
-                        : "font-medium"
+    <div className="flex flex-col h-full bg-[#f8fafc] text-slate-700 font-mono text-xs select-none">
+      {/* Explorer Sidebar Header */}
+      <div className="flex items-center justify-between px-3.5 py-2.5 border-b border-slate-200 bg-[#f1f5f9] text-[11px] font-bold text-slate-600 tracking-wider uppercase">
+        <span className="flex items-center gap-1.5">
+          <FolderOpen className="size-3.5 text-[#0284c7]" />
+          Explorer
+        </span>
+        <span className="text-[10px] text-[#0284c7] font-bold">CASE-WORKSPACE</span>
+      </div>
+
+      <div className="overflow-y-auto flex-1 divide-y divide-slate-200">
+        {/* Accordion 1: SECTIONS / FILES (Tree Stack) */}
+        <div>
+          <button
+            type="button"
+            onClick={() => setSectionsOpen(!sectionsOpen)}
+            className="w-full flex items-center justify-between px-3 py-2 font-bold text-[11px] text-slate-600 hover:text-slate-900 bg-[#f1f5f9] hover:bg-slate-200/60 transition-colors"
+          >
+            <span className="flex items-center gap-1.5 uppercase tracking-wider">
+              {sectionsOpen ? (
+                <ChevronDown className="size-3.5 text-[#0284c7]" />
+              ) : (
+                <ChevronRight className="size-3.5" />
+              )}
+              Sections (08)
+            </span>
+            <span className="text-[10px] text-black font-black">
+              {sectionsDone.filter(Boolean).length}/8 done
+            </span>
+          </button>
+
+          {sectionsOpen && (
+            <div className="py-1 space-y-0.5">
+              {SECTION_FILES.map((file, idx) => {
+                const current = idx === step;
+                const done = sectionsDone[idx];
+                const isCode = idx === 6;
+
+                return (
+                  <button
+                    key={file.name}
+                    type="button"
+                    onClick={() => {
+                      setStep(idx);
+                      onSelect?.();
+                    }}
+                    className={`w-full flex items-center gap-2 px-3 py-1.5 text-left text-xs transition-all cursor-pointer ${
+                      current
+                        ? "bg-[#e0f2fe] text-[#0284c7] font-semibold border-l-2 border-[#0284c7] shadow-xs"
+                        : done
+                          ? "text-black font-bold hover:bg-slate-100"
+                          : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                    }`}
+                  >
+                    {isCode ? (
+                      <span className="text-[#b45309] font-mono font-bold text-[10px] px-1 py-0.2 rounded bg-amber-100">
+                        PY
+                      </span>
+                    ) : (
+                      <FileText className="size-3.5 text-[#0284c7] shrink-0" />
+                    )}
+
+                    <span className="truncate flex-1 font-mono text-[12px]">{file.name}</span>
+
+                    {done ? (
+                      <span
+                        className="text-black font-black text-[11px] shrink-0"
+                        title="Completed"
+                      >
+                        ✓
+                      </span>
+                    ) : current ? (
+                      <span className="size-1.5 rounded-full bg-[#0284c7] shrink-0 animate-pulse" />
+                    ) : null}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* Accordion 2: PREREQUISITES */}
+        {prerequisites && prerequisites.length > 0 && (
+          <div>
+            <button
+              type="button"
+              onClick={() => setPrereqsOpen(!prereqsOpen)}
+              className="w-full flex items-center gap-1.5 px-3 py-2 font-bold text-[11px] text-slate-600 hover:text-slate-900 bg-[#f1f5f9] hover:bg-slate-200/60 transition-colors"
+            >
+              {prereqsOpen ? (
+                <ChevronDown className="size-3.5 text-[#0284c7]" />
+              ) : (
+                <ChevronRight className="size-3.5" />
+              )}
+              <span className="uppercase tracking-wider">
+                Prerequisites ({prerequisites.length})
+              </span>
+            </button>
+
+            {prereqsOpen && (
+              <div className="px-4 py-2 space-y-1.5 text-[11px] text-slate-600 font-sans leading-relaxed">
+                {prerequisites.map((p) => (
+                  <div key={p} className="flex items-start gap-2">
+                    <span className="text-[#0284c7] font-mono font-bold">&bull;</span>
+                    <span>{p}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Accordion 3: KNOWLEDGE COMPANION */}
+        <div>
+          <button
+            type="button"
+            onClick={() => setCompanionOpen(!companionOpen)}
+            className="w-full flex items-center justify-between px-3 py-2 font-bold text-[11px] text-slate-600 hover:text-slate-900 bg-[#f1f5f9] hover:bg-slate-200/60 transition-colors"
+          >
+            <span className="flex items-center gap-1.5 uppercase tracking-wider">
+              {companionOpen ? (
+                <ChevronDown className="size-3.5 text-[#0284c7]" />
+              ) : (
+                <ChevronRight className="size-3.5" />
+              )}
+              Knowledge Companion
+            </span>
+            {primer && <span className="size-2 rounded-full bg-black" title="Primer ready" />}
+          </button>
+
+          {companionOpen && (
+            <div className="p-3 space-y-3">
+              <div className="grid grid-cols-3 gap-1 bg-slate-100 p-1 rounded border border-slate-200 text-[10px]">
+                <button
+                  type="button"
+                  onClick={() => setCompanionTab("primer")}
+                  className={`py-1 rounded font-bold transition-colors ${
+                    companionTab === "primer"
+                      ? "bg-[#0284c7] text-white"
+                      : "text-slate-600 hover:text-slate-900"
                   }`}
                 >
-                  {label}
-                </span>
-                {current && <span className="ml-auto size-1.5 rounded-full recording-dot" />}
-                {done && !current && (
-                  <span className="ml-auto font-mono text-[10px] text-[#ccff00]">✓</span>
-                )}
-              </button>
-            </li>
-          );
-        })}
-      </ol>
+                  Primer
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCompanionTab("principles")}
+                  className={`py-1 rounded font-bold transition-colors ${
+                    companionTab === "principles"
+                      ? "bg-[#0284c7] text-white"
+                      : "text-slate-600 hover:text-slate-900"
+                  }`}
+                >
+                  Principles
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCompanionTab("concepts")}
+                  className={`py-1 rounded font-bold transition-colors ${
+                    companionTab === "concepts"
+                      ? "bg-[#0284c7] text-white"
+                      : "text-slate-600 hover:text-slate-900"
+                  }`}
+                >
+                  Concepts
+                </button>
+              </div>
 
-      {prerequisites && prerequisites.length > 0 && (
-        <>
-          <p className="mb-2 mt-6 font-mono text-[10px] uppercase tracking-[0.18em] text-[#8a8a8a]">
-            Prerequisites
-          </p>
-          <ul className="space-y-1.5">
-            {prerequisites.map((p) => (
-              <li key={p} className="text-[11px] leading-relaxed text-[#8a8a8a]">
-                · {p}
-              </li>
-            ))}
-          </ul>
-        </>
-      )}
-    </>
+              {companionTab === "primer" && primer && (
+                <div className="space-y-2 text-[11px] font-sans text-slate-700 leading-relaxed">
+                  <p className="font-mono text-[10px] text-[#0284c7] uppercase font-bold">
+                    {primer.minutes}m Primer: {primer.concept}
+                  </p>
+                  <p className="text-slate-600">{primer.definition}</p>
+                  <div className="p-2.5 rounded bg-slate-100 border border-slate-200 text-[11px]">
+                    <span className="text-slate-500 block font-mono font-bold uppercase text-[10px] mb-0.5">
+                      Why it matters
+                    </span>
+                    <span>{primer.whyNeeded}</span>
+                  </div>
+                  {primer.tinyExample && (
+                    <pre className="p-2.5 rounded bg-slate-900 border border-slate-700 font-mono text-[10px] overflow-x-auto text-sky-200">
+                      <code>{primer.tinyExample}</code>
+                    </pre>
+                  )}
+                </div>
+              )}
+
+              {companionTab === "principles" && (
+                <div className="space-y-2 text-[11px] font-sans">
+                  {techNotesList.length > 0 ? (
+                    techNotesList.map((t) => (
+                      <div
+                        key={t.name}
+                        className="p-2.5 rounded bg-slate-100 border border-slate-200 space-y-1"
+                      >
+                        <span className="font-mono text-[9px] uppercase px-1.5 py-0.5 rounded bg-white text-slate-600 font-bold border border-slate-200">
+                          {t.kind}
+                        </span>
+                        <p className="font-bold text-slate-800 text-[11px]">{t.name}</p>
+                        <p className="text-slate-600 text-[10.5px] leading-relaxed">{t.note}</p>
+                      </div>
+                    ))
+                  ) : (
+                    <p className="text-slate-500 py-2 text-center">No tech notes available</p>
+                  )}
+                </div>
+              )}
+
+              {companionTab === "concepts" && (
+                <div className="flex flex-wrap gap-1.5">
+                  {engineeringConceptsList.map((c) => (
+                    <span
+                      key={c}
+                      className="px-2 py-0.5 rounded bg-slate-100 border border-slate-200 font-mono text-[10px] text-slate-700 hover:border-[#0284c7]/40"
+                    >
+                      {c}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Accordion 4: WALLET & REWARDS */}
+        <div>
+          <button
+            type="button"
+            onClick={() => setWalletOpen(!walletOpen)}
+            className="w-full flex items-center justify-between px-3 py-2 font-bold text-[11px] text-slate-600 hover:text-slate-900 bg-[#f1f5f9] hover:bg-slate-200/60 transition-colors"
+          >
+            <span className="flex items-center gap-1.5 uppercase tracking-wider">
+              {walletOpen ? (
+                <ChevronDown className="size-3.5 text-[#0284c7]" />
+              ) : (
+                <ChevronRight className="size-3.5" />
+              )}
+              Wallet & Progress
+            </span>
+            <span className="text-[10px] text-black font-black">
+              +{caseRewarded ? caseRc : 0} RC
+            </span>
+          </button>
+
+          {walletOpen && (
+            <div className="p-3 space-y-3 font-sans text-xs">
+              <RCWalletPanel />
+              <div className="space-y-1.5 pt-2 border-t border-slate-200 font-mono text-[10px] text-slate-600">
+                <div className="flex justify-between">
+                  <span>Reading Steps (0-5, 7)</span>
+                  <span className={doneCount >= 7 ? "text-black font-black" : ""}>
+                    {doneCount >= 7 ? "✓ Complete" : `${doneCount}/7`}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Practice Lab (07)</span>
+                  <span className={labEarned ? "text-black font-black" : ""}>
+                    {labEarned ? "✓ Passed" : "Pending"}
+                  </span>
+                </div>
+                <div className="flex justify-between text-slate-900 font-bold">
+                  <span>Full Case Bonus</span>
+                  <span className="text-black font-black">+{caseRc} RC</span>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -223,39 +470,39 @@ function CompanionHub({
             <p className="font-mono text-[10px] uppercase tracking-widest text-[#8a8a8a]">
               Case Yield Potential
             </p>
-            <span className="font-mono text-xs font-bold text-[#ccff00]">
+            <span className="font-mono text-xs font-black text-black">
               +{caseRewarded ? caseRc : 0} / {caseRc} RC
             </span>
           </div>
 
-          <p className="mb-2 text-[11px] leading-relaxed text-[#8a8a8a]">
+          <p className="mb-2 text-[11px] leading-relaxed text-black font-medium">
             Full {caseRc} RC is awarded upon completing the entire 8-section path (reading, passing
             the code lab, and writing reflection).
           </p>
 
-          <div className="space-y-1.5 font-mono text-[11px] text-[#8a8a8a]">
+          <div className="space-y-1.5 font-mono text-[11px] text-black">
             <div className="flex justify-between items-center py-0.5">
               <span>Reading Steps (0-5, 7)</span>
-              <span className={doneCount >= 7 ? "text-[#ccff00] font-bold" : "text-[#8a8a8a]"}>
+              <span className={doneCount >= 7 ? "text-black font-black" : "text-neutral-500"}>
                 {doneCount >= 7 ? "✓ Viewed" : `${doneCount}/7 complete`}
               </span>
             </div>
             <div className="flex justify-between items-center py-0.5">
               <span>Practice (CodeArena)</span>
-              <span className={labEarned ? "text-[#ccff00] font-bold" : "text-[#8a8a8a]"}>
+              <span className={labEarned ? "text-black font-black" : "text-neutral-500"}>
                 {labEarned ? "✓ Passed" : "pending"}
               </span>
             </div>
             <div className="flex justify-between items-center py-0.5">
               <span>Full Case Complete</span>
-              <span className={caseRewarded ? "text-[#ccff00] font-bold" : "text-[#8a8a8a]"}>
+              <span className={caseRewarded ? "text-black font-black" : "text-neutral-500"}>
                 {caseRewarded ? `+${caseRc} RC ✓` : `+${caseRc} RC`}
               </span>
             </div>
           </div>
 
           {caseRewarded && (
-            <div className="mt-3 rounded-xl bg-[#182608] border border-[#ccff00]/30 px-3 py-2 font-mono text-xs font-bold text-[#ccff00] flex items-center gap-1.5">
+            <div className="mt-3 rounded-xl bg-neutral-100 border-2 border-black px-3 py-2 font-mono text-xs font-black text-black flex items-center gap-1.5">
               <span>✓</span>
               <span>Case mastered · {caseRc} RC banked</span>
             </div>
@@ -264,23 +511,21 @@ function CompanionHub({
       </div>
 
       {/* 2. Modular Knowledge Hub (Tabs: Primer | Principles | Concepts) */}
-      <div className="rounded-2xl border border-white/[0.08] bg-[#121212]/90 p-4 shadow-sm space-y-4">
+      <div className="rounded-2xl border-2 border-black bg-white p-4 shadow-xs space-y-4 text-black">
         {/* Tab Header */}
-        <div className="flex items-center justify-between border-b border-white/[0.06] pb-3">
-          <span className="font-mono text-[10px] uppercase tracking-widest text-[#8a8a8a] font-bold">
+        <div className="flex items-center justify-between border-b-2 border-black pb-3">
+          <span className="font-mono text-[10px] uppercase tracking-widest text-black font-black">
             Knowledge Companion
           </span>
         </div>
 
         {/* Segmented Tab Switcher */}
-        <div className="grid grid-cols-3 gap-1 rounded-xl bg-black/40 p-1 border border-white/[0.06]">
+        <div className="grid grid-cols-3 gap-1 rounded-xl bg-neutral-100 p-1 border-2 border-black">
           <button
             type="button"
             onClick={() => setCompanionTab("primer")}
-            className={`rounded-lg py-1.5 text-center font-mono text-[11px] font-bold transition-all ${
-              companionTab === "primer"
-                ? "bg-[#182608] text-[#ccff00] border border-[#ccff00]/40"
-                : "text-[#8a8a8a] hover:text-[#f5f5f5]"
+            className={`rounded-lg py-1.5 text-center font-mono text-[11px] font-black transition-all ${
+              companionTab === "primer" ? "bg-black text-white" : "text-black hover:bg-neutral-200"
             }`}
           >
             Primer
@@ -288,10 +533,10 @@ function CompanionHub({
           <button
             type="button"
             onClick={() => setCompanionTab("principles")}
-            className={`rounded-lg py-1.5 text-center font-mono text-[11px] font-bold transition-all ${
+            className={`rounded-lg py-1.5 text-center font-mono text-[11px] font-black transition-all ${
               companionTab === "principles"
-                ? "bg-[#182608] text-[#ccff00] border border-[#ccff00]/40"
-                : "text-[#8a8a8a] hover:text-[#f5f5f5]"
+                ? "bg-black text-white"
+                : "text-black hover:bg-neutral-200"
             }`}
           >
             Principles ({techNotesList.length})
@@ -299,10 +544,10 @@ function CompanionHub({
           <button
             type="button"
             onClick={() => setCompanionTab("concepts")}
-            className={`rounded-lg py-1.5 text-center font-mono text-[11px] font-bold transition-all ${
+            className={`rounded-lg py-1.5 text-center font-mono text-[11px] font-black transition-all ${
               companionTab === "concepts"
-                ? "bg-[#182608] text-[#ccff00] border border-[#ccff00]/40"
-                : "text-[#8a8a8a] hover:text-[#f5f5f5]"
+                ? "bg-black text-white"
+                : "text-black hover:bg-neutral-200"
             }`}
           >
             Concepts
@@ -318,25 +563,27 @@ function CompanionHub({
                 <div className="space-y-3">
                   <div>
                     <div className="flex items-center gap-1.5 mb-1">
-                      <span className="size-1.5 rounded-full recording-dot" />
-                      <span className="font-mono text-[10px] text-[#ccff00] font-bold">
+                      <span className="size-2 rounded-full bg-black" />
+                      <span className="font-mono text-[10px] text-black font-black">
                         {primer.minutes} MIN ARCHITECTURE PRIMER
                       </span>
                     </div>
-                    <h4 className="text-sm font-bold text-[#f5f5f5]">{primer.concept}</h4>
+                    <h4 className="text-sm font-black text-black">{primer.concept}</h4>
                   </div>
 
-                  <p className="text-xs leading-relaxed text-[#b8b8b8]">{primer.definition}</p>
+                  <p className="text-xs leading-relaxed text-black font-medium">
+                    {primer.definition}
+                  </p>
 
-                  <div className="rounded-xl bg-white/[0.02] border border-white/[0.06] p-3 text-xs leading-relaxed text-[#b8b8b8]">
-                    <p className="font-mono text-[10px] uppercase text-[#8a8a8a] mb-1 font-bold">
+                  <div className="rounded-xl bg-neutral-50 border-2 border-black p-3 text-xs leading-relaxed text-black">
+                    <p className="font-mono text-[10px] uppercase text-black mb-1 font-black">
                       Why it matters
                     </p>
                     <p>{primer.whyNeeded}</p>
                   </div>
 
-                  <div className="rounded-xl bg-[#141a05] border border-[#ccff00]/25 p-3 text-xs leading-relaxed text-[#a3e635]">
-                    <span className="font-mono text-[10px] font-bold text-[#ccff00] block mb-1">
+                  <div className="rounded-xl bg-neutral-50 border-2 border-black p-3 text-xs leading-relaxed text-black">
+                    <span className="font-mono text-[10px] font-black text-black block mb-1">
                       Analogy
                     </span>
                     <p>{primer.analogy}</p>
@@ -344,17 +591,17 @@ function CompanionHub({
 
                   <div>
                     <div className="flex items-center justify-between mb-1.5">
-                      <span className="font-mono text-[10px] text-[#8a8a8a] uppercase">
+                      <span className="font-mono text-[10px] text-black uppercase font-black">
                         Code Pattern
                       </span>
                     </div>
-                    <pre className="overflow-x-auto rounded-xl bg-[#080808] p-3 font-mono text-[11px] text-[#f5f5f5] border border-white/10 leading-snug">
+                    <pre className="overflow-x-auto rounded-xl bg-neutral-900 p-3 font-mono text-[11px] text-white border-2 border-black leading-snug">
                       <code>{primer.tinyExample}</code>
                     </pre>
                   </div>
                 </div>
               ) : (
-                <p className="text-xs text-[#8a8a8a] py-4 text-center">
+                <p className="text-xs text-neutral-500 py-4 text-center">
                   No dedicated primer needed for this case.
                 </p>
               )}
@@ -368,19 +615,19 @@ function CompanionHub({
                 techNotesList.map((t) => (
                   <div
                     key={t.name}
-                    className="rounded-xl bg-white/[0.02] border border-white/[0.06] p-3.5 hover:border-white/15 transition-colors"
+                    className="rounded-xl bg-white border-2 border-black p-3.5 shadow-xs transition-colors"
                   >
                     <div className="flex items-center justify-between">
-                      <span className="rounded-md bg-white/[0.04] border border-white/[0.08] px-2 py-0.5 font-mono text-[9px] uppercase tracking-wider text-[#8a8a8a]">
+                      <span className="rounded-md bg-neutral-100 border border-black px-2 py-0.5 font-mono text-[9px] uppercase tracking-wider text-black font-black">
                         {t.kind}
                       </span>
                     </div>
-                    <p className="mt-1.5 text-xs font-bold text-[#f5f5f5]">{t.name}</p>
-                    <p className="mt-1 text-xs leading-relaxed text-[#8a8a8a]">{t.note}</p>
+                    <p className="mt-1.5 text-xs font-black text-black">{t.name}</p>
+                    <p className="mt-1 text-xs leading-relaxed text-neutral-700">{t.note}</p>
                   </div>
                 ))
               ) : (
-                <p className="text-xs text-[#8a8a8a] py-4 text-center">
+                <p className="text-xs text-neutral-500 py-4 text-center">
                   No architectural notes for this case.
                 </p>
               )}
@@ -390,14 +637,14 @@ function CompanionHub({
           {/* TAB 3: Engineering Concepts */}
           {companionTab === "concepts" && (
             <div className="space-y-3">
-              <p className="font-mono text-[11px] text-[#8a8a8a]">
+              <p className="font-mono text-[11px] text-black font-bold">
                 Key domain concepts mastered in this case:
               </p>
               <div className="flex flex-wrap gap-2">
                 {engineeringConceptsList.map((concept) => (
                   <span
                     key={concept}
-                    className="rounded-lg bg-white/[0.03] border border-white/[0.08] px-2.5 py-1 font-mono text-xs text-[#f5f5f5] hover:border-[#ccff00]/40 hover:text-[#ccff00] transition-colors"
+                    className="rounded-lg bg-white border-2 border-black px-2.5 py-1 font-mono text-xs font-black text-black shadow-xs"
                   >
                     {concept}
                   </span>
@@ -471,16 +718,16 @@ function CaseStudyPage() {
     return (
       <AppChrome>
         <div className="mx-auto max-w-[720px] px-5 py-32 text-center">
-          <div className="mx-auto mb-6 flex size-16 items-center justify-center rounded-2xl border border-[#ccff00]/30 bg-[#141a05] text-[#ccff00] shadow-[0_0_25px_rgba(204,255,0,0.2)]">
-            <Lock className="size-8" />
+          <div className="mx-auto mb-6 flex size-16 items-center justify-center rounded-2xl border-2 border-black bg-white text-black shadow-xs">
+            <Lock className="size-8 text-black" />
           </div>
-          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-[#ccff00] font-bold">
+          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-black font-black">
             Authentication Required
           </p>
-          <h1 className="mt-3 text-3xl font-extrabold text-[#f5f5f5] sm:text-4xl">
+          <h1 className="mt-3 text-3xl font-black text-black sm:text-4xl">
             Sign in to Enter the Case Arena
           </h1>
-          <p className="mt-4 text-sm leading-relaxed text-[#8a8a8a] max-w-[50ch] mx-auto">
+          <p className="mt-4 text-sm leading-relaxed text-black font-medium max-w-[50ch] mx-auto">
             KRUZZ system architecture investigations, engineering trade-off matrices, and
             interactive AI coding labs require an active investigator session.
           </p>
@@ -488,13 +735,13 @@ function CaseStudyPage() {
             <Link
               to="/sign-in"
               search={{ redirect: `/cases/${slug}` }}
-              className="rounded-xl bg-[#ccff00] px-6 py-3 font-mono text-xs font-black text-[#080808] shadow-[0_0_20px_rgba(204,255,0,0.4)] hover:scale-105 active:scale-95 transition-all"
+              className="rounded-xl bg-black px-6 py-3 font-mono text-xs font-black text-white border-2 border-black shadow-xs hover:bg-neutral-800 active:scale-95 transition-all"
             >
               Sign In to Proceed
             </Link>
             <Link
               to="/cases"
-              className="neu-btn rounded-xl px-6 py-3 font-mono text-xs font-semibold text-[#f5f5f5]"
+              className="rounded-xl bg-white border-2 border-black px-6 py-3 font-mono text-xs font-black text-black hover:bg-neutral-100 shadow-xs transition-all"
             >
               Browse Topic Catalog
             </Link>
@@ -508,8 +755,8 @@ function CaseStudyPage() {
     return (
       <AppChrome>
         <div className="mx-auto max-w-[1240px] px-5 py-32 text-center">
-          <div className="inline-block size-6 animate-spin rounded-full border-2 border-[#ccff00] border-t-transparent mb-4" />
-          <p className="font-mono text-xs uppercase tracking-widest text-[#ccff00]">
+          <div className="inline-block size-6 animate-spin rounded-full border-2 border-black border-t-transparent mb-4" />
+          <p className="font-mono text-xs uppercase tracking-widest text-black font-black">
             Accessing Case Dossier from Database...
           </p>
         </div>
@@ -589,6 +836,7 @@ function CaseStudyPage() {
   const sample = study.implementation?.samples?.[lang] ?? study.implementation?.samples?.[0];
   const diagram = study.architecture?.levels?.[level] ?? study.architecture?.levels?.[0];
   const primer = study.primers?.[0];
+  const activeFile = SECTION_FILES[step] || SECTION_FILES[0];
 
   const practiceList: Exercise[] = Array.isArray(study.practice)
     ? study.practice
@@ -659,28 +907,30 @@ function CaseStudyPage() {
     return (
       <AppChrome>
         <div className="mx-auto max-w-[720px] px-5 py-20 text-center">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-[#141a05] border border-[#ccff00]/40 px-3.5 py-1 font-mono text-[10px] uppercase tracking-[0.18em] text-[#ccff00] font-bold shadow-[0_0_15px_rgba(204,255,0,0.25)]">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-neutral-100 border-2 border-black px-3.5 py-1 font-mono text-[10px] uppercase tracking-[0.18em] text-black font-black shadow-xs">
             🔒 Locked Free-Tier Case · {study.category}
           </span>
-          <h1 className="mt-3 text-balance text-3xl font-bold tracking-tight text-[#f5f5f5]">
+          <h1 className="mt-3 text-balance text-3xl font-black tracking-tight text-black">
             {study.title}
           </h1>
-          <p className="mt-3 text-pretty text-sm leading-relaxed text-[#b8b8b8]">{study.summary}</p>
-          <div className="glass-panel mx-auto mt-8 max-w-[460px] rounded-3xl p-6 text-left border border-white/[0.08]">
-            <p className="font-mono text-[10px] uppercase tracking-widest text-[#8a8a8a]">
+          <p className="mt-3 text-pretty text-sm leading-relaxed text-black font-medium">
+            {study.summary}
+          </p>
+          <div className="glass-panel mx-auto mt-8 max-w-[460px] rounded-3xl p-6 text-left border-2 border-black bg-white text-black shadow-xs">
+            <p className="font-mono text-[10px] uppercase tracking-widest text-black font-black">
               Sequential Progression Requirement
             </p>
-            <p className="mt-1 text-lg font-bold text-[#f5f5f5]">
+            <p className="mt-1 text-lg font-black text-black">
               Complete previous case study to unlock
             </p>
-            <p className="mt-3 text-xs leading-relaxed text-[#b8b8b8]">
+            <p className="mt-3 text-xs leading-relaxed text-black font-medium">
               This case study is included in the free tier and unlocks automatically when you
               complete all 8 sections and pass the CodeArena lab of the preceding investigation.
             </p>
           </div>
           <Link
             to="/cases"
-            className="mt-6 inline-flex rounded-xl bg-gradient-to-r from-[#d4ff00] via-[#ccff00] to-[#9df000] px-5 py-2.5 font-mono text-xs font-bold text-[#080808] shadow-[0_0_15px_rgba(204,255,0,0.4)] hover:scale-[1.02] active:scale-[0.98] transition-all"
+            className="mt-6 inline-flex rounded-xl bg-black px-5 py-2.5 font-mono text-xs font-black text-white border-2 border-black shadow-xs hover:bg-neutral-800 active:scale-[0.98] transition-all"
           >
             Go to Free Cases Library
           </Link>
@@ -692,77 +942,149 @@ function CaseStudyPage() {
   return (
     <AppChrome>
       <div className="mx-auto max-w-[1536px] px-3 sm:px-6 md:px-8 py-6">
-        <div className="glass-panel overflow-hidden rounded-3xl border border-white/[0.08] shadow-[0_24px_48px_rgba(0,0,0,0.5)]">
-          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/[0.08] bg-[#141414]/60 px-6 py-4">
+        <div className="glass-panel overflow-hidden rounded-3xl border-2 border-black bg-white text-black shadow-xs">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b-2 border-black bg-neutral-50 px-6 py-4">
             <div className="flex flex-wrap items-center gap-3">
-              <span className="font-mono text-[10px] uppercase tracking-widest text-[#8a8a8a]">
+              <span className="font-mono text-[10px] uppercase tracking-widest text-black font-bold">
                 Case {study.index} / {study.category} · {study.subcategory}
               </span>
-              <h1 className="text-base font-bold tracking-tight text-[#f5f5f5]">{study.title}</h1>
-              <span className="rounded-lg bg-[#ccff00]/15 border border-[#ccff00]/30 px-2 py-0.5 font-mono text-[10px] font-bold text-[#ccff00]">
+              <h1 className="text-base font-black tracking-tight text-black">{study.title}</h1>
+              <span className="rounded-lg bg-white border-2 border-black px-2 py-0.5 font-mono text-[10px] font-black text-black">
                 {study.learnerLevel}
               </span>
               {isCompleted && (
-                <span className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-[#d4ff00] via-[#ccff00] to-[#9df000] px-3 py-0.5 font-mono text-[10px] font-extrabold uppercase tracking-wider text-[#080808] shadow-[0_0_15px_rgba(204,255,0,0.45)]">
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-black border-2 border-black px-3 py-0.5 font-mono text-[10px] font-black uppercase tracking-wider text-white shadow-xs">
                   <CheckCircle2 className="size-3 stroke-[2.5]" />
                   Completed · 100%
                 </span>
               )}
             </div>
-            <div className="flex items-center gap-3 font-mono text-xs text-[#8a8a8a]">
-              <span>Progress</span>
-              <div className="h-2 w-40 overflow-hidden rounded-full bg-[#1a1a1a] p-0.5 border border-white/[0.06]">
+            <div className="flex items-center gap-3 font-mono text-xs text-black">
+              <span className="font-bold">Progress</span>
+              <div className="h-2 w-40 overflow-hidden rounded-full bg-neutral-200 p-0.5 border border-black">
                 <div
-                  className="h-full rounded-full transition-all duration-300 bg-gradient-to-r from-[#d4ff00] via-[#ccff00] to-[#9df000] shadow-[0_0_10px_rgba(204,255,0,0.5)]"
+                  className="h-full rounded-full transition-all duration-300 bg-black"
                   style={{ width: `${progress}%` }}
                 />
               </div>
-              <span className="text-[#ccff00] font-bold">{progress}%</span>
+              <span className="text-black font-black">{progress}%</span>
             </div>
           </div>
 
-          <div className="grid lg:grid-cols-[210px_1fr_340px] xl:grid-cols-[220px_1fr_360px]">
-            {/* LEFT RAIL — stepper (Desktop only) */}
-            <aside className="hidden lg:block border-r border-white/[0.08] p-4 bg-[#0d0d0d]/30">
-              <StepperList
+          <div className="grid lg:grid-cols-[280px_1fr] xl:grid-cols-[300px_1fr] border border-slate-200 bg-white rounded-2xl overflow-hidden shadow-sm">
+            {/* LEFT RAIL — VS Code Explorer Sidebar (Desktop only) */}
+            <aside className="hidden lg:block border-r border-slate-200 bg-[#f8fafc]">
+              <VSCodeExplorerSidebar
                 step={step}
                 setStep={setStep}
                 sectionsDone={sectionsDone}
                 prerequisites={study.prerequisites}
+                companionTab={companionTab}
+                setCompanionTab={setCompanionTab}
+                primer={primer}
+                techNotesList={techNotesList}
+                engineeringConceptsList={engineeringConceptsList}
+                caseRewarded={caseRewarded}
+                caseRc={caseRc}
+                doneCount={doneCount}
+                labEarned={labEarned}
+                points={points}
               />
             </aside>
 
-            {/* MAIN CONTENT AREA */}
-            <div className="min-w-0 w-full flex flex-col">
+            {/* MAIN WORKSPACE / EDITOR COLUMN */}
+            <div className="min-w-0 w-full flex flex-col bg-white">
+              {/* VS Code Editor Tab Bar */}
+              <div className="hidden lg:flex items-center justify-between border-b border-slate-200 bg-[#f1f5f9] select-none">
+                <div className="flex items-center">
+                  {/* Active Tab */}
+                  <div className="flex items-center gap-2 border-t-2 border-[#0284c7] bg-white px-4 py-2 text-xs font-mono text-slate-900 font-semibold border-r border-slate-200">
+                    {step === 6 ? (
+                      <span className="text-[#b45309] font-mono font-bold text-[10px] px-1 py-0.2 rounded bg-amber-100">
+                        PY
+                      </span>
+                    ) : (
+                      <FileText className="size-3.5 text-[#0284c7]" />
+                    )}
+                    <span>{activeFile.name}</span>
+                    <span className="text-slate-400 text-[10px] ml-1">✕</span>
+                  </div>
+
+                  {/* Quick switch to Practice tab */}
+                  {step !== 6 && (
+                    <button
+                      type="button"
+                      onClick={() => setStep(6)}
+                      className="flex items-center gap-1.5 px-3 py-2 text-xs font-mono text-slate-500 hover:text-slate-900 hover:bg-slate-200/60 border-r border-slate-200 transition-colors cursor-pointer"
+                    >
+                      <span className="text-[#b45309] font-mono font-bold text-[10px]">PY</span>
+                      <span>07_practice.py</span>
+                    </button>
+                  )}
+                </div>
+
+                {/* Editor Tab Actions: Prev / Next */}
+                <div className="flex items-center gap-1 px-3">
+                  <button
+                    type="button"
+                    disabled={step === 0}
+                    onClick={() => setStep((s) => Math.max(0, s - 1))}
+                    className="px-2.5 py-1 rounded font-mono text-[11px] text-slate-600 hover:text-slate-900 hover:bg-slate-200/70 disabled:opacity-30 disabled:pointer-events-none transition-colors cursor-pointer"
+                  >
+                    ← Prev
+                  </button>
+                  <span className="font-mono text-[10px] text-slate-500 px-1">
+                    {String(step + 1).padStart(2, "0")} / 08
+                  </span>
+                  <button
+                    type="button"
+                    disabled={step === SECTION_FILES.length - 1}
+                    onClick={() => setStep((s) => Math.min(SECTION_FILES.length - 1, s + 1))}
+                    className="px-2.5 py-1 rounded font-mono text-[11px] text-slate-600 hover:text-slate-900 hover:bg-slate-200/70 disabled:opacity-30 disabled:pointer-events-none transition-colors cursor-pointer"
+                  >
+                    Next →
+                  </button>
+                </div>
+              </div>
+
+              {/* VS Code Breadcrumbs */}
+              <div className="hidden lg:flex items-center gap-1.5 px-5 py-1.5 border-b border-slate-200 bg-white font-mono text-[11px] text-slate-500">
+                <span>kruzz-workspace</span>
+                <span>›</span>
+                <span>cases</span>
+                <span>›</span>
+                <span className="text-[#0284c7]">{study.slug}</span>
+                <span>›</span>
+                <span className="text-slate-900 font-medium">{activeFile.name}</span>
+              </div>
+
               {/* MOBILE STICKY SUBHEADER (< lg) */}
-              <div className="lg:hidden sticky top-0 z-20 flex items-center justify-between gap-2 border-b border-white/[0.08] bg-[#121212]/95 backdrop-blur-md px-3.5 py-2.5">
+              <div className="lg:hidden sticky top-0 z-20 flex items-center justify-between gap-2 border-b border-slate-200 bg-white/95 backdrop-blur-md px-3.5 py-2.5">
                 <button
                   type="button"
                   onClick={() => setMobileSectionsOpen(true)}
-                  className="flex items-center gap-2 rounded-xl bg-white/[0.05] border border-white/10 px-3 py-1.5 font-mono text-xs font-semibold text-[#f5f5f5] hover:border-[#ccff00]/40 transition-colors"
+                  className="flex items-center gap-2 rounded-xl bg-slate-100 border border-slate-200 px-3 py-1.5 font-mono text-xs font-semibold text-slate-800 hover:border-[#0284c7]/40 transition-colors"
                 >
-                  <BookOpen className="size-3.5 text-[#ccff00]" />
-                  <span className="truncate max-w-[150px] sm:max-w-[220px]">
-                    {String(step + 1).padStart(2, "0")}/08 · {SECTION_LABELS[step]}
-                  </span>
-                  <ChevronDown className="size-3 text-[#8a8a8a]" />
+                  <FileText className="size-3.5 text-[#0284c7]" />
+                  <span className="truncate max-w-[150px] sm:max-w-[220px]">{activeFile.name}</span>
+                  <ChevronDown className="size-3 text-slate-500" />
                 </button>
 
                 <div className="flex items-center gap-2">
-                  <span className="font-mono text-xs font-bold text-[#ccff00]">{progress}%</span>
+                  <span className="font-mono text-xs font-black text-black">{progress}%</span>
                   <button
                     type="button"
                     onClick={() => setMobileCompanionOpen(true)}
-                    className="flex items-center gap-1.5 rounded-xl bg-[#141a05] border border-[#ccff00]/30 px-3 py-1.5 font-mono text-xs font-bold text-[#ccff00] shadow-[0_0_10px_rgba(204,255,0,0.2)]"
+                    className="flex items-center gap-1.5 rounded-xl bg-white border-2 border-black px-3 py-1.5 font-mono text-xs font-black text-black shadow-xs"
                   >
-                    <Lightbulb className="size-3.5" />
+                    <Lightbulb className="size-3.5 text-black" />
                     <span>Notes & RC</span>
                   </button>
                 </div>
               </div>
 
-              <div className="p-3.5 sm:p-5 lg:p-6 min-w-0 w-full">
-                <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-primary">
+              <div className="p-4 sm:p-6 lg:p-8 min-w-0 w-full">
+                <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-[#007acc] font-bold">
                   {String(step + 1).padStart(2, "0")} — {SECTION_KICKERS[step]}
                 </p>
 
@@ -770,7 +1092,7 @@ function CaseStudyPage() {
                 {step === 0 && (
                   <>
                     <H2>The situation</H2>
-                    <p className="mt-3 max-w-[62ch] text-pretty text-sm leading-relaxed text-ink2">
+                    <p className="mt-3 w-full text-pretty text-sm leading-relaxed text-ink2">
                       {study.discover?.situation || (study.discover as any)?.task}
                     </p>
                     <ArrowChain steps={study.discover?.humanFlow ?? []} />
@@ -811,7 +1133,7 @@ function CaseStudyPage() {
                 {step === 1 && (
                   <>
                     <H2>How the system behaves</H2>
-                    <p className="mt-3 max-w-[62ch] text-pretty text-sm leading-relaxed text-ink2">
+                    <p className="mt-3 w-full text-pretty text-sm leading-relaxed text-ink2">
                       {study.understand?.overview}
                     </p>
 
@@ -875,7 +1197,7 @@ function CaseStudyPage() {
                 {step === 2 && (
                   <>
                     <H2>What holds this system up</H2>
-                    <p className="mt-3 max-w-[62ch] text-pretty text-sm leading-relaxed text-ink2">
+                    <p className="mt-3 w-full text-pretty text-sm leading-relaxed text-ink2">
                       Every concept follows the same shape: what it is, why it exists, an everyday
                       analogy, the technical explanation, and where it appears in this case.
                     </p>
@@ -963,7 +1285,7 @@ function CaseStudyPage() {
                 {step === 3 && (
                   <>
                     <H2>How the pieces connect</H2>
-                    <p className="mt-3 max-w-[62ch] text-pretty text-sm leading-relaxed text-ink2">
+                    <p className="mt-3 w-full text-pretty text-sm leading-relaxed text-ink2">
                       {study.architecture?.caption || (study.architecture as any)?.overview}
                     </p>
                     <div className="mt-4 flex flex-wrap gap-2">
@@ -1009,7 +1331,7 @@ function CaseStudyPage() {
                 {step === 4 && (
                   <>
                     <H2>Why this technology, and what it costs</H2>
-                    <p className="mt-3 max-w-[62ch] text-pretty text-sm leading-relaxed text-ink2">
+                    <p className="mt-3 w-full text-pretty text-sm leading-relaxed text-ink2">
                       Every decision answers the same six questions, so you learn why a technology
                       exists rather than memorising its name.
                     </p>
@@ -1092,7 +1414,7 @@ function CaseStudyPage() {
                 {step === 5 && (
                   <>
                     <H2>From reasoning to code</H2>
-                    <p className="mt-3 max-w-[62ch] text-pretty text-sm leading-relaxed text-ink2">
+                    <p className="mt-3 w-full text-pretty text-sm leading-relaxed text-ink2">
                       {study.implementation?.behaviour}
                     </p>
 
@@ -1139,8 +1461,8 @@ function CaseStudyPage() {
                             onClick={() => setLang(i)}
                             className={`rounded-lg px-3.5 py-2 sm:py-1.5 font-mono text-[11px] font-bold transition-all cursor-pointer ${
                               i === lang
-                                ? "bg-[#182608] text-[#ccff00] border border-[#ccff00]/40 shadow-[0_0_8px_rgba(204,255,0,0.25)]"
-                                : "text-[#8a8a8a] hover:text-[#f5f5f5]"
+                                ? "bg-black text-white border-2 border-black font-black shadow-xs"
+                                : "bg-white text-black border-2 border-black/30 hover:border-black font-bold"
                             }`}
                           >
                             {s.language.charAt(0).toUpperCase() + s.language.slice(1)}
@@ -1211,7 +1533,7 @@ function CaseStudyPage() {
                 {step === 6 && (
                   <>
                     <H2>Understand, modify, build, think</H2>
-                    <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                    <div className="mt-3 grid gap-3">
                       {practiceList.map((ch, i) => (
                         <div
                           key={ch.title || i}
@@ -1286,10 +1608,8 @@ function CaseStudyPage() {
                         }
                       }}
                       placeholder="Explain the system in your own words: what each part is responsible for, why it exists, and what you would change. Minimum 300 characters and 50 words."
-                      className={`mt-2 w-full rounded-2xl bg-card/70 p-4 text-sm leading-relaxed text-ink outline-none ring-1 placeholder:text-ink2/60 transition-colors ${
-                        reflectionValid
-                          ? "ring-[#ccff00]/40 focus:ring-[#ccff00]/60"
-                          : "ring-line/70 focus:ring-primary/40"
+                      className={`mt-2 w-full rounded-2xl bg-white p-4 text-sm leading-relaxed text-black outline-none border-2 border-black placeholder:text-neutral-500 transition-colors ${
+                        reflectionValid ? "ring-2 ring-black" : "focus:ring-2 focus:ring-black"
                       }`}
                     />
                     {/* Character / word counter */}
@@ -1297,49 +1617,49 @@ function CaseStudyPage() {
                       <span
                         className={
                           reflectionCharCount >= MIN_REFLECTION_CHARS
-                            ? "text-[#ccff00]"
-                            : "text-[#8a8a8a]"
+                            ? "text-black font-black"
+                            : "text-neutral-500"
                         }
                       >
                         {reflectionCharCount} / {MIN_REFLECTION_CHARS} chars
                       </span>
-                      <span className="text-[#3a3a3a]">·</span>
+                      <span className="text-black">·</span>
                       <span
                         className={
                           reflectionWordCount >= MIN_REFLECTION_WORDS
-                            ? "text-[#ccff00]"
-                            : "text-[#8a8a8a]"
+                            ? "text-black font-black"
+                            : "text-neutral-500"
                         }
                       >
                         {reflectionWordCount} / {MIN_REFLECTION_WORDS} words
                       </span>
                       {reflectionValid && (
-                        <span className="text-[#ccff00] font-bold">Ready to complete</span>
+                        <span className="text-black font-black">Ready to complete</span>
                       )}
                       {isAuthenticated && reflectionTrimmed && (
-                        <span className="text-[#5a5a5a] ml-auto">synced to cloud</span>
+                        <span className="text-neutral-500 ml-auto">synced to cloud</span>
                       )}
                     </div>
                   </>
                 )}
 
                 {step === 7 && isCompleted && (
-                  <div className="mt-8 rounded-3xl bg-gradient-to-b from-[#182608] via-[#101905] to-[#080c03] border-2 border-[#ccff00]/60 p-6 shadow-[0_0_35px_rgba(204,255,0,0.25)]">
+                  <div className="mt-8 rounded-3xl bg-neutral-50 border-2 border-black p-6 shadow-xs text-black">
                     <div className="flex flex-wrap items-center justify-between gap-4">
                       <div className="flex items-center gap-3">
-                        <div className="size-12 rounded-2xl bg-gradient-to-br from-[#d4ff00] to-[#ccff00] flex items-center justify-center text-[#080808] font-bold shadow-[0_0_15px_rgba(204,255,0,0.5)]">
+                        <div className="size-12 rounded-2xl bg-black border-2 border-black flex items-center justify-center text-white font-bold shadow-xs">
                           <CheckCircle2 className="size-6 stroke-[2.5]" />
                         </div>
                         <div>
                           <div className="flex items-center gap-2">
-                            <span className="font-mono text-[10px] uppercase tracking-widest text-[#ccff00] font-bold">
+                            <span className="font-mono text-[10px] uppercase tracking-widest text-black font-black">
                               Investigation Mastered
                             </span>
-                            <span className="rounded-md bg-[#182608] text-[#ccff00] font-mono text-[10px] px-2 py-0.5 font-bold border border-[#ccff00]/40">
+                            <span className="rounded-md bg-white text-black font-mono text-[10px] px-2 py-0.5 font-black border-2 border-black">
                               +{caseRc} RC Banked
                             </span>
                           </div>
-                          <h3 className="text-lg font-bold text-[#f5f5f5] mt-0.5">
+                          <h3 className="text-lg font-black text-black mt-0.5">
                             {study.title} Cleared!
                           </h3>
                         </div>
@@ -1347,7 +1667,7 @@ function CaseStudyPage() {
                       <button
                         type="button"
                         onClick={() => navigate({ to: "/cases" })}
-                        className="rounded-xl bg-gradient-to-r from-[#d4ff00] via-[#ccff00] to-[#9df000] px-5 py-2.5 font-mono text-xs font-bold text-[#080808] shadow-[0_0_15px_rgba(204,255,0,0.4)] hover:shadow-[0_0_25px_rgba(204,255,0,0.6)] transition-all"
+                        className="rounded-xl bg-black border-2 border-black px-5 py-2.5 font-mono text-xs font-black text-white shadow-xs hover:bg-neutral-800 transition-all cursor-pointer"
                       >
                         ✓ Back to Arena Centre
                       </button>
@@ -1356,8 +1676,8 @@ function CaseStudyPage() {
                 )}
 
                 {step === 6 ? (
-                  <div className="mt-8 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-mint/40 p-4 ring-1 ring-primary/15">
-                    <p className="text-[12px] leading-relaxed text-ink2">
+                  <div className="mt-8 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-neutral-50 border-2 border-black p-4 shadow-xs">
+                    <p className="text-[12px] leading-relaxed text-black font-medium">
                       {labEarned
                         ? `Practice complete — you passed the lab at 80%+! Proceed to reflection to complete the case study.`
                         : `This section unlocks only by passing the AI-judged code lab above at 80% or higher.`}
@@ -1367,14 +1687,14 @@ function CaseStudyPage() {
                         <button
                           type="button"
                           onClick={() => setStep(7)}
-                          className="rounded-xl bg-gradient-to-r from-[#d4ff00] via-[#ccff00] to-[#9df000] px-5 py-2.5 font-mono text-xs font-bold text-[#080808] shadow-[0_0_15px_rgba(204,255,0,0.4)] transition-all hover:shadow-[0_0_20px_rgba(204,255,0,0.6)]"
+                          className="rounded-xl bg-black border-2 border-black px-5 py-2.5 font-mono text-xs font-black text-white shadow-xs hover:bg-neutral-800 transition-all cursor-pointer"
                         >
                           Proceed to Reflection (Step 08) →
                         </button>
                         <button
                           type="button"
                           onClick={() => navigate({ to: "/cases" })}
-                          className="neu-btn rounded-xl px-4 py-2.5 font-mono text-xs font-semibold text-[#8a8a8a] hover:text-[#f5f5f5]"
+                          className="rounded-xl bg-white border-2 border-black px-4 py-2.5 font-mono text-xs font-black text-black hover:bg-neutral-100 shadow-xs transition-all cursor-pointer"
                         >
                           Back to the Arena Centre
                         </button>
@@ -1382,9 +1702,9 @@ function CaseStudyPage() {
                     )}
                   </div>
                 ) : (
-                  <div className="mt-8 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-mint/40 p-4 ring-1 ring-primary/15">
+                  <div className="mt-8 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-neutral-50 border-2 border-black p-4 shadow-xs">
                     <div className="flex-1">
-                      <p className="text-[12px] leading-relaxed text-ink2">
+                      <p className="text-[12px] leading-relaxed text-black font-medium">
                         {step === 7
                           ? caseRewarded
                             ? "Case study fully mastered and RC points banked."
@@ -1428,7 +1748,7 @@ function CaseStudyPage() {
                           setStep((s) => Math.min(SECTION_LABELS.length - 1, s + 1));
                         }
                       }}
-                      className="rounded-xl bg-gradient-to-r from-[#d4ff00] via-[#ccff00] to-[#9df000] px-4 py-2.5 font-mono text-xs font-bold text-[#080808] shadow-[0_0_15px_rgba(204,255,0,0.4)] transition-all hover:shadow-[0_0_20px_rgba(204,255,0,0.6)] disabled:opacity-40 disabled:pointer-events-none"
+                      className="rounded-xl bg-black border-2 border-black px-4 py-2.5 font-mono text-xs font-black text-white shadow-xs hover:bg-neutral-800 transition-all disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
                     >
                       {step === 7
                         ? caseRewarded
@@ -1445,54 +1765,63 @@ function CaseStudyPage() {
                   </div>
                 )}
 
-                <div className="mt-5 flex items-center justify-between border-t border-white/[0.08] pt-4">
+                <div className="mt-5 flex items-center justify-between border-t-2 border-black pt-4">
                   <button
                     type="button"
                     disabled={step === 0}
                     onClick={() => setStep((s) => Math.max(0, s - 1))}
-                    className="neu-btn rounded-xl px-4 py-2 font-mono text-xs font-medium text-[#b8b8b8] hover:text-[#f5f5f5] disabled:opacity-30 disabled:pointer-events-none"
+                    className="rounded-xl bg-white border-2 border-black px-4 py-2 font-mono text-xs font-black text-black hover:bg-neutral-100 disabled:opacity-30 disabled:pointer-events-none cursor-pointer shadow-xs"
                   >
                     ← Previous
                   </button>
                   <button
                     type="button"
                     onClick={() => setMobileSectionsOpen(true)}
-                    className="lg:hidden flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-widest text-[#8a8a8a] hover:text-[#ccff00] px-2.5 py-1 rounded-lg hover:bg-white/5 transition-colors border border-transparent hover:border-white/10"
+                    className="lg:hidden flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-widest text-black font-black px-2.5 py-1 rounded-lg border-2 border-black bg-white hover:bg-neutral-100"
                   >
                     <span>{String(step + 1).padStart(2, "0")} / 08</span>
-                    <BookOpen className="size-3 text-[#ccff00]" />
+                    <BookOpen className="size-3 text-black" />
                   </button>
-                  <span className="hidden lg:inline font-mono text-[11px] uppercase tracking-widest text-[#8a8a8a]">
+                  <span className="hidden lg:inline font-mono text-[11px] uppercase tracking-widest text-black font-black">
                     {String(step + 1).padStart(2, "0")} / 08
                   </span>
                   <button
                     type="button"
                     disabled={step === SECTION_LABELS.length - 1}
                     onClick={() => setStep((s) => Math.min(SECTION_LABELS.length - 1, s + 1))}
-                    className="rounded-xl bg-gradient-to-r from-[#d4ff00] via-[#ccff00] to-[#9df000] px-4 py-2 font-mono text-xs font-bold text-[#080808] shadow-[0_0_12px_rgba(204,255,0,0.35)] disabled:opacity-30 disabled:pointer-events-none"
+                    className="rounded-xl bg-black border-2 border-black px-4 py-2 font-mono text-xs font-black text-white shadow-xs hover:bg-neutral-800 disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
                   >
                     Next →
                   </button>
                 </div>
+
+                {/* VS Code Bottom Status Bar */}
+                <div className="flex flex-wrap items-center justify-between border-t border-[#2d2d2d] bg-[#007acc] text-white px-3 py-1 font-mono text-[11px] select-none mt-8 -mx-4 -mb-4 sm:-mx-6 sm:-mb-6 lg:-mx-8 lg:-mb-8">
+                  <div className="flex items-center gap-3">
+                    <span className="flex items-center gap-1 font-semibold">
+                      <GitBranch className="size-3" />
+                      main
+                    </span>
+                    <span>&bull;</span>
+                    <span>0 errors, 0 warnings</span>
+                    <span>&bull;</span>
+                    <span className="font-semibold">{activeFile.label}</span>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <span>{progress}% complete</span>
+                    <span>&bull;</span>
+                    <span>UTF-8</span>
+                    <span>&bull;</span>
+                    <span>{step === 6 ? study.codeLab?.language || "Python" : "Markdown"}</span>
+                    <span>&bull;</span>
+                    <span className="font-bold">{points} RC</span>
+                  </div>
+                </div>
               </div>
               {/* End inner content */}
             </div>
-            {/* End MAIN CONTENT AREA */}
-
-            {/* RIGHT COMPANION RAIL (Desktop only) */}
-            <aside className="hidden lg:block space-y-4 border-l border-white/[0.08] p-5 bg-[#0d0d0d]/40">
-              <CompanionHub
-                companionTab={companionTab}
-                setCompanionTab={setCompanionTab}
-                primer={primer}
-                techNotesList={techNotesList}
-                engineeringConceptsList={engineeringConceptsList}
-                caseRewarded={caseRewarded}
-                caseRc={caseRc}
-                doneCount={doneCount}
-                labEarned={labEarned}
-              />
-            </aside>
+            {/* End MAIN WORKSPACE COLUMN */}
           </div>
         </div>
 
@@ -1503,13 +1832,13 @@ function CaseStudyPage() {
             onClick={() => setMobileSectionsOpen(false)}
           >
             <div
-              className="fixed inset-y-0 left-0 w-[85vw] max-w-[320px] bg-[#0c0c0c] border-r border-white/10 p-5 shadow-2xl overflow-y-auto"
+              className="fixed inset-y-0 left-0 w-[85vw] max-w-[320px] bg-[#181818] border-r border-[#2d2d2d] p-0 shadow-2xl overflow-y-auto flex flex-col"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="flex items-center justify-between border-b border-white/10 pb-3 mb-4">
+              <div className="flex items-center justify-between border-b border-[#2d2d2d] bg-[#1f1f1f] p-3">
                 <div>
-                  <p className="font-mono text-[10px] uppercase tracking-widest text-[#ccff00] font-bold">
-                    Case Roadmap
+                  <p className="font-mono text-[10px] uppercase tracking-widest text-[#007acc] font-bold">
+                    Case Workspace
                   </p>
                   <h3 className="text-sm font-bold text-[#f5f5f5]">{study.title}</h3>
                 </div>
@@ -1521,13 +1850,25 @@ function CaseStudyPage() {
                   <X className="size-4" />
                 </button>
               </div>
-              <StepperList
-                step={step}
-                setStep={setStep}
-                sectionsDone={sectionsDone}
-                prerequisites={study.prerequisites}
-                onSelect={() => setMobileSectionsOpen(false)}
-              />
+              <div className="flex-1 overflow-y-auto">
+                <VSCodeExplorerSidebar
+                  step={step}
+                  setStep={setStep}
+                  sectionsDone={sectionsDone}
+                  prerequisites={study.prerequisites}
+                  companionTab={companionTab}
+                  setCompanionTab={setCompanionTab}
+                  primer={primer}
+                  techNotesList={techNotesList}
+                  engineeringConceptsList={engineeringConceptsList}
+                  caseRewarded={caseRewarded}
+                  caseRc={caseRc}
+                  doneCount={doneCount}
+                  labEarned={labEarned}
+                  points={points}
+                  onSelect={() => setMobileSectionsOpen(false)}
+                />
+              </div>
             </div>
           </div>
         )}
@@ -1539,20 +1880,20 @@ function CaseStudyPage() {
             onClick={() => setMobileCompanionOpen(false)}
           >
             <div
-              className="fixed inset-y-0 right-0 w-[90vw] max-w-[380px] bg-[#0c0c0c] border-l border-white/10 p-5 shadow-2xl overflow-y-auto space-y-4"
+              className="fixed inset-y-0 right-0 w-[90vw] max-w-[380px] bg-white border-l-2 border-black p-5 shadow-2xl overflow-y-auto space-y-4"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="flex items-center justify-between border-b border-white/10 pb-3">
+              <div className="flex items-center justify-between border-b-2 border-black pb-3">
                 <div>
-                  <p className="font-mono text-[10px] uppercase tracking-widest text-[#ccff00] font-bold">
+                  <p className="font-mono text-[10px] uppercase tracking-widest text-black font-black">
                     Knowledge & Wallet
                   </p>
-                  <h3 className="text-sm font-bold text-[#f5f5f5]">Case Companion</h3>
+                  <h3 className="text-sm font-black text-black">Case Companion</h3>
                 </div>
                 <button
                   type="button"
                   onClick={() => setMobileCompanionOpen(false)}
-                  className="p-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-[#8a8a8a] hover:text-[#f5f5f5]"
+                  className="p-1.5 rounded-lg bg-neutral-100 hover:bg-neutral-200 text-black border-2 border-black cursor-pointer"
                 >
                   <X className="size-4" />
                 </button>

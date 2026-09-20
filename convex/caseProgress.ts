@@ -10,7 +10,7 @@ import { internal } from "./_generated/api";
 import { type Doc, type Id } from "./_generated/dataModel";
 import { v } from "convex/values";
 import { getOrCreateUser } from "./users";
-import { gradeLabAttempt, SCORE_PROMPT } from "./ai";
+import { gradeLabAttempt, SCORE_PROMPT, dryRunCode, type DryRunResult } from "./ai";
 import { awardPointsInternal } from "./awards";
 import { touchStreakForUser } from "./streaks";
 import {
@@ -1278,6 +1278,38 @@ export const submitCaseLab = action({
     });
 
     return grade;
+  },
+});
+
+/**
+ * Executes or dry-runs code against unit tests without grading or consuming quotas.
+ * Used by the CodeArena "Run Code" button so users can test before submitting.
+ */
+export const runCodeDryRun = action({
+  args: {
+    language: v.string(),
+    code: v.string(),
+    functionName: v.string(),
+    tests: v.array(
+      v.object({
+        name: v.string(),
+        args: v.array(v.any()),
+        expected: v.any(),
+      }),
+    ),
+  },
+  handler: async (_ctx, args): Promise<DryRunResult> => {
+    if (!args.code || args.code.trim().length === 0) {
+      return {
+        syntaxValid: false,
+        compileError: "No code provided to execute.",
+        stdout: "",
+        testResults: [],
+        summary: "Empty code buffer.",
+      };
+    }
+
+    return await dryRunCode(args.language, args.functionName, args.code, args.tests);
   },
 });
 

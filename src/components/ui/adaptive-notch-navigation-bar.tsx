@@ -191,8 +191,8 @@ export const NotchItem = forwardRef<HTMLButtonElement, NotchItemProps>(
         onKeyDown={handleKeyDown}
         className={cn(
           "relative flex h-9 cursor-pointer items-center gap-2 rounded-full px-3.5 text-xs font-semibold transition-all outline-none select-none",
-          "focus-visible:ring-2 focus-visible:ring-primary/50",
-          isActive ? "text-primary" : "text-[#8a8a8a] hover:text-[#f5f5f5]",
+          "focus-visible:ring-2 focus-visible:ring-white/50",
+          isActive ? "text-white font-bold" : "text-white/70 hover:text-white",
           disabled && "cursor-not-allowed pointer-events-none opacity-40",
           className,
         )}
@@ -201,7 +201,7 @@ export const NotchItem = forwardRef<HTMLButtonElement, NotchItemProps>(
         {isActive && (
           <motion.span
             layoutId="notch-active-pill"
-            className="absolute inset-0 rounded-full bg-[var(--theme-surface,#182608)] border border-primary/40 shadow-[0_0_12px_var(--glow-color,rgba(204,255,0,0.25))]"
+            className="absolute inset-0 rounded-full bg-white/20 border border-white/40 shadow-[0_0_12px_rgba(255,255,255,0.15)]"
             transition={{
               type: "spring",
               stiffness: 400,
@@ -215,15 +215,15 @@ export const NotchItem = forwardRef<HTMLButtonElement, NotchItemProps>(
             <Icon
               className={cn(
                 "size-4 shrink-0 transition-colors",
-                isActive ? "text-primary" : "text-[#8a8a8a] group-hover:text-[#f5f5f5]",
+                isActive ? "text-white" : "text-white/70 group-hover:text-white",
               )}
             />
           )}
 
-          <span className="leading-none">{label}</span>
+          <span className="leading-none text-white">{label}</span>
 
           {badge && (
-            <span className="rounded-full bg-primary px-1.5 py-0.5 text-[9px] font-black uppercase text-primary-foreground">
+            <span className="rounded-full bg-white px-1.5 py-0.5 text-[9px] font-black uppercase text-black">
               {badge}
             </span>
           )}
@@ -257,16 +257,16 @@ function NotchDropdownItem({ item, isSelected, onSelect }: NotchDropdownItemProp
       onClick={handleClick}
       className={cn(
         "flex w-full min-h-[42px] cursor-pointer items-center justify-between gap-2.5 rounded-xl px-3.5 py-2.5 text-left text-sm outline-none transition-colors select-none",
-        "focus-visible:ring-2 focus-visible:ring-primary/50",
+        "focus-visible:ring-2 focus-visible:ring-white/50",
         isSelected
-          ? "bg-[var(--theme-surface,#182608)] font-semibold text-primary border border-primary/40"
-          : "text-[#8a8a8a] hover:bg-white/[0.04] hover:text-[#f5f5f5] active:bg-[var(--theme-surface,#182608)]",
+          ? "bg-white/20 font-semibold text-white border border-white/40"
+          : "text-white/70 hover:bg-white/[0.08] hover:text-white active:bg-white/20",
         item.disabled && "cursor-not-allowed pointer-events-none opacity-40",
       )}
     >
       <div className="flex items-center gap-2.5 min-w-0">
         {Icon && (
-          <Icon className={cn("size-4 shrink-0", isSelected ? "text-primary" : "text-[#8a8a8a]")} />
+          <Icon className={cn("size-4 shrink-0", isSelected ? "text-white" : "text-white/70")} />
         )}
 
         <span className="truncate">{item.label}</span>
@@ -274,11 +274,11 @@ function NotchDropdownItem({ item, isSelected, onSelect }: NotchDropdownItemProp
 
       <div className="flex items-center gap-2 shrink-0">
         {item.badge && (
-          <span className="rounded-full bg-primary/20 border border-primary/40 px-1.5 py-0.5 text-[9px] font-black uppercase text-primary">
+          <span className="rounded-full bg-white px-1.5 py-0.5 text-[9px] font-black uppercase text-black">
             {item.badge}
           </span>
         )}
-        {isSelected && <Check className="size-3.5 text-primary" />}
+        {isSelected && <Check className="size-3.5 text-white" />}
       </div>
     </button>
   );
@@ -377,7 +377,7 @@ export function NotchNav({
       )}
       {...props}
     >
-      <div className="relative flex h-full w-full flex-col rounded-none md:rounded-3xl bg-[#080808] text-[#f5f5f5] antialiased transition-colors duration-200 border border-black shadow-[0_0_0_1px_#000000]">
+      <div className="relative flex h-full w-full flex-col rounded-none md:rounded-3xl bg-background text-foreground antialiased transition-colors duration-200 border border-black shadow-[0_0_0_1px_#000000]">
         <div
           aria-hidden="true"
           onClick={handleCloseDropdown}
@@ -495,25 +495,25 @@ export function NotchNav({
               aria-haspopup="listbox"
               aria-label="Toggle navigation menu"
               onClick={handleToggleDropdown}
-              className="group flex h-8 min-w-0 max-w-[180px] sm:max-w-none cursor-pointer items-center justify-center gap-1 sm:gap-1.5 rounded-full bg-white/[0.03] sm:bg-transparent border border-white/[0.06] sm:border-transparent px-2.5 sm:px-3 text-xs sm:text-sm font-semibold text-[#f5f5f5] outline-none transition-colors hover:bg-white/[0.06] focus-visible:ring-2 focus-visible:ring-primary/50"
+              className="group flex h-8 min-w-0 max-w-[180px] sm:max-w-none cursor-pointer items-center justify-center gap-1 sm:gap-1.5 rounded-full bg-white/[0.03] sm:bg-transparent border border-white/[0.06] sm:border-transparent px-2.5 sm:px-3 text-xs sm:text-sm font-semibold text-white outline-none transition-colors hover:bg-white/[0.06] focus-visible:ring-2 focus-visible:ring-white/50"
             >
               {activeItem?.icon && (
-                <activeItem.icon className="size-3.5 sm:size-4 shrink-0 text-primary" />
+                <activeItem.icon className="size-3.5 sm:size-4 shrink-0 text-white" />
               )}
 
-              <span className="truncate leading-none">{activeItem?.label}</span>
+              <span className="truncate leading-none text-white">{activeItem?.label}</span>
 
               {isBottom ? (
                 <ChevronUp
                   className={cn(
-                    "size-3.5 shrink-0 text-[#8a8a8a] transition-transform duration-200",
+                    "size-3.5 shrink-0 text-white/70 transition-transform duration-200",
                     isDropdownOpen && "rotate-180",
                   )}
                 />
               ) : (
                 <ChevronDown
                   className={cn(
-                    "size-3.5 shrink-0 text-[#8a8a8a] transition-transform duration-200",
+                    "size-3.5 shrink-0 text-white/70 transition-transform duration-200",
                     isDropdownOpen && "rotate-180",
                   )}
                 />

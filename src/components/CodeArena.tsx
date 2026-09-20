@@ -6,6 +6,18 @@ import { RC_RULES } from "@/lib/rc";
 import { useAction } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import type { LabGrade } from "../../convex/ai";
+import { executeCode, type ExecutionResult } from "@/lib/codeRunner";
+import {
+  Play,
+  Terminal,
+  CheckCircle,
+  XCircle,
+  AlertTriangle,
+  RotateCcw,
+  HelpCircle,
+  X,
+  Trash2,
+} from "lucide-react";
 
 const MIN_WORDS = 20;
 const PASS_THRESHOLD = 80;
@@ -13,12 +25,6 @@ const PASS_THRESHOLD = 80;
 const LANGUAGES = ["Python", "Java", "C"] as const;
 type Lang = (typeof LANGUAGES)[number];
 
-/**
- * Generate a blank starter template for the learner — NEVER uses the reference
- * solution stored in lab.starterCode / lab.javaStarterCode / lab.languages.*.starterCode.
- * The template shows the function signature + requirements from hints as a
- * docstring/comment block so the learner understands the task without seeing the answer.
- */
 function starterFor(lang: Lang, lab: CodeLab): string {
   const fn = lab.functionName;
   const hints = lab.hints ?? [];
@@ -103,19 +109,59 @@ export function CodeArena({
   const [checking, setChecking] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Execution & Terminal Panel State
+  const [isRunning, setIsRunning] = useState(false);
+  const [executionResult, setExecutionResult] = useState<ExecutionResult | null>(null);
+  const [terminalTab, setTerminalTab] = useState<"terminal" | "tests" | "output">("terminal");
+  const [isTerminalOpen, setIsTerminalOpen] = useState(false);
+
   const submitLab = useAction(api.caseProgress.submitCaseLab);
+  const runDryRunAction = useAction(api.caseProgress.runCodeDryRun);
 
   const words = explanation.trim() ? explanation.trim().split(/\s+/).length : 0;
   const enoughWords = words >= MIN_WORDS;
-  const hasEnoughCode = code.trim().length >= 50;
+  const hasEnoughCode = code.trim().length >= 30;
 
   function switchLanguage(lang: Lang) {
     setLanguage(lang);
     setCode(starterFor(lang, lab));
     setResult(null);
     setError(null);
+    setExecutionResult(null);
   }
 
+  // ── Execute / Test Run Handler ──
+  async function handleRunCode() {
+    if (isRunning) return;
+    setIsRunning(true);
+    setIsTerminalOpen(true);
+    setError(null);
+
+    try {
+      const exec = await executeCode({
+        language,
+        code: code.trim(),
+        functionName: lab.functionName,
+        tests: lab.tests || [],
+        runAction: runDryRunAction,
+      });
+      setExecutionResult(exec);
+
+      // Default to tests tab if errors or some tests failed, else terminal
+      if (exec.testResults.some((t) => !t.passed) || exec.compileError) {
+        setTerminalTab("tests");
+      } else {
+        setTerminalTab("terminal");
+      }
+    } catch (err) {
+      console.error("Code execution error:", err);
+      setError((err as Error).message || "Failed to execute code runner.");
+    } finally {
+      setIsRunning(false);
+    }
+  }
+
+  // ── Official AI Grading Submission Handler ──
   async function handleCheck() {
     if (!enoughWords || !hasEnoughCode || earned || checking) return;
 
@@ -164,59 +210,60 @@ export function CodeArena({
   const authBlocked = !isAuthenticated && !earned;
 
   return (
-    <div className="glass-panel mt-6 rounded-2xl sm:rounded-3xl p-3.5 sm:p-6 shadow-[0_20px_40px_rgba(0,0,0,0.45)] min-w-0">
+    <div className="rounded-2xl border-2 border-black bg-white p-4 sm:p-6 shadow-sm min-w-0">
       {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-2">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b-2 border-black pb-4">
         <div>
           <div className="flex items-center gap-2">
-            <span className="size-2 rounded-full recording-dot" />
-            <p className="font-mono text-[10px] uppercase tracking-widest text-[#ccff00]">
-              Code Arena · AI-Judged Lab
+            <span className="size-2 rounded-full bg-black" />
+            <p className="font-mono text-[10px] uppercase tracking-widest text-black font-bold">
+              Interactive Code Lab &middot; {language}
             </p>
           </div>
-          <p className="mt-1 text-base font-bold tracking-tight text-[#f5f5f5]">{lab.title}</p>
+          <h2 className="mt-1 text-lg font-bold tracking-tight text-black">{lab.title}</h2>
         </div>
         <span
-          className={`rounded-[10px] px-3 py-1 font-mono text-[11px] font-bold ${
+          className={`rounded-lg px-3 py-1 font-mono text-xs font-bold ${
             earned
-              ? "bg-[#182608] text-[#ccff00] border border-[#ccff00]/40"
-              : "bg-gradient-to-r from-[#d4ff00] via-[#ccff00] to-[#9df000] text-[#080808] shadow-[0_0_12px_rgba(204,255,0,0.4)]"
+              ? "bg-black text-white border-2 border-black"
+              : "bg-neutral-100 text-black border-2 border-black"
           }`}
         >
           {earned ? `✓ +${caseRc} RC earned` : `+${caseRc} RC reward`}
         </span>
       </div>
 
-      <p className="mt-2.5 max-w-[62ch] text-pretty text-[13px] leading-relaxed text-[#b8b8b8]">
-        {lab.brief}
-      </p>
+      <p className="mt-3 max-w-[68ch] text-[13px] leading-relaxed text-neutral-700">{lab.brief}</p>
 
-      {/* Edge cases from test names */}
+      {/* Edge cases preview */}
       {lab.tests && lab.tests.length > 0 && (
-        <div className="mt-4 rounded-2xl bg-[#0e0e0e] border border-white/[0.07] p-4">
-          <p className="mb-2 font-mono text-[10px] uppercase tracking-widest text-[#8a8a8a]">
-            Edge cases your solution must handle
+        <div className="mt-4 rounded-xl bg-neutral-50 border-2 border-black p-3.5">
+          <p className="mb-2 font-mono text-[10px] uppercase tracking-widest text-neutral-500">
+            Unit Test Suite Requirements ({lab.tests.length} test assertions)
           </p>
-          <ul className="space-y-1">
+          <div className="grid gap-2 sm:grid-cols-2">
             {lab.tests.map((t, i) => (
-              <li key={i} className="flex items-start gap-2 text-[12px] text-[#b8b8b8]">
-                <span className="mt-0.5 font-mono text-[10px] text-[#ccff00]/60">
-                  {String(i + 1).padStart(2, "0")}
+              <div key={i} className="flex items-start gap-2 text-[12px] text-neutral-700">
+                <span className="font-mono text-[10px] text-black font-bold">
+                  [{String(i + 1).padStart(2, "0")}]
                 </span>
-                <span>{(t as any).name ?? `Test case ${i + 1}`}</span>
-              </li>
+                <span className="truncate">{(t as any).name ?? `Test Case ${i + 1}`}</span>
+              </div>
             ))}
-          </ul>
+          </div>
         </div>
       )}
 
-      <div className="mt-4 rounded-2xl bg-[#121212] p-4 border border-white/[0.08]">
-        <MermaidDiagram chart={lab.mermaid} />
-      </div>
+      {/* Architecture diagram if present */}
+      {lab.mermaid && (
+        <div className="mt-4 rounded-xl bg-slate-50 p-3.5 border border-slate-200">
+          <MermaidDiagram chart={lab.mermaid} />
+        </div>
+      )}
 
-      {/* Language selector */}
+      {/* Language selector & Signature bar */}
       <div className="mt-5 flex flex-wrap items-center justify-between gap-2.5">
-        <p className="font-mono text-[11px] text-[#ccff00]/80">
+        <p className="font-mono text-[11px] text-black font-semibold">
           {language === "Java"
             ? (lab.javaSignature ?? lab.languages?.java?.signature ?? lab.signature)
             : language === "C"
@@ -225,17 +272,17 @@ export function CodeArena({
                 `bool ${lab.functionName}(...)`)
               : (lab.pythonSignature ?? lab.languages?.python?.signature ?? lab.signature)}
         </p>
-        <div className="flex gap-1 rounded-xl bg-black/40 p-1 border border-white/[0.06]">
+        <div className="flex gap-1 rounded-lg bg-neutral-100 p-1 border-2 border-black">
           {LANGUAGES.map((l) => (
             <button
               key={l}
               type="button"
               onClick={() => switchLanguage(l)}
               disabled={earned}
-              className={`rounded-lg px-3.5 py-1.5 font-mono text-[11px] font-bold transition-all cursor-pointer ${
+              className={`rounded px-3 py-1 font-mono text-[11px] font-semibold transition-all cursor-pointer ${
                 language === l
-                  ? "bg-[#182608] text-[#ccff00] border border-[#ccff00]/40 shadow-[0_0_8px_rgba(204,255,0,0.25)]"
-                  : "text-[#8a8a8a] hover:text-[#f5f5f5]"
+                  ? "bg-black text-white shadow-xs"
+                  : "text-neutral-600 hover:text-black"
               } disabled:opacity-40`}
             >
               {l}
@@ -244,72 +291,381 @@ export function CodeArena({
         </div>
       </div>
 
-      {/* Code Editor — starts blank (skeleton only, not the reference solution) */}
-      <CodeEditor value={code} onChange={setCode} language={language} disabled={earned} rows={16} />
-
-      {/* Action buttons */}
-      <div className="mt-3 flex flex-wrap items-center gap-2.5">
-        <button
-          type="button"
-          onClick={() => {
-            setCode(starterFor(language, lab));
-            setResult(null);
-            setError(null);
-          }}
-          className="neu-btn rounded-xl px-3.5 py-2 font-mono text-xs font-medium text-[#b8b8b8] hover:text-[#f5f5f5]"
-        >
-          Reset
-        </button>
-        <button
-          type="button"
-          onClick={() => setHintsOpen((h) => !h)}
-          className="neu-btn rounded-xl px-3.5 py-2 font-mono text-xs font-medium text-[#b8b8b8] hover:text-[#f5f5f5]"
-        >
-          {hintsOpen ? "Hide hints" : `Hints (${lab.hints.length})`}
-        </button>
+      {/* Code Editor */}
+      <div className="mt-2">
+        <CodeEditor
+          value={code}
+          onChange={setCode}
+          language={language}
+          disabled={earned}
+          rows={16}
+        />
       </div>
 
+      {/* Editor Control Toolbar: Run, Reset, Hints */}
+      <div className="mt-3 flex flex-wrap items-center justify-between gap-2 border-b-2 border-black pb-3">
+        <div className="flex items-center gap-2">
+          {/* PRIMARY RUN BUTTON */}
+          <button
+            type="button"
+            onClick={handleRunCode}
+            disabled={isRunning || code.trim().length === 0}
+            className="inline-flex items-center gap-1.5 rounded-lg bg-black hover:bg-neutral-800 active:bg-neutral-900 text-white px-4 py-2 font-mono text-xs font-bold shadow-sm transition-all disabled:opacity-40 cursor-pointer"
+            title="Execute code against unit tests in real-time"
+          >
+            {isRunning ? (
+              <>
+                <svg className="size-3.5 animate-spin" viewBox="0 0 24 24" fill="none">
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                  />
+                </svg>
+                <span>Running...</span>
+              </>
+            ) : (
+              <>
+                <Play className="size-3.5 fill-current" />
+                <span>Run Code</span>
+              </>
+            )}
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setCode(starterFor(language, lab));
+              setResult(null);
+              setError(null);
+              setExecutionResult(null);
+            }}
+            className="inline-flex items-center gap-1.5 rounded-lg bg-white hover:bg-neutral-100 text-black px-3 py-2 font-mono text-xs font-medium border-2 border-black transition-colors cursor-pointer"
+          >
+            <RotateCcw className="size-3" />
+            <span>Reset</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setHintsOpen((h) => !h)}
+            className="inline-flex items-center gap-1.5 rounded-lg bg-white hover:bg-neutral-100 text-black px-3 py-2 font-mono text-xs font-medium border-2 border-black transition-colors cursor-pointer"
+          >
+            <HelpCircle className="size-3" />
+            <span>{hintsOpen ? "Hide hints" : `Hints (${lab.hints.length})`}</span>
+          </button>
+        </div>
+
+        {/* Terminal Toggle Badge */}
+        {executionResult && !isTerminalOpen && (
+          <button
+            type="button"
+            onClick={() => setIsTerminalOpen(true)}
+            className="inline-flex items-center gap-1.5 font-mono text-xs text-black font-bold hover:underline"
+          >
+            <Terminal className="size-3.5" />
+            <span>View Terminal Output ({executionResult.summary})</span>
+          </button>
+        )}
+      </div>
+
+      {/* Hints dropdown */}
       {hintsOpen && (
-        <ul className="mt-3 space-y-1.5 rounded-2xl bg-[#161616] p-4 text-[12px] leading-relaxed text-[#b8b8b8] border border-white/[0.08]">
+        <ul className="mt-3 space-y-1.5 rounded-xl bg-neutral-50 border-2 border-black p-4 text-[12px] leading-relaxed text-neutral-700">
           {lab.hints.map((h) => (
             <li key={h} className="flex items-start gap-2">
-              <span className="text-[#ccff00]">·</span>
+              <span className="text-black font-bold">&bull;</span>
               <span>{h}</span>
             </li>
           ))}
         </ul>
       )}
 
+      {/* ─── VS CODE TERMINAL / OUTPUT PANEL ─── */}
+      {isTerminalOpen && (
+        <div className="mt-4 rounded-xl border-2 border-[#111827] bg-[#0b1120] overflow-hidden shadow-2xl font-mono text-xs text-[#f8fafc]">
+          {/* Panel Tab Header */}
+          <div className="flex items-center justify-between border-b border-[#475569] bg-[#1e293b] px-3 py-1.5 select-none">
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={() => setTerminalTab("terminal")}
+                className={`flex items-center gap-1.5 px-3 py-1 text-[11px] font-semibold transition-colors rounded ${
+                  terminalTab === "terminal"
+                    ? "bg-[#0f172a] text-white shadow-xs"
+                    : "text-[#cbd5e1] hover:text-white"
+                }`}
+              >
+                <Terminal className="size-3" />
+                TERMINAL
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setTerminalTab("tests")}
+                className={`flex items-center gap-1.5 px-3 py-1 text-[11px] font-semibold transition-colors rounded ${
+                  terminalTab === "tests"
+                    ? "bg-[#0f172a] text-white shadow-xs"
+                    : "text-[#cbd5e1] hover:text-white"
+                }`}
+              >
+                <CheckCircle className="size-3 text-[#4ec9b0]" />
+                TEST CASES
+                {executionResult?.testResults && (
+                  <span
+                    className={`ml-1 px-1.5 py-0.2 rounded text-[10px] ${
+                      executionResult.testResults.every((t) => t.passed)
+                        ? "bg-[#14532d] text-[#bbf7d0]"
+                        : "bg-[#7f1d1d] text-[#fecaca]"
+                    }`}
+                  >
+                    {executionResult.testResults.filter((t) => t.passed).length}/
+                    {executionResult.testResults.length}
+                  </span>
+                )}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setTerminalTab("output")}
+                className={`flex items-center gap-1.5 px-3 py-1 text-[11px] font-semibold transition-colors rounded ${
+                  terminalTab === "output"
+                    ? "bg-[#0f172a] text-white shadow-xs"
+                    : "text-[#cbd5e1] hover:text-white"
+                }`}
+              >
+                OUTPUT
+              </button>
+            </div>
+
+            <div className="flex items-center gap-2 text-[#cbd5e1]">
+              {executionResult && (
+                <span className="text-[10px] hidden sm:inline">
+                  {executionResult.runner === "pyodide-wasm" ? "Python 3.12 (WASM)" : "IDE Engine"}{" "}
+                  &middot; {executionResult.executionTimeMs}ms
+                </span>
+              )}
+              <button
+                type="button"
+                onClick={() => setExecutionResult(null)}
+                title="Clear Console"
+                className="hover:text-white p-1"
+              >
+                <Trash2 className="size-3" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsTerminalOpen(false)}
+                title="Hide Panel"
+                className="hover:text-white p-1"
+              >
+                <X className="size-3" />
+              </button>
+            </div>
+          </div>
+
+          {/* Panel Body */}
+          <div className="p-3.5 max-h-[420px] overflow-y-auto space-y-2 font-mono text-[12px] leading-relaxed">
+            {isRunning && (
+              <div className="flex items-center gap-2 text-[#cccccc] py-3">
+                <svg className="size-4 animate-spin text-[#007acc]" viewBox="0 0 24 24" fill="none">
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  />
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                  />
+                </svg>
+                <span>Executing test assertions in {language}...</span>
+              </div>
+            )}
+
+            {!isRunning && !executionResult && (
+              <p className="text-[#858585] italic py-2">
+                Click &quot;Run Code&quot; above to execute your solution against the test suite and
+                inspect terminal stdout.
+              </p>
+            )}
+
+            {/* TAB: TERMINAL */}
+            {!isRunning && executionResult && terminalTab === "terminal" && (
+              <div className="space-y-2 text-[#cccccc]">
+                <div className="text-[#858585]">
+                  &gt;{" "}
+                  {language === "Python"
+                    ? "python3"
+                    : language === "Java"
+                      ? "javac Solution.java && java Solution"
+                      : "gcc main.c && ./a.out"}{" "}
+                  solution
+                </div>
+
+                {executionResult.compileError ? (
+                  <div className="p-2.5 rounded bg-[#331111] border border-[#f14c4c]/40 text-[#f14c4c]">
+                    <p className="font-bold flex items-center gap-1.5">
+                      <AlertTriangle className="size-3.5" />
+                      Execution / Compilation Error:
+                    </p>
+                    <pre className="mt-1 text-[11px] whitespace-pre-wrap">
+                      {executionResult.compileError}
+                    </pre>
+                  </div>
+                ) : (
+                  <>
+                    {executionResult.stdout && (
+                      <div className="border-l-2 border-[#007acc] pl-2 text-[#d4d4d4]">
+                        <p className="text-[10px] text-[#858585] uppercase">
+                          Standard Output (stdout):
+                        </p>
+                        <pre className="whitespace-pre-wrap">{executionResult.stdout}</pre>
+                      </div>
+                    )}
+
+                    <div className="space-y-1 pt-1">
+                      {executionResult.testResults.map((t, idx) => (
+                        <div key={idx} className="flex items-center gap-2">
+                          {t.passed ? (
+                            <span className="text-[#4ec9b0] font-bold">&#10003; [PASS]</span>
+                          ) : (
+                            <span className="text-[#f14c4c] font-bold">&#10007; [FAIL]</span>
+                          )}
+                          <span className="text-[#f5f5f5] font-semibold">{t.name}:</span>
+                          <span className={t.passed ? "text-[#858585]" : "text-[#f14c4c]"}>
+                            {t.passed
+                              ? `returned ${JSON.stringify(t.actual)}`
+                              : t.error ||
+                                `expected ${JSON.stringify(t.expected)}, got ${JSON.stringify(t.actual)}`}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+
+                    <div className="pt-2 text-[11px] text-[#858585] border-t border-[#2d2d2d] flex justify-between">
+                      <span>{executionResult.summary}</span>
+                      <span>
+                        Process exited with code{" "}
+                        {executionResult.testResults.every((t) => t.passed) ? "0 (SUCCESS)" : "1"}
+                      </span>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+
+            {/* TAB: TEST CASES */}
+            {!isRunning && executionResult && terminalTab === "tests" && (
+              <div className="space-y-2">
+                {executionResult.testResults.map((t, idx) => (
+                  <div
+                    key={idx}
+                    className={`rounded-lg p-3 border ${
+                      t.passed
+                        ? "bg-[#123524] border-[#4ade80]/60 text-[#f8fafc]"
+                        : "bg-[#451a1a] border-[#f87171]/70 text-[#f8fafc]"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-1.5">
+                      <span className="font-bold flex items-center gap-1.5">
+                        {t.passed ? (
+                          <CheckCircle className="size-3.5 text-[#4ec9b0]" />
+                        ) : (
+                          <XCircle className="size-3.5 text-[#f14c4c]" />
+                        )}
+                        Test {idx + 1}: {t.name}
+                      </span>
+                      <span
+                        className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                          t.passed ? "bg-[#166534] text-[#dcfce7]" : "bg-[#991b1b] text-[#fee2e2]"
+                        }`}
+                      >
+                        {t.passed ? "PASSED" : "FAILED"}
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] pt-1 border-t border-white/[0.06]">
+                      <div>
+                        <span className="text-[#cbd5e1]">Input:</span>{" "}
+                        <code className="text-[#bae6fd]">{JSON.stringify(t.input)}</code>
+                      </div>
+                      <div>
+                        <span className="text-[#cbd5e1]">Expected:</span>{" "}
+                        <code className="text-[#86efac]">{JSON.stringify(t.expected)}</code>
+                      </div>
+                      <div className="sm:col-span-2">
+                        <span className="text-[#cbd5e1]">Actual Return:</span>{" "}
+                        <code className={t.passed ? "text-[#86efac]" : "text-[#fca5a5]"}>
+                          {t.actual !== undefined ? JSON.stringify(t.actual) : "undefined / null"}
+                        </code>
+                        {t.error && <p className="mt-1 text-[#fca5a5]">{t.error}</p>}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* TAB: OUTPUT */}
+            {!isRunning && executionResult && terminalTab === "output" && (
+              <div>
+                {executionResult.stdout ? (
+                  <pre className="text-[#d4d4d4] whitespace-pre-wrap">{executionResult.stdout}</pre>
+                ) : (
+                  <p className="text-[#858585] italic">
+                    No standard output printed during execution.
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {error && (
-        <p className="mt-3 rounded-2xl bg-[#201010] p-4 font-mono text-xs leading-relaxed text-[#ff5555] border border-[#ff5555]/30">
+        <p className="mt-3 rounded-xl bg-red-50 p-3.5 font-mono text-xs leading-relaxed text-red-700 border-2 border-red-300">
           {error}
         </p>
       )}
 
-      {/* ── Rich AI feedback ── */}
+      {/* ── Rich AI Feedback for Official Grading ── */}
       {result && !earned && (
         <>
           {result.passed ? (
-            /* PASS banner */
-            <div className="mt-4 rounded-2xl bg-[#0f1f0a] border border-[#ccff00]/40 p-4 space-y-3">
+            <div className="mt-4 rounded-xl bg-neutral-100 border-2 border-black p-4 space-y-3 text-black">
               <div className="flex items-center gap-2">
-                <span className="text-[#ccff00] font-bold font-mono text-sm">
-                  \u2713 {result.score}/100 — Passed
+                <span className="text-black font-black font-mono text-sm">
+                  &#10003; {result.score}/100 — Passed
                 </span>
-                <span className="rounded-md bg-[#182608] border border-[#ccff00]/30 px-2 py-0.5 font-mono text-[10px] text-[#ccff00]">
+                <span className="rounded-md bg-black text-white px-2 py-0.5 font-mono text-[10px] font-black">
                   +{caseRc} RC earned
                 </span>
               </div>
-              <p className="text-[13px] text-[#b8b8b8] leading-relaxed">{result.summary}</p>
+              <p className="text-[13px] text-neutral-800 leading-relaxed font-medium">
+                {result.summary}
+              </p>
               {result.strengths.length > 0 && (
                 <div>
-                  <p className="font-mono text-[10px] uppercase tracking-widest text-[#8a8a8a] mb-1.5">
+                  <p className="font-mono text-[10px] uppercase tracking-widest text-neutral-600 font-bold mb-1.5">
                     What you did well
                   </p>
                   <ul className="space-y-1">
                     {result.strengths.map((s, i) => (
-                      <li key={i} className="flex items-start gap-2 text-[12px] text-[#b8b8b8]">
-                        <span className="text-[#ccff00] mt-0.5">+</span>
+                      <li key={i} className="flex items-start gap-2 text-[12px] text-neutral-800">
+                        <span className="text-black font-black mt-0.5">+</span>
                         <span>{s}</span>
                       </li>
                     ))}
@@ -318,102 +674,104 @@ export function CodeArena({
               )}
               {result.mistakes.length > 0 && (
                 <div>
-                  <p className="font-mono text-[10px] uppercase tracking-widest text-[#8a8a8a] mb-1.5">
+                  <p className="font-mono text-[10px] uppercase tracking-widest text-neutral-600 font-bold mb-1.5">
                     Minor areas to polish
                   </p>
                   <ul className="space-y-2">
                     {result.mistakes.map((m, i) => (
-                      <li key={i} className="rounded-xl bg-[#131f0a] p-3 text-[12px] space-y-0.5">
-                        <p className="font-mono text-[10px] text-[#ccff00]/80 font-bold">
-                          {m.area}
-                        </p>
-                        <p className="text-[#b8b8b8]">{m.problem}</p>
-                        <p className="text-[#7aff00]/80 italic">\u2192 {m.suggestion}</p>
+                      <li
+                        key={i}
+                        className="rounded-xl bg-white border border-black/20 p-3 text-[12px] space-y-0.5"
+                      >
+                        <p className="font-mono text-[10px] text-black font-black">{m.area}</p>
+                        <p className="text-neutral-700">{m.problem}</p>
+                        <p className="text-black font-bold italic">&rarr; {m.suggestion}</p>
                       </li>
                     ))}
                   </ul>
                 </div>
               )}
-              <p className="text-[12px] text-[#ccff00]/70 font-mono">{result.nextStep}</p>
+              <p className="text-[12px] text-black font-mono font-bold">{result.nextStep}</p>
             </div>
           ) : (
-            /* FAIL banner */
-            <div className="mt-4 rounded-2xl bg-[#201010] border border-[#ff5555]/30 p-4 space-y-3">
-              <p className="font-mono text-xs font-bold text-[#ff5555]">
+            <div className="mt-4 rounded-xl bg-red-50 border-2 border-red-300 p-4 space-y-3">
+              <p className="font-mono text-xs font-bold text-red-700">
                 Score {result.score}/100 — below {PASS_THRESHOLD}, no RC awarded yet.
               </p>
-              <p className="text-[13px] text-[#b8b8b8] leading-relaxed">{result.summary}</p>
+              <p className="text-[13px] text-neutral-700 leading-relaxed">{result.summary}</p>
               {result.mistakes.length > 0 && (
                 <div>
-                  <p className="font-mono text-[10px] uppercase tracking-widest text-[#8a8a8a] mb-1.5">
+                  <p className="font-mono text-[10px] uppercase tracking-widest text-neutral-500 font-bold mb-1.5">
                     Issues to fix
                   </p>
                   <ul className="space-y-2">
                     {result.mistakes.map((m, i) => (
-                      <li key={i} className="rounded-xl bg-[#2a1010] p-3 text-[12px] space-y-0.5">
-                        <p className="font-mono text-[10px] text-[#ff5555]/80 font-bold">
-                          {m.area}
-                        </p>
-                        <p className="text-[#f5f5f5]">{m.problem}</p>
-                        <p className="text-[#ffaa55]/80 italic">\u2192 {m.suggestion}</p>
+                      <li
+                        key={i}
+                        className="space-y-0.5 rounded-xl border border-red-200 bg-white p-3 text-[12px]"
+                      >
+                        <p className="font-mono text-[10px] font-black text-red-600">{m.area}</p>
+                        <p className="text-neutral-800">{m.problem}</p>
+                        <p className="text-black font-bold italic">&rarr; {m.suggestion}</p>
                       </li>
                     ))}
                   </ul>
                 </div>
               )}
-              <p className="text-[12px] text-[#ff5555]/70 font-mono">{result.nextStep}</p>
+              <p className="text-[12px] text-red-600 font-mono font-bold">{result.nextStep}</p>
             </div>
           )}
         </>
       )}
 
-      {/* ── Explanation section ── */}
-      <div className="mt-6 border-t border-white/[0.08] pt-5">
+      {/* ── Explanation Section & Official AI Submission ── */}
+      <div className="mt-6 border-t-2 border-black pt-5">
         <label
           htmlFor="lab-explanation"
-          className="block font-mono text-[11px] uppercase tracking-[0.18em] text-[#8a8a8a]"
+          className="block font-mono text-[11px] uppercase tracking-[0.18em] text-neutral-500"
         >
-          Explain your solution in your own words
+          Step 2: Explain your solution in your own words
         </label>
-        <p className="mt-1 text-[12px] leading-relaxed text-[#b8b8b8]">{lab.explanationPrompt}</p>
+        <p className="mt-1 text-[12px] leading-relaxed text-neutral-600">{lab.explanationPrompt}</p>
 
         <textarea
           id="lab-explanation"
-          rows={5}
+          rows={4}
           value={explanation}
           onChange={(e) => setExplanation(e.target.value)}
           disabled={earned}
-          placeholder={`At least ${MIN_WORDS} words. Your code and explanation are graded by AI — your writing is never stored, and you earn RC only at ${PASS_THRESHOLD}%+.`}
+          placeholder={`At least ${MIN_WORDS} words. Once your code passes the 'Run Code' checks, submit here for AI architectural grading and +${caseRc} RC.`}
           className="explanation-area mt-2.5"
         />
 
-        {/* Word count + submit */}
+        {/* Word count + submit button */}
         <div className="mt-3 flex flex-wrap items-center gap-3">
           <div className="flex items-center gap-2">
             <span
               className={`font-mono text-xs transition-colors ${
-                enoughWords ? "text-[#ccff00]" : "text-[#8a8a8a]"
+                enoughWords ? "text-black font-bold" : "text-neutral-400"
               }`}
             >
               {words}/{MIN_WORDS} words
             </span>
-            <span className="text-[#3a3a3a]">·</span>
-            <span className="font-mono text-xs text-[#8a8a8a]">
+            <span className="text-neutral-300">&middot;</span>
+            <span className="font-mono text-xs text-neutral-400">
               {code.trim().length} chars code
             </span>
           </div>
 
           {authBlocked && (
-            <span className="rounded-xl bg-[#161616] border border-[#ccff00]/40 px-3.5 py-2 font-mono text-xs font-bold text-[#ccff00]">
-              Sign in to have your lab AI-graded and earn RC
+            <span className="rounded-lg bg-neutral-100 border-2 border-black px-3.5 py-2 font-mono text-xs font-semibold text-black">
+              Sign in to submit your lab for AI grading and RC reward
             </span>
           )}
+
           {!earned && !authBlocked && (
             <button
               type="button"
               onClick={handleCheck}
               disabled={!enoughWords || !hasEnoughCode || checking}
-              className="rounded-xl bg-gradient-to-r from-[#d4ff00] via-[#ccff00] to-[#9df000] px-4 py-2 font-mono text-xs font-bold text-[#080808] shadow-[0_0_15px_rgba(204,255,0,0.4)] disabled:opacity-30 disabled:pointer-events-none transition-all hover:shadow-[0_0_24px_rgba(204,255,0,0.6)]"
+              className="rounded-lg bg-black text-white hover:bg-neutral-800 px-5 py-2 font-mono text-xs font-black border-2 border-black shadow-xs disabled:opacity-30 disabled:pointer-events-none transition-all hover:scale-[1.02] cursor-pointer"
             >
               {checking ? (
                 <span className="flex items-center gap-1.5">
@@ -432,25 +790,26 @@ export function CodeArena({
                       d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
                     />
                   </svg>
-                  Grading...
+                  Grading with AI...
                 </span>
               ) : (
-                "Grade my attempt"
+                `Submit & Grade (+${caseRc} RC)`
               )}
             </button>
           )}
+
           {(earned || result?.passed) && (
-            <span className="rounded-xl bg-[#182608] border border-[#ccff00]/40 px-3.5 py-2 font-mono text-xs font-bold text-[#ccff00]">
-              ✓ Passed {result?.score ?? 100}/100 &middot; +{caseRc} RC
+            <span className="rounded-lg bg-neutral-100 border-2 border-black px-3.5 py-2 font-mono text-xs font-black text-black shadow-xs">
+              &check; Passed {result?.score ?? 100}/100 &middot; +{caseRc} RC banked
             </span>
           )}
         </div>
 
-        <p className="mt-3 font-mono text-[10px] text-[#8a8a8a] flex items-center gap-1.5">
-          <span className="text-[#ccff00]">ℹ</span>
+        <p className="mt-3 font-mono text-[10px] text-neutral-400 flex items-center gap-1.5">
+          <span className="text-black font-bold">&#9432;</span>
           <span>
-            Code & explanations are evaluated transiently by AI models for real-time pedagogical
-            feedback. Source code is never retained or permanently stored.
+            Test runs execute directly in your sandbox. Official grading evaluates pedagogical
+            quality and architectural trade-offs.
           </span>
         </p>
       </div>

@@ -6,6 +6,8 @@ import {
   isCircuitAvailable,
   recordProviderFailure,
   recordProviderSuccess,
+  dryRunCode,
+  DRY_RUN_PROMPT,
 } from "../convex/ai.ts";
 
 // ============================================================================
@@ -127,4 +129,17 @@ test("AI Guardrail 6: Circuit breaker trips after 3 consecutive failures and rec
   // Success clears and recovers circuit
   recordProviderSuccess("groq");
   assert.equal(isCircuitAvailable("groq"), true, "Circuit must recover on success");
+});
+
+test("AI Guardrail 7: DRY_RUN_PROMPT is defined and dryRunCode executes fallback gracefully", async () => {
+  assert.ok(DRY_RUN_PROMPT.includes("code execution simulator"));
+
+  const result = await dryRunCode("Python", "solve", "def solve(a, b): return a + b", [
+    { name: "adds two numbers", args: [2, 3], expected: 5 },
+  ]);
+
+  assert.equal(result.syntaxValid, true);
+  assert.equal(result.testResults.length, 1);
+  assert.equal(result.testResults[0].name, "adds two numbers");
+  assert.equal(result.testResults[0].passed, true);
 });

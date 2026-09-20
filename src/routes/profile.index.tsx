@@ -6,7 +6,7 @@ import { useAccount, useWallet, useStreak } from "@/lib/account";
 import { isCaseCompleted, isLabCompleted, isStudyComplete, RANKS } from "@/lib/rc";
 import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
-import { ArrowRight, Award, CheckCircle2, ShieldCheck } from "lucide-react";
+import { ArrowRight, Award, ShieldCheck } from "lucide-react";
 
 export const Route = createFileRoute("/profile/")({
   head: () => ({
@@ -59,26 +59,26 @@ function ProfilePage() {
     <AppChrome>
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 flex flex-col gap-6">
         {/* Page Header */}
-        <div className="border-b border-white/[0.08] pb-6">
-          <div className="flex items-center gap-2 font-mono text-xs text-primary">
-            <span className="size-2 rounded-full bg-primary animate-pulse" />
-            <span className="tracking-widest uppercase font-semibold">
+        <div className="border-b-2 border-black pb-6">
+          <div className="flex items-center gap-2 font-mono text-xs text-black">
+            <span className="size-2.5 rounded-full bg-black ring-2 ring-black/20" />
+            <span className="tracking-widest uppercase font-black">
               ENGINEERING DOSSIER · VERIFIED IDENTITY
             </span>
           </div>
           <div className="mt-2 flex flex-wrap items-baseline justify-between gap-4">
-            <h1 className="text-3xl font-extrabold tracking-tight text-[#f5f5f5] sm:text-4xl">
+            <h1 className="text-3xl font-black tracking-tight text-black sm:text-4xl">
               Investigator Profile
             </h1>
-            <span className="font-mono text-xs text-[#8a8a8a]">
-              Tier: <span className="font-bold text-primary">{rank.name}</span> · Balance:{" "}
-              <span className="font-bold text-[#f5f5f5]">{points} RC</span>
+            <span className="font-mono text-xs text-black font-bold">
+              Tier: <span className="font-black underline">{rank.name}</span> · Balance:{" "}
+              <span className="font-black">{points} RC</span>
             </span>
           </div>
         </div>
 
         {/* =========================================================================
-            EQUAL 2-COLUMN HERO DECK: Profile + Streak (Left) & Rank + Leaderboard (Right)
+            EQUAL 2-COLUMN HERO DECK: Profile + Streak (Left) & Rank + Telemetry (Right)
            ========================================================================= */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
           {/* Left Column (50%): Identity & Daily Consistency Matrix */}
@@ -90,15 +90,15 @@ function ProfilePage() {
           {/* Right Column (50%): System Thinking Rank Ladder & Engineering Milestones */}
           <div className="flex flex-col gap-6">
             {/* 1. System Thinking Rank Ladder */}
-            <div className="glass-panel rounded-3xl p-6 border border-white/[0.08] shadow-[0_16px_32px_rgba(0,0,0,0.35)]">
-              <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
+            <div className="glass-panel rounded-3xl p-6 border-2 border-black bg-white text-black shadow-xs">
+              <div className="flex flex-wrap items-center justify-between gap-2 mb-4 border-b-2 border-black pb-3">
                 <div className="flex items-center gap-2">
-                  <ShieldCheck className="size-4.5 text-primary" />
-                  <h3 className="font-bold text-sm text-[#f5f5f5]">System Thinking Rank Ladder</h3>
+                  <ShieldCheck className="size-4.5 text-black stroke-[2.5]" />
+                  <h3 className="font-black text-sm text-black">System Thinking Rank Ladder</h3>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="font-mono text-xs text-[#8a8a8a]">Current Rank:</span>
-                  <span className="rounded-lg bg-[var(--theme-surface,#182608)] border border-primary/40 px-2.5 py-0.5 font-mono text-xs font-bold text-primary">
+                  <span className="font-mono text-xs text-black font-bold">Current Rank:</span>
+                  <span className="rounded-lg bg-black text-white border-2 border-black px-2.5 py-0.5 font-mono text-xs font-black">
                     {rank.name}
                   </span>
                 </div>
@@ -106,18 +106,19 @@ function ProfilePage() {
 
               {/* Progress to next tier */}
               {nextTier && (
-                <div className="mb-5 rounded-2xl bg-white/[0.02] border border-white/[0.05] p-3.5">
-                  <div className="flex items-center justify-between font-mono text-xs text-[#8a8a8a] mb-2">
-                    <span>
-                      Progression to <strong className="text-[#f5f5f5]">{nextTier.name}</strong>
+                <div className="mb-5 rounded-2xl bg-neutral-50 border-2 border-black p-3.5 text-black">
+                  <div className="flex items-center justify-between font-mono text-xs text-black mb-2">
+                    <span className="font-bold">
+                      Progression to{" "}
+                      <strong className="font-black underline">{nextTier.name}</strong>
                     </span>
-                    <span className="text-primary font-bold">
+                    <span className="font-black">
                       {Math.max(0, nextTierMin - points)} RC needed
                     </span>
                   </div>
-                  <div className="h-2 w-full overflow-hidden rounded-full bg-[#141414] p-0.5 border border-white/[0.06]">
+                  <div className="h-2.5 w-full overflow-hidden rounded-full bg-neutral-200 p-0.5 border border-black">
                     <div
-                      className="h-full rounded-full bg-primary shadow-[0_0_12px_var(--glow-color,rgba(204,255,0,0.4))] transition-all duration-500"
+                      className="h-full rounded-full bg-black transition-all duration-500"
                       style={{ width: `${rankProgressPercent}%` }}
                     />
                   </div>
@@ -133,71 +134,79 @@ function ProfilePage() {
                   return (
                     <div
                       key={tier.name}
-                      className={`rounded-2xl p-3 border text-center transition-all ${
+                      className={`rounded-2xl p-3 border-2 border-black text-center transition-all shadow-xs ${
                         isCurrent
-                          ? "bg-[var(--theme-surface,#182608)] border-primary/60 shadow-[0_0_12px_var(--glow-color,rgba(204,255,0,0.2))]"
+                          ? "bg-black text-white"
                           : isAchieved
-                            ? "bg-white/[0.03] border-white/10"
-                            : "bg-black/20 border-white/[0.04] opacity-40"
+                            ? "bg-neutral-100 text-black font-black"
+                            : "bg-white text-black"
                       }`}
                     >
-                      <span className="font-mono text-[10px] text-[#8a8a8a]">Lv 0{i + 1}</span>
+                      <span
+                        className={`font-mono text-[10px] font-bold ${
+                          isCurrent ? "text-neutral-300" : "text-neutral-600"
+                        }`}
+                      >
+                        Lv 0{i + 1}
+                      </span>
                       <p
-                        className={`mt-1 font-bold text-xs truncate ${
-                          isCurrent
-                            ? "text-primary font-extrabold"
-                            : isAchieved
-                              ? "text-[#f5f5f5]"
-                              : "text-[#8a8a8a]"
+                        className={`mt-1 font-black text-xs truncate ${
+                          isCurrent ? "text-white" : "text-black"
                         }`}
                       >
                         {tier.name}
                       </p>
-                      <p className="mt-1 font-mono text-[10px] text-[#8a8a8a]">{tier.at} RC</p>
+                      <p
+                        className={`mt-1 font-mono text-[10px] font-bold ${
+                          isCurrent ? "text-neutral-300" : "text-neutral-600"
+                        }`}
+                      >
+                        {tier.at} RC
+                      </p>
                     </div>
                   );
                 })}
               </div>
             </div>
 
-            {/* 2. Engineering Telemetry & Verified Milestones (Fills the gap cleanly) */}
-            <div className="glass-panel rounded-3xl p-6 border border-white/[0.08] shadow-[0_16px_32px_rgba(0,0,0,0.35)] flex-1 flex flex-col justify-between">
+            {/* 2. Engineering Telemetry & Verified Milestones */}
+            <div className="glass-panel rounded-3xl p-6 border-2 border-black bg-white text-black shadow-xs flex-1 flex flex-col justify-between">
               <div>
-                <div className="flex items-center justify-between mb-4 pb-3 border-b border-white/[0.06]">
+                <div className="flex items-center justify-between mb-4 pb-3 border-b-2 border-black">
                   <div className="flex items-center gap-2">
-                    <Award className="size-4.5 text-primary" />
-                    <h3 className="font-bold text-sm text-[#f5f5f5]">
+                    <Award className="size-4.5 text-black stroke-[2.5]" />
+                    <h3 className="font-black text-sm text-black">
                       Engineering Telemetry & Milestones
                     </h3>
                   </div>
-                  <span className="font-mono text-[10px] text-primary bg-[var(--theme-surface,#182608)] border border-primary/30 px-2.5 py-0.5 rounded-full font-bold">
+                  <span className="font-mono text-[10px] text-white bg-black border-2 border-black px-2.5 py-0.5 rounded-full font-black">
                     {completedCases.length} of {totalCases} Cleared
                   </span>
                 </div>
 
                 {/* 3 Telemetry metric boxes */}
                 <div className="grid grid-cols-3 gap-2.5 mb-5 text-center">
-                  <div className="rounded-2xl bg-white/[0.02] border border-white/[0.06] p-3">
-                    <p className="font-mono text-base font-bold text-[#f5f5f5]">
+                  <div className="rounded-2xl bg-neutral-50 border-2 border-black p-3 shadow-xs">
+                    <p className="font-mono text-base font-black text-black">
                       {Math.round((completedCases.length / Math.max(1, totalCases)) * 100)}%
                     </p>
-                    <p className="font-mono text-[9px] text-[#8a8a8a] uppercase tracking-wider mt-0.5">
+                    <p className="font-mono text-[9px] text-black font-black uppercase tracking-wider mt-0.5">
                       Curriculum
                     </p>
                   </div>
 
-                  <div className="rounded-2xl bg-white/[0.02] border border-white/[0.06] p-3">
-                    <p className="font-mono text-base font-bold text-primary">
+                  <div className="rounded-2xl bg-neutral-50 border-2 border-black p-3 shadow-xs">
+                    <p className="font-mono text-base font-black text-black">
                       {completedLabs.length}
                     </p>
-                    <p className="font-mono text-[9px] text-[#8a8a8a] uppercase tracking-wider mt-0.5">
+                    <p className="font-mono text-[9px] text-black font-black uppercase tracking-wider mt-0.5">
                       Labs Passed
                     </p>
                   </div>
 
-                  <div className="rounded-2xl bg-white/[0.02] border border-white/[0.06] p-3">
-                    <p className="font-mono text-base font-bold text-[#f5f5f5]">{streakLongest}d</p>
-                    <p className="font-mono text-[9px] text-[#8a8a8a] uppercase tracking-wider mt-0.5">
+                  <div className="rounded-2xl bg-neutral-50 border-2 border-black p-3 shadow-xs">
+                    <p className="font-mono text-base font-black text-black">{streakLongest}d</p>
+                    <p className="font-mono text-[9px] text-black font-black uppercase tracking-wider mt-0.5">
                       Max Streak
                     </p>
                   </div>
@@ -205,42 +214,40 @@ function ProfilePage() {
 
                 {/* Milestone verification pills */}
                 <div className="space-y-2">
-                  <div className="flex items-center justify-between rounded-xl bg-white/[0.02] border border-white/[0.05] px-3.5 py-2.5 text-xs">
+                  <div className="flex items-center justify-between rounded-xl bg-neutral-50 border-2 border-black px-3.5 py-2.5 text-xs shadow-xs">
                     <div className="flex items-center gap-2.5">
                       <span
-                        className={`size-2 rounded-full ${
+                        className={`size-2.5 rounded-full ${
                           completedCases.length >= 1
-                            ? "bg-primary shadow-[0_0_8px_var(--glow-color,rgba(204,255,0,0.5))]"
-                            : "bg-white/20"
+                            ? "bg-black ring-2 ring-black/20"
+                            : "bg-neutral-300"
                         }`}
                       />
-                      <span className="font-medium text-[#f5f5f5]">
-                        First Principles Investigation
-                      </span>
+                      <span className="font-black text-black">First Principles Investigation</span>
                     </div>
                     <span
-                      className={`font-mono text-[10px] font-bold ${
-                        completedCases.length >= 1 ? "text-primary" : "text-[#8a8a8a]"
+                      className={`font-mono text-[10px] font-black ${
+                        completedCases.length >= 1 ? "text-black" : "text-neutral-500"
                       }`}
                     >
                       {completedCases.length >= 1 ? "VERIFIED ✓" : "0/1 Cases"}
                     </span>
                   </div>
 
-                  <div className="flex items-center justify-between rounded-xl bg-white/[0.02] border border-white/[0.05] px-3.5 py-2.5 text-xs">
+                  <div className="flex items-center justify-between rounded-xl bg-neutral-50 border-2 border-black px-3.5 py-2.5 text-xs shadow-xs">
                     <div className="flex items-center gap-2.5">
                       <span
-                        className={`size-2 rounded-full ${
+                        className={`size-2.5 rounded-full ${
                           streakCurrent >= 3 || streakLongest >= 3
-                            ? "bg-primary shadow-[0_0_8px_var(--glow-color,rgba(204,255,0,0.5))]"
-                            : "bg-white/20"
+                            ? "bg-black ring-2 ring-black/20"
+                            : "bg-neutral-300"
                         }`}
                       />
-                      <span className="font-medium text-[#f5f5f5]">3-Day Cadence Lock</span>
+                      <span className="font-black text-black">3-Day Cadence Lock</span>
                     </div>
                     <span
-                      className={`font-mono text-[10px] font-bold ${
-                        streakCurrent >= 3 || streakLongest >= 3 ? "text-primary" : "text-[#8a8a8a]"
+                      className={`font-mono text-[10px] font-black ${
+                        streakCurrent >= 3 || streakLongest >= 3 ? "text-black" : "text-neutral-500"
                       }`}
                     >
                       {streakCurrent >= 3 || streakLongest >= 3
@@ -249,20 +256,20 @@ function ProfilePage() {
                     </span>
                   </div>
 
-                  <div className="flex items-center justify-between rounded-xl bg-white/[0.02] border border-white/[0.05] px-3.5 py-2.5 text-xs">
+                  <div className="flex items-center justify-between rounded-xl bg-neutral-50 border-2 border-black px-3.5 py-2.5 text-xs shadow-xs">
                     <div className="flex items-center gap-2.5">
                       <span
-                        className={`size-2 rounded-full ${
+                        className={`size-2.5 rounded-full ${
                           completedCases.length >= 5
-                            ? "bg-primary shadow-[0_0_8px_var(--glow-color,rgba(204,255,0,0.5))]"
-                            : "bg-white/20"
+                            ? "bg-black ring-2 ring-black/20"
+                            : "bg-neutral-300"
                         }`}
                       />
-                      <span className="font-medium text-[#f5f5f5]">Distributed Architect Tier</span>
+                      <span className="font-black text-black">Distributed Architect Tier</span>
                     </div>
                     <span
-                      className={`font-mono text-[10px] font-bold ${
-                        completedCases.length >= 5 ? "text-primary" : "text-[#8a8a8a]"
+                      className={`font-mono text-[10px] font-black ${
+                        completedCases.length >= 5 ? "text-black" : "text-neutral-500"
                       }`}
                     >
                       {completedCases.length >= 5
@@ -274,11 +281,13 @@ function ProfilePage() {
               </div>
 
               {/* Action row at bottom */}
-              <div className="mt-4 pt-3.5 border-t border-white/[0.06] flex items-center justify-between">
-                <span className="font-mono text-[10px] text-[#8a8a8a]">System Arena Dossier</span>
+              <div className="mt-5 pt-3.5 border-t-2 border-black flex items-center justify-between">
+                <span className="font-mono text-[10px] text-black font-black uppercase tracking-wider">
+                  System Arena Dossier
+                </span>
                 <Link
                   to="/cases"
-                  className="inline-flex items-center gap-1.5 font-mono text-xs font-bold text-primary hover:underline"
+                  className="inline-flex items-center gap-1.5 font-mono text-xs font-black text-black hover:underline"
                 >
                   <span>Explore Cases</span>
                   <ArrowRight className="size-3.5" />
