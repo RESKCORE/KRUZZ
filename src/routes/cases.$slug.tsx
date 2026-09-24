@@ -701,29 +701,28 @@ function CaseStudyPage() {
   }, []);
 
   // Gracefully close tab in the editor tab bar
-  const closeTab = useCallback((tabIdxToClose: number, e?: React.MouseEvent) => {
-    e?.stopPropagation();
-    setOpenTabs((prev) => {
-      if (prev.length <= 1) return prev;
-      const nextTabs = prev.filter((idx) => idx !== tabIdxToClose);
-      if (step === tabIdxToClose) {
-        const closedPosition = prev.indexOf(tabIdxToClose);
-        const nextActive = nextTabs[Math.min(closedPosition, nextTabs.length - 1)] ?? 0;
-        setStep(nextActive);
-      }
-      return nextTabs;
-    });
-  }, [step]);
+  const closeTab = useCallback(
+    (tabIdxToClose: number, e?: React.MouseEvent) => {
+      e?.stopPropagation();
+      setOpenTabs((prev) => {
+        if (prev.length <= 1) return prev;
+        const nextTabs = prev.filter((idx) => idx !== tabIdxToClose);
+        if (step === tabIdxToClose) {
+          const closedPosition = prev.indexOf(tabIdxToClose);
+          const nextActive = nextTabs[Math.min(closedPosition, nextTabs.length - 1)] ?? 0;
+          setStep(nextActive);
+        }
+        return nextTabs;
+      });
+    },
+    [step],
+  );
 
   // Keyboard navigation: Alt + ArrowLeft / ArrowRight to step through case study
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
       const target = e.target as HTMLElement;
-      if (
-        target.tagName === "INPUT" ||
-        target.tagName === "TEXTAREA" ||
-        target.isContentEditable
-      ) {
+      if (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.isContentEditable) {
         return;
       }
 
@@ -898,7 +897,7 @@ function CaseStudyPage() {
   const needed = unlockThreshold(study.rcCost);
 
   const progress = isCompleted ? 100 : Math.round((doneCount / SECTION_LABELS.length) * 100);
-  
+
   const sampleCount = study.implementation?.samples?.length ?? 0;
   const activeLang = sampleCount > 0 ? Math.min(lang, sampleCount - 1) : 0;
   const sample = study.implementation?.samples?.[activeLang] ?? study.implementation?.samples?.[0];
@@ -906,7 +905,8 @@ function CaseStudyPage() {
   const levelCount = study.architecture?.levels?.length ?? 0;
   const activeLevel = levelCount > 0 ? Math.min(level, levelCount - 1) : 0;
   const diagram = study.architecture?.levels?.[activeLevel] ?? study.architecture?.levels?.[0];
-  const activeMermaid = diagram?.mermaid || (study.architecture as any)?.mermaid || resolvedLab?.mermaid || "";
+  const activeMermaid =
+    diagram?.mermaid || (study.architecture as any)?.mermaid || resolvedLab?.mermaid || "";
 
   const primer = study.primers?.[0];
   const activeFile = SECTION_FILES[step] || SECTION_FILES[0];
@@ -961,20 +961,22 @@ function CaseStudyPage() {
           "What architectural trade-offs did you make in your implementation, and what would you improve in a high-scale deployment?",
         ];
 
-  const decisionsList: any[] = Array.isArray(study.decisions) && study.decisions.length > 0
-    ? study.decisions
-    : Array.isArray(study.tradeOffs) && study.tradeOffs.length > 0
-      ? study.tradeOffs
-      : [
-          {
-            title: "Primary Architecture Trade-off",
-            what: "Explicit Boundary Validation & State Guarding",
-            why: "Guarantees deterministic behavior and prevents unhandled state corruption under stress.",
-            problemSolved: "Silent data desynchronization across concurrent clients.",
-            withoutIt: "Inconsistent state requiring manual operational intervention.",
-            tradeoff: "Slightly higher verification latency in exchange for strict data integrity.",
-          },
-        ];
+  const decisionsList: any[] =
+    Array.isArray(study.decisions) && study.decisions.length > 0
+      ? study.decisions
+      : Array.isArray(study.tradeOffs) && study.tradeOffs.length > 0
+        ? study.tradeOffs
+        : [
+            {
+              title: "Primary Architecture Trade-off",
+              what: "Explicit Boundary Validation & State Guarding",
+              why: "Guarantees deterministic behavior and prevents unhandled state corruption under stress.",
+              problemSolved: "Silent data desynchronization across concurrent clients.",
+              withoutIt: "Inconsistent state requiring manual operational intervention.",
+              tradeoff:
+                "Slightly higher verification latency in exchange for strict data integrity.",
+            },
+          ];
 
   const techNotesList: TechNote[] = Array.isArray(study.techNotes)
     ? study.techNotes
@@ -1141,7 +1143,9 @@ function CaseStudyPage() {
                         ) : (
                           <FileText
                             className={`size-3.5 transition-colors ${
-                              isActive ? "text-[#0284c7]" : "text-slate-400 group-hover:text-slate-600"
+                              isActive
+                                ? "text-[#0284c7]"
+                                : "text-slate-400 group-hover:text-slate-600"
                             }`}
                           />
                         )}
@@ -1368,12 +1372,18 @@ function CaseStudyPage() {
                             name,
                             difficulty: "Core",
                             simpleDefinition: `${name} provides structured coordination and reliability guarantees in ${study.title}.`,
-                            whyItExists: "Mitigates failure modes, prevents data corruption, and ensures correct operational semantics.",
-                            realWorldAnalogy: "Like a traffic signal preventing gridlock at a crowded intersection.",
+                            whyItExists:
+                              "Mitigates failure modes, prevents data corruption, and ensures correct operational semantics.",
+                            realWorldAnalogy:
+                              "Like a traffic signal preventing gridlock at a crowded intersection.",
                             technicalExplanation: `The system applies ${name} as a strict architectural contract across data and transport boundaries.`,
                             caseApplication: `Directly drives the state machine and invariant checking in this case study.`,
-                            commonMistakes: ["Assuming best-effort success without explicit timeouts or rollback mechanisms."],
-                            practice: ["Trace execution flow when input parameters violate invariant constraints."],
+                            commonMistakes: [
+                              "Assuming best-effort success without explicit timeouts or rollback mechanisms.",
+                            ],
+                            practice: [
+                              "Trace execution flow when input parameters violate invariant constraints.",
+                            ],
                           }))
                       ).map((c: any) => {
                         const open = openConcept === c.id;
@@ -1483,7 +1493,8 @@ function CaseStudyPage() {
                     )}
                     <div className="mt-4 rounded-2xl bg-paper/70 p-5 ring-1 ring-primary/10">
                       <p className="mb-4 text-[12px] leading-relaxed text-ink2">
-                        {diagram?.description || "Interactive component flow and state transitions."}
+                        {diagram?.description ||
+                          "Interactive component flow and state transitions."}
                       </p>
                       {activeMermaid && <MermaidDiagram chart={activeMermaid} />}
                       <div className="mt-4 flex flex-wrap items-center gap-4 border-t border-line/70 pt-3 font-mono text-[10px] text-ink2">
@@ -1532,19 +1543,20 @@ function CaseStudyPage() {
                         }
 
                         // Determine fields across all schema variants
-                        const isSimpleChoiceRationale = Boolean(d.choice && d.rationale && !d.title && !d.decision);
+                        const isSimpleChoiceRationale = Boolean(
+                          d.choice && d.rationale && !d.title && !d.decision,
+                        );
                         const isChoiceABVerdict = Boolean(d.choiceA && (d.choiceB || d.verdict));
 
                         const title =
-                          d.title ||
-                          d.decision ||
-                          d.choice ||
-                          `Architecture Decision ${idx + 1}`;
+                          d.title || d.decision || d.choice || `Architecture Decision ${idx + 1}`;
 
                         // Avoid duplicating the title in "what" when title was derived from choice
                         const what = isSimpleChoiceRationale
                           ? undefined
-                          : d.what || d.choiceA || (d.choice && d.choice !== title ? d.choice : undefined);
+                          : d.what ||
+                            d.choiceA ||
+                            (d.choice && d.choice !== title ? d.choice : undefined);
 
                         const why = d.why || d.verdict || d.rationale;
                         const problem = d.problemSolved;
@@ -1578,7 +1590,9 @@ function CaseStudyPage() {
                               {what && (
                                 <div className="rounded-xl bg-paper/60 p-3 ring-1 ring-line/40">
                                   <dt className="font-mono text-[10px] uppercase tracking-widest font-bold text-primary mb-1">
-                                    {isChoiceABVerdict ? "Chosen Architecture (Option A)" : "Choice / Pattern"}
+                                    {isChoiceABVerdict
+                                      ? "Chosen Architecture (Option A)"
+                                      : "Choice / Pattern"}
                                   </dt>
                                   <dd className="font-medium text-ink">{what}</dd>
                                 </div>
@@ -1587,7 +1601,9 @@ function CaseStudyPage() {
                               {altText && (
                                 <div className="rounded-xl bg-paper/40 p-3 ring-1 ring-line/30">
                                   <dt className="font-mono text-[10px] uppercase tracking-widest font-bold text-ink2 mb-1">
-                                    {isChoiceABVerdict ? "Alternative Considered (Option B)" : "Alternatives Considered"}
+                                    {isChoiceABVerdict
+                                      ? "Alternative Considered (Option B)"
+                                      : "Alternatives Considered"}
                                   </dt>
                                   <dd className="text-ink2">{altText}</dd>
                                 </div>
@@ -1596,7 +1612,9 @@ function CaseStudyPage() {
                               {why && (
                                 <div className="pt-1">
                                   <dt className="font-mono text-[10px] uppercase tracking-widest font-bold text-primary mb-0.5">
-                                    {isChoiceABVerdict ? "Verdict & Engineering Justification" : "Why & Rationale"}
+                                    {isChoiceABVerdict
+                                      ? "Verdict & Engineering Justification"
+                                      : "Why & Rationale"}
                                   </dt>
                                   <dd className="text-ink leading-relaxed">{why}</dd>
                                 </div>
@@ -1651,7 +1669,7 @@ function CaseStudyPage() {
                             ))}
                           </ul>
                         </div>
-                    )}
+                      )}
                   </>
                 )}
 
@@ -1719,11 +1737,13 @@ function CaseStudyPage() {
                                 : "bg-white text-black border-2 border-black/30 hover:border-black font-bold"
                             }`}
                           >
-                            {(s.language || "Code").charAt(0).toUpperCase() + (s.language || "code").slice(1)}
+                            {(s.language || "Code").charAt(0).toUpperCase() +
+                              (s.language || "code").slice(1)}
                           </button>
                         ))}
                         <span className="ml-auto px-2 font-mono text-[10px] text-[#777]">
-                          {sample?.filename || `${sample?.language || "solution"}.${sample?.language === "python" ? "py" : sample?.language === "c" ? "c" : "java"}`}
+                          {sample?.filename ||
+                            `${sample?.language || "solution"}.${sample?.language === "python" ? "py" : sample?.language === "c" ? "c" : "java"}`}
                         </span>
                       </div>
                     )}

@@ -274,7 +274,7 @@ export const updateDecisionsInternal = internalMutation({
       v.object({
         slug: v.string(),
         decisions: v.any(),
-      })
+      }),
     ),
   },
   handler: async (ctx: MutationCtx, args: { updates: Array<{ slug: string; decisions: any }> }) => {

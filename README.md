@@ -175,6 +175,57 @@ KRUZZ includes **35 comprehensive case studies** across 7 curriculum tracks:
 
 ---
 
+## 🏛️ System Architecture: Clear Frontend & Backend Separation
+
+KRUZZ maintains strict architectural separation between client presentation and authoritative serverless state:
+
+```mermaid
+flowchart TD
+    subgraph Frontend ["🖥️ Frontend (src/) — TanStack Start + React 19"]
+        A[TanStack Start SSR] --> B[8-Section Incident Workspace]
+        B --> C[Progressive Mermaid Diagrams]
+        B --> D[Pyodide In-Browser Wasm Runner]
+        B --> E[Multi-Language CodeArena]
+    end
+
+    subgraph Backend ["⚙️ Backend (convex/) — Serverless Real-Time Backend"]
+        F[Convex Database] --> G[Case Studies Store — 35 Incidents]
+        F --> H[User Progress & Daily Streaks]
+        F --> I[Multi-Provider AI Grading Engine]
+        F --> J[Durable Provider Circuit Breakers]
+    end
+
+    subgraph Tooling ["🛠️ Tooling & Audits (scripts/)"]
+        K[audit_all_sections.ts]
+        L[Multi-Language Seeders]
+    end
+
+    B <== "Real-time subscriptions (WebSocket)" ==> F
+    K -. "DB Integrity Verification" .-> F
+```
+
+### 🔒 Architectural Invariants
+
+1. **100% Database-Driven Content**:
+   - **Zero case studies are hardcoded in the frontend codebase**.
+   - All 35 case studies, progressive Mermaid blueprints, architectural decisions, code ladders, test suites, and reflection prompts are stored exclusively in the **Convex Database** (`convex/`).
+   - The frontend (`src/`) acts purely as a presentation and interactive reasoning layer, querying Convex in real time.
+
+2. **Frontend (`src/`)**:
+   - Built on TanStack Start (SSR) and React 19.
+   - Runs client-side Python execution via in-browser **Pyodide** WebAssembly.
+   - Manages responsive themes, VS Code-like workspace tabs, and progressive architectural disclosure.
+
+3. **Backend (`convex/`)**:
+   - Authoritative data store with strict schema validation (`convex/schema.ts`).
+   - Transactional progress tracking, streak counting, and Reasoning Credit (RC) ledger.
+   - Multi-provider AI grading engine (`convex/ai.ts`) with durable circuit breakers (Gemini $\rightarrow$ Groq $\rightarrow$ OpenRouter).
+
+4. **Auditing & Verification (`scripts/`)**:
+   - Run `bun scripts/audit_all_sections.ts` to execute a comprehensive audit guaranteeing that all 8 sections across all 35 cases are populated, valid, and non-empty in the database.
+
+---
+
 ## 🛠 Technical Stack
 
 KRUZZ is engineered with modern full-stack TypeScript primitives for sub-100ms real-time reactivity and compile-time type safety:

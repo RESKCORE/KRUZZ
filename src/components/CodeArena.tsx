@@ -37,7 +37,11 @@ function starterFor(lang: Lang, lab?: CodeLab | null): string {
     if (lab.starterCode && lab.starterCode.trim()) {
       return lab.starterCode;
     }
-    const sig = lab.languages?.python?.signature ?? lab.pythonSignature ?? lab.signature ?? `def ${fn}(*args):`;
+    const sig =
+      lab.languages?.python?.signature ??
+      lab.pythonSignature ??
+      lab.signature ??
+      `def ${fn}(*args):`;
     const hintLines = hints.map((h, i) => `    ${i + 1}. ${h}`).join("\n");
     const taskLine = lab.explanationPrompt ? `\n    Task: ${lab.explanationPrompt}\n` : "";
     return [
@@ -56,7 +60,10 @@ function starterFor(lang: Lang, lab?: CodeLab | null): string {
     if (lab.javaStarterCode && lab.javaStarterCode.trim()) {
       return lab.javaStarterCode;
     }
-    const sig = lab.languages?.java?.signature ?? lab.javaSignature ?? `public static Object ${fn}(Object... args)`;
+    const sig =
+      lab.languages?.java?.signature ??
+      lab.javaSignature ??
+      `public static Object ${fn}(Object... args)`;
     const hintLines = hints.map((h, i) => `        // ${i + 1}. ${h}`).join("\n");
     return [
       `// ${sig}`,
@@ -114,7 +121,8 @@ export function CodeArena({
   isAuthenticated: boolean;
   onSolved: () => void;
 }) {
-  const activeLab = lab && lab.functionName ? lab : resolveCodeLab({ slug: caseSlug, codeLab: lab });
+  const activeLab =
+    lab && lab.functionName ? lab : resolveCodeLab({ slug: caseSlug, codeLab: lab });
 
   const [language, setLanguage] = useState<Lang>("Python");
   const [code, setCode] = useState(() => starterFor("Python", activeLab));
@@ -248,7 +256,9 @@ export function CodeArena({
         </span>
       </div>
 
-      <p className="mt-3 max-w-[68ch] text-[13px] leading-relaxed text-neutral-700">{activeLab.brief}</p>
+      <p className="mt-3 max-w-[68ch] text-[13px] leading-relaxed text-neutral-700">
+        {activeLab.brief}
+      </p>
 
       {/* Edge cases preview */}
       {activeLab.tests && activeLab.tests.length > 0 && (
@@ -280,12 +290,16 @@ export function CodeArena({
       <div className="mt-5 flex flex-wrap items-center justify-between gap-2.5">
         <p className="font-mono text-[11px] text-black font-semibold">
           {language === "Java"
-            ? (activeLab.javaSignature ?? activeLab.languages?.java?.signature ?? activeLab.signature)
+            ? (activeLab.javaSignature ??
+              activeLab.languages?.java?.signature ??
+              activeLab.signature)
             : language === "C"
               ? ((activeLab as any).cSignature ??
                 (activeLab.languages as any)?.c?.signature ??
                 `bool ${activeLab.functionName || "solution"}(...)`)
-              : (activeLab.pythonSignature ?? activeLab.languages?.python?.signature ?? activeLab.signature)}
+              : (activeLab.pythonSignature ??
+                activeLab.languages?.python?.signature ??
+                activeLab.signature)}
         </p>
         <div className="flex gap-1 rounded-lg bg-neutral-100 p-1 border-2 border-black">
           {LANGUAGES.map((l) => (
@@ -747,7 +761,9 @@ export function CodeArena({
         >
           Step 2: Explain your solution in your own words
         </label>
-        <p className="mt-1 text-[12px] leading-relaxed text-neutral-600">{activeLab.explanationPrompt}</p>
+        <p className="mt-1 text-[12px] leading-relaxed text-neutral-600">
+          {activeLab.explanationPrompt}
+        </p>
 
         <textarea
           id="lab-explanation"
