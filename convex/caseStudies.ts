@@ -252,12 +252,47 @@ async function performCaseStudyUpsert(ctx: any, study: any) {
  * Trusted internal mutation for curriculum updates (e.g. seed scripts and automated pipelines).
  * Accessible only by server functions and CLI runners via `npx convex run`.
  */
+export const getAllInternal = query({
+  args: {},
+  handler: async (ctx) => {
+    return await ctx.db.query("caseStudies").collect();
+  },
+});
+
 export const upsertInternal = internalMutation({
   args: {
     caseStudy: v.any(),
   },
   handler: async (ctx: MutationCtx, args: { caseStudy: any }) => {
     return await performCaseStudyUpsert(ctx, args.caseStudy);
+  },
+});
+
+export const updateDecisionsInternal = internalMutation({
+  args: {
+    updates: v.array(
+      v.object({
+        slug: v.string(),
+        decisions: v.any(),
+      })
+    ),
+  },
+  handler: async (ctx: MutationCtx, args: { updates: Array<{ slug: string; decisions: any }> }) => {
+    let count = 0;
+    for (const update of args.updates) {
+      const existing = await ctx.db
+        .query("caseStudies")
+        .withIndex("by_slug", (q) => q.eq("slug", update.slug))
+        .first();
+      if (existing) {
+        await ctx.db.patch(existing._id, {
+          decisions: update.decisions,
+          updatedAt: Date.now(),
+        });
+        count++;
+      }
+    }
+    return { updatedCount: count };
   },
 });
 

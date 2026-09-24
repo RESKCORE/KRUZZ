@@ -121,9 +121,40 @@ else:
     else:
         tests_data = json.loads(${JSON.stringify(JSON.stringify(tests))})
         for t in tests_data:
+            def _parse_input_args(item):
+                raw_args = item.get("args")
+                if raw_args is not None:
+                    return raw_args if isinstance(raw_args, list) else [raw_args]
+                raw_in = item.get("input")
+                if raw_in is None:
+                    return []
+                if isinstance(raw_in, list):
+                    return raw_in
+                if isinstance(raw_in, str):
+                    try:
+                        parsed = eval(f"({raw_in})")
+                        if isinstance(parsed, tuple):
+                            return list(parsed)
+                        return [parsed]
+                    except Exception:
+                        return [raw_in]
+                return [raw_in]
+
+            def _parse_expected(item):
+                exp = item.get("expected")
+                if isinstance(exp, str):
+                    trimmed = exp.strip()
+                    if trimmed.startswith("(") or trimmed.startswith("[") or trimmed.startswith("{") or trimmed in ("True", "False", "None"):
+                        try:
+                            return eval(trimmed)
+                        except Exception:
+                            return exp
+                return exp
+
+            args = _parse_input_args(t)
+            expected = _parse_expected(t)
+
             try:
-                args = t.get("args", [])
-                expected = t.get("expected")
                 actual = fn(*args)
                 passed = _values_equal(actual, expected)
                 _test_results.append({
@@ -138,8 +169,8 @@ else:
                 _test_results.append({
                     "name": t.get("name", "Test"),
                     "passed": False,
-                    "input": t.get("args", []),
-                    "expected": t.get("expected"),
+                    "input": args,
+                    "expected": expected,
                     "actual": None,
                     "error": traceback.format_exc().splitlines()[-1] if traceback.format_exc() else str(e)
                 })

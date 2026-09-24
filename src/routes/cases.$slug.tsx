@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo, useRef, useCallback } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { AppChrome } from "@/components/AppChrome";
 import { MermaidDiagram } from "@/components/MermaidDiagram";
@@ -17,6 +17,7 @@ import {
 import { CodeArena } from "@/components/CodeArena";
 import { CodeEditor } from "@/components/CodeEditor";
 import { RCWalletPanel } from "@/components/RCWallet";
+import { resolveCodeLab } from "@/lib/codeLabs";
 import {
   RC_RULES,
   caseAwardId,
@@ -667,6 +668,8 @@ function CaseStudyPage() {
   ) as unknown as (CaseStudy & { isLocked?: boolean }) | undefined | null;
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
+  const [openTabs, setOpenTabs] = useState<number[]>([0, 6]);
+  const workspaceTopRef = useRef<HTMLDivElement>(null);
   const [lang, setLang] = useState(0);
   const [level, setLevel] = useState(0);
   const [openConcept, setOpenConcept] = useState<string | null>(null);
@@ -674,6 +677,68 @@ function CaseStudyPage() {
   const [companionTab, setCompanionTab] = useState<"primer" | "principles" | "concepts">("primer");
   const [mobileSectionsOpen, setMobileSectionsOpen] = useState(false);
   const [mobileCompanionOpen, setMobileCompanionOpen] = useState(false);
+
+  // Reset tab/step state when navigating to a different case study
+  useEffect(() => {
+    setStep(0);
+    setOpenTabs([0, 6]);
+    setLang(0);
+    setLevel(0);
+    setOpenConcept(null);
+    setReflection("");
+  }, [slug]);
+
+  // Guarantee a complete, non-null CodeLab for any case study
+  const resolvedLab = useMemo(() => resolveCodeLab(study), [study]);
+
+  // Smooth step setter that tracks open tabs and smoothly scrolls content to top
+  const handleSetStep = useCallback((newStep: number) => {
+    setStep(newStep);
+    setOpenTabs((prev) => (prev.includes(newStep) ? prev : [...prev, newStep]));
+    requestAnimationFrame(() => {
+      workspaceTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  }, []);
+
+  // Gracefully close tab in the editor tab bar
+  const closeTab = useCallback((tabIdxToClose: number, e?: React.MouseEvent) => {
+    e?.stopPropagation();
+    setOpenTabs((prev) => {
+      if (prev.length <= 1) return prev;
+      const nextTabs = prev.filter((idx) => idx !== tabIdxToClose);
+      if (step === tabIdxToClose) {
+        const closedPosition = prev.indexOf(tabIdxToClose);
+        const nextActive = nextTabs[Math.min(closedPosition, nextTabs.length - 1)] ?? 0;
+        setStep(nextActive);
+      }
+      return nextTabs;
+    });
+  }, [step]);
+
+  // Keyboard navigation: Alt + ArrowLeft / ArrowRight to step through case study
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      const target = e.target as HTMLElement;
+      if (
+        target.tagName === "INPUT" ||
+        target.tagName === "TEXTAREA" ||
+        target.isContentEditable
+      ) {
+        return;
+      }
+
+      if (e.altKey && e.key === "ArrowRight") {
+        e.preventDefault();
+        handleSetStep(Math.min(SECTION_FILES.length - 1, step + 1));
+      } else if (e.altKey && e.key === "ArrowLeft") {
+        e.preventDefault();
+        handleSetStep(Math.max(0, step - 1));
+      }
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [step, handleSetStep]);
 
   const cloudProgress = useQuery(
     api.caseProgress.getCaseProgress,
@@ -833,12 +898,20 @@ function CaseStudyPage() {
   const needed = unlockThreshold(study.rcCost);
 
   const progress = isCompleted ? 100 : Math.round((doneCount / SECTION_LABELS.length) * 100);
-  const sample = study.implementation?.samples?.[lang] ?? study.implementation?.samples?.[0];
-  const diagram = study.architecture?.levels?.[level] ?? study.architecture?.levels?.[0];
+  
+  const sampleCount = study.implementation?.samples?.length ?? 0;
+  const activeLang = sampleCount > 0 ? Math.min(lang, sampleCount - 1) : 0;
+  const sample = study.implementation?.samples?.[activeLang] ?? study.implementation?.samples?.[0];
+
+  const levelCount = study.architecture?.levels?.length ?? 0;
+  const activeLevel = levelCount > 0 ? Math.min(level, levelCount - 1) : 0;
+  const diagram = study.architecture?.levels?.[activeLevel] ?? study.architecture?.levels?.[0];
+  const activeMermaid = diagram?.mermaid || (study.architecture as any)?.mermaid || resolvedLab?.mermaid || "";
+
   const primer = study.primers?.[0];
   const activeFile = SECTION_FILES[step] || SECTION_FILES[0];
 
-  const practiceList: Exercise[] = Array.isArray(study.practice)
+  const rawPracticeList: Exercise[] = Array.isArray(study.practice)
     ? study.practice
     : Array.isArray((study.practice as any)?.tasks)
       ? (study.practice as any).tasks.map((t: string, idx: number) => ({
@@ -848,11 +921,60 @@ function CaseStudyPage() {
         }))
       : [];
 
-  const reflectionList: string[] = Array.isArray(study.reflection)
+  const practiceList: Exercise[] =
+    rawPracticeList.length > 0
+      ? rawPracticeList
+      : [
+          {
+            level: "Understand",
+            title: "Trace Request Flow",
+            brief: `Trace how ${study.title} coordinates state transitions and handles invalid payloads.`,
+          },
+          {
+            level: "Modify",
+            title: "Add Metric Gauges",
+            brief: `Introduce latency instrumentation and error counter telemetry into the system handler.`,
+          },
+          {
+            level: "Build",
+            title: "Concurrency Guard",
+            brief: `Enforce boundary guards and validation checks for edge cases under burst workloads.`,
+          },
+          {
+            level: "Think",
+            title: "Distributed Failure Modes",
+            brief: `What happens when upstream services timeout or partition under high concurrency?`,
+          },
+        ];
+
+  const rawReflectionList: string[] = Array.isArray(study.reflection)
     ? study.reflection
     : typeof (study.reflection as any)?.takeaway === "string"
       ? [(study.reflection as any).takeaway, (study.reflection as any).nextSteps].filter(Boolean)
       : [];
+
+  const reflectionList: string[] =
+    rawReflectionList.length > 0
+      ? rawReflectionList
+      : [
+          `How does ${study.title} maintain consistency and avoid race conditions under real-world workloads?`,
+          "What architectural trade-offs did you make in your implementation, and what would you improve in a high-scale deployment?",
+        ];
+
+  const decisionsList: any[] = Array.isArray(study.decisions) && study.decisions.length > 0
+    ? study.decisions
+    : Array.isArray(study.tradeOffs) && study.tradeOffs.length > 0
+      ? study.tradeOffs
+      : [
+          {
+            title: "Primary Architecture Trade-off",
+            what: "Explicit Boundary Validation & State Guarding",
+            why: "Guarantees deterministic behavior and prevents unhandled state corruption under stress.",
+            problemSolved: "Silent data desynchronization across concurrent clients.",
+            withoutIt: "Inconsistent state requiring manual operational intervention.",
+            tradeoff: "Slightly higher verification latency in exchange for strict data integrity.",
+          },
+        ];
 
   const techNotesList: TechNote[] = Array.isArray(study.techNotes)
     ? study.techNotes
@@ -976,7 +1098,7 @@ function CaseStudyPage() {
             <aside className="hidden lg:block border-r border-slate-200 bg-[#f8fafc]">
               <VSCodeExplorerSidebar
                 step={step}
-                setStep={setStep}
+                setStep={handleSetStep}
                 sectionsDone={sectionsDone}
                 prerequisites={study.prerequisites}
                 companionTab={companionTab}
@@ -994,42 +1116,74 @@ function CaseStudyPage() {
 
             {/* MAIN WORKSPACE / EDITOR COLUMN */}
             <div className="min-w-0 w-full flex flex-col bg-white">
-              {/* VS Code Editor Tab Bar */}
-              <div className="hidden lg:flex items-center justify-between border-b border-slate-200 bg-[#f1f5f9] select-none">
-                <div className="flex items-center">
-                  {/* Active Tab */}
-                  <div className="flex items-center gap-2 border-t-2 border-[#0284c7] bg-white px-4 py-2 text-xs font-mono text-slate-900 font-semibold border-r border-slate-200">
-                    {step === 6 ? (
-                      <span className="text-[#b45309] font-mono font-bold text-[10px] px-1 py-0.2 rounded bg-amber-100">
-                        PY
-                      </span>
-                    ) : (
-                      <FileText className="size-3.5 text-[#0284c7]" />
-                    )}
-                    <span>{activeFile.name}</span>
-                    <span className="text-slate-400 text-[10px] ml-1">✕</span>
-                  </div>
+              {/* VS Code Editor Tab Bar — Smooth Multi-Tab IDE Experience */}
+              <div className="hidden lg:flex items-center justify-between border-b border-slate-200 bg-[#f1f5f9] select-none overflow-x-auto">
+                <div className="flex items-center flex-nowrap min-w-0">
+                  {openTabs.map((tabIdx) => {
+                    const file = SECTION_FILES[tabIdx] || SECTION_FILES[0];
+                    const isActive = step === tabIdx;
+                    const isCode = tabIdx === 6;
 
-                  {/* Quick switch to Practice tab */}
-                  {step !== 6 && (
+                    return (
+                      <div
+                        key={file.name}
+                        onClick={() => handleSetStep(tabIdx)}
+                        className={`group flex items-center gap-2 px-3.5 py-2 text-xs font-mono border-r border-slate-200 transition-all cursor-pointer select-none ${
+                          isActive
+                            ? "border-t-2 border-[#0284c7] bg-white text-slate-900 font-semibold shadow-xs"
+                            : "bg-[#f1f5f9] text-slate-500 hover:text-slate-900 hover:bg-slate-200/60"
+                        }`}
+                      >
+                        {isCode ? (
+                          <span className="text-[#b45309] font-mono font-bold text-[10px] px-1 py-0.2 rounded bg-amber-100">
+                            PY
+                          </span>
+                        ) : (
+                          <FileText
+                            className={`size-3.5 transition-colors ${
+                              isActive ? "text-[#0284c7]" : "text-slate-400 group-hover:text-slate-600"
+                            }`}
+                          />
+                        )}
+                        <span className="truncate max-w-[140px]">{file.name}</span>
+                        {openTabs.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={(e) => closeTab(tabIdx, e)}
+                            className="p-0.5 rounded text-slate-400 hover:text-slate-800 hover:bg-slate-200/80 transition-colors ml-1"
+                            title={`Close ${file.name}`}
+                          >
+                            <span className="text-[11px] leading-none">✕</span>
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })}
+
+                  {/* Quick button to open Practice tab if not already open */}
+                  {!openTabs.includes(6) && (
                     <button
                       type="button"
-                      onClick={() => setStep(6)}
+                      onClick={() => handleSetStep(6)}
                       className="flex items-center gap-1.5 px-3 py-2 text-xs font-mono text-slate-500 hover:text-slate-900 hover:bg-slate-200/60 border-r border-slate-200 transition-colors cursor-pointer"
+                      title="Open 07_practice.py in Editor"
                     >
-                      <span className="text-[#b45309] font-mono font-bold text-[10px]">PY</span>
-                      <span>07_practice.py</span>
+                      <span className="text-[#b45309] font-mono font-bold text-[10px] px-1 py-0.2 rounded bg-amber-100/70">
+                        PY
+                      </span>
+                      <span>+ 07_practice.py</span>
                     </button>
                   )}
                 </div>
 
                 {/* Editor Tab Actions: Prev / Next */}
-                <div className="flex items-center gap-1 px-3">
+                <div className="flex items-center gap-1 px-3 shrink-0">
                   <button
                     type="button"
                     disabled={step === 0}
-                    onClick={() => setStep((s) => Math.max(0, s - 1))}
+                    onClick={() => handleSetStep(Math.max(0, step - 1))}
                     className="px-2.5 py-1 rounded font-mono text-[11px] text-slate-600 hover:text-slate-900 hover:bg-slate-200/70 disabled:opacity-30 disabled:pointer-events-none transition-colors cursor-pointer"
+                    title="Previous section (Alt+Left)"
                   >
                     ← Prev
                   </button>
@@ -1039,8 +1193,9 @@ function CaseStudyPage() {
                   <button
                     type="button"
                     disabled={step === SECTION_FILES.length - 1}
-                    onClick={() => setStep((s) => Math.min(SECTION_FILES.length - 1, s + 1))}
+                    onClick={() => handleSetStep(Math.min(SECTION_FILES.length - 1, step + 1))}
                     className="px-2.5 py-1 rounded font-mono text-[11px] text-slate-600 hover:text-slate-900 hover:bg-slate-200/70 disabled:opacity-30 disabled:pointer-events-none transition-colors cursor-pointer"
+                    title="Next section (Alt+Right)"
                   >
                     Next →
                   </button>
@@ -1083,7 +1238,11 @@ function CaseStudyPage() {
                 </div>
               </div>
 
-              <div className="p-4 sm:p-6 lg:p-8 min-w-0 w-full">
+              <div
+                ref={workspaceTopRef}
+                key={step}
+                className="animate-in fade-in-50 duration-200 ease-out p-4 sm:p-6 lg:p-8 min-w-0 w-full"
+              >
                 <p className="font-mono text-[11px] uppercase tracking-[0.18em] text-[#007acc] font-bold">
                   {String(step + 1).padStart(2, "0")} — {SECTION_KICKERS[step]}
                 </p>
@@ -1202,7 +1361,21 @@ function CaseStudyPage() {
                       analogy, the technical explanation, and where it appears in this case.
                     </p>
                     <div className="mt-5 space-y-3">
-                      {study.concepts.map((c) => {
+                      {(study.concepts && study.concepts.length > 0
+                        ? study.concepts
+                        : (study.engineeringConcepts ?? []).map((name: string, idx: number) => ({
+                            id: `concept-${idx}`,
+                            name,
+                            difficulty: "Core",
+                            simpleDefinition: `${name} provides structured coordination and reliability guarantees in ${study.title}.`,
+                            whyItExists: "Mitigates failure modes, prevents data corruption, and ensures correct operational semantics.",
+                            realWorldAnalogy: "Like a traffic signal preventing gridlock at a crowded intersection.",
+                            technicalExplanation: `The system applies ${name} as a strict architectural contract across data and transport boundaries.`,
+                            caseApplication: `Directly drives the state machine and invariant checking in this case study.`,
+                            commonMistakes: ["Assuming best-effort success without explicit timeouts or rollback mechanisms."],
+                            practice: ["Trace execution flow when input parameters violate invariant constraints."],
+                          }))
+                      ).map((c: any) => {
                         const open = openConcept === c.id;
                         return (
                           <div
@@ -1217,7 +1390,7 @@ function CaseStudyPage() {
                               <span className="text-sm font-semibold tracking-tight">{c.name}</span>
                               <span className="flex items-center gap-2 font-mono text-[10px] text-ink2">
                                 <span className="rounded bg-butter/70 px-2 py-0.5">
-                                  {c.difficulty}
+                                  {c.difficulty || "Core"}
                                 </span>
                                 {open ? "−" : "+"}
                               </span>
@@ -1286,29 +1459,33 @@ function CaseStudyPage() {
                   <>
                     <H2>How the pieces connect</H2>
                     <p className="mt-3 w-full text-pretty text-sm leading-relaxed text-ink2">
-                      {study.architecture?.caption || (study.architecture as any)?.overview}
+                      {study.architecture?.caption ||
+                        (study.architecture as any)?.overview ||
+                        `Architectural blueprint and component topology for ${study.title}.`}
                     </p>
-                    <div className="mt-4 flex flex-wrap gap-2">
-                      {(study.architecture?.levels ?? []).map((l, i) => (
-                        <button
-                          key={l.title}
-                          type="button"
-                          onClick={() => setLevel(i)}
-                          className={`rounded-lg px-3 py-1.5 font-mono text-[11px] ring-1 transition-colors ${
-                            i === level
-                              ? "bg-primary/10 text-ink ring-primary/30"
-                              : "bg-card/60 text-ink2 ring-line/70 hover:text-ink"
-                          }`}
-                        >
-                          {l.title}
-                        </button>
-                      ))}
-                    </div>
+                    {(study.architecture?.levels ?? []).length > 0 && (
+                      <div className="mt-4 flex flex-wrap gap-2">
+                        {study.architecture!.levels.map((l: any, i: number) => (
+                          <button
+                            key={l.title || i}
+                            type="button"
+                            onClick={() => setLevel(i)}
+                            className={`rounded-lg px-3 py-1.5 font-mono text-[11px] ring-1 transition-colors ${
+                              i === activeLevel
+                                ? "bg-primary/10 text-ink ring-primary/30"
+                                : "bg-card/60 text-ink2 ring-line/70 hover:text-ink"
+                            }`}
+                          >
+                            {l.title || `Level ${i + 1}`}
+                          </button>
+                        ))}
+                      </div>
+                    )}
                     <div className="mt-4 rounded-2xl bg-paper/70 p-5 ring-1 ring-primary/10">
                       <p className="mb-4 text-[12px] leading-relaxed text-ink2">
-                        {diagram?.description}
+                        {diagram?.description || "Interactive component flow and state transitions."}
                       </p>
-                      {diagram && <MermaidDiagram chart={diagram.mermaid} />}
+                      {activeMermaid && <MermaidDiagram chart={activeMermaid} />}
                       <div className="mt-4 flex flex-wrap items-center gap-4 border-t border-line/70 pt-3 font-mono text-[10px] text-ink2">
                         <span className="flex items-center gap-1.5">
                           <span className="size-2 rounded-full bg-rose ring-1 ring-primary/20" />
@@ -1335,78 +1512,146 @@ function CaseStudyPage() {
                       Every decision answers the same six questions, so you learn why a technology
                       exists rather than memorising its name.
                     </p>
-                    <div className="mt-5 space-y-3">
-                      {(study.decisions ?? []).map((d: any, idx: number) => {
-                        const title = d.title || d.decision || `Decision ${idx + 1}`;
-                        const what = d.what || d.choiceA;
-                        const why = d.why || d.verdict;
+                    <div className="mt-5 space-y-4">
+                      {decisionsList.map((d: any, idx: number) => {
+                        if (typeof d === "string") {
+                          return (
+                            <div
+                              key={d + idx}
+                              className="rounded-2xl bg-card/70 p-5 ring-1 ring-line/80 shadow-xs"
+                            >
+                              <div className="flex items-center gap-2 mb-2">
+                                <span className="font-mono text-[10px] uppercase tracking-widest font-bold px-2 py-0.5 rounded bg-primary/10 text-primary">
+                                  {`Decision ${String(idx + 1).padStart(2, "0")}`}
+                                </span>
+                              </div>
+                              <p className="text-sm font-semibold tracking-tight text-ink">{`Architecture Decision ${idx + 1}`}</p>
+                              <p className="mt-2 text-[13px] leading-relaxed text-ink2">{d}</p>
+                            </div>
+                          );
+                        }
+
+                        // Determine fields across all schema variants
+                        const isSimpleChoiceRationale = Boolean(d.choice && d.rationale && !d.title && !d.decision);
+                        const isChoiceABVerdict = Boolean(d.choiceA && (d.choiceB || d.verdict));
+
+                        const title =
+                          d.title ||
+                          d.decision ||
+                          d.choice ||
+                          `Architecture Decision ${idx + 1}`;
+
+                        // Avoid duplicating the title in "what" when title was derived from choice
+                        const what = isSimpleChoiceRationale
+                          ? undefined
+                          : d.what || d.choiceA || (d.choice && d.choice !== title ? d.choice : undefined);
+
+                        const why = d.why || d.verdict || d.rationale;
                         const problem = d.problemSolved;
-                        const withoutIt = d.withoutIt || d.choiceB;
-                        const alts = Array.isArray(d.alternatives)
-                          ? d.alternatives.join(" · ")
-                          : d.alternatives || (d.choiceB ? `Alternative: ${d.choiceB}` : null);
+                        const withoutIt = d.withoutIt;
+                        const altText = d.choiceB
+                          ? d.choiceB
+                          : Array.isArray(d.alternatives)
+                            ? d.alternatives.join(" · ")
+                            : d.alternatives || null;
                         const tradeoff = d.tradeoff;
 
                         return (
                           <div
                             key={title + idx}
-                            className="rounded-2xl bg-card/60 p-4 ring-1 ring-line/70"
+                            className="rounded-2xl bg-card/70 p-5 ring-1 ring-line/80 shadow-xs transition-all hover:ring-line"
                           >
-                            <p className="text-sm font-semibold tracking-tight">{title}</p>
-                            <dl className="mt-2 space-y-1.5 text-[12px] leading-relaxed text-ink2">
+                            <div className="flex items-center justify-between gap-2 mb-2">
+                              <span className="font-mono text-[10px] uppercase tracking-widest font-bold px-2 py-0.5 rounded bg-primary/10 text-primary">
+                                {`Decision ${String(idx + 1).padStart(2, "0")}`}
+                              </span>
+                              {isChoiceABVerdict && (
+                                <span className="font-mono text-[10px] text-ink2">
+                                  A/B Architecture Trade-off
+                                </span>
+                              )}
+                            </div>
+
+                            <p className="text-sm font-bold tracking-tight text-ink">{title}</p>
+
+                            <dl className="mt-3 space-y-2 text-[12px] leading-relaxed text-ink2">
                               {what && (
-                                <>
-                                  <dt className="font-mono text-[10px] uppercase tracking-widest">
-                                    What
+                                <div className="rounded-xl bg-paper/60 p-3 ring-1 ring-line/40">
+                                  <dt className="font-mono text-[10px] uppercase tracking-widest font-bold text-primary mb-1">
+                                    {isChoiceABVerdict ? "Chosen Architecture (Option A)" : "Choice / Pattern"}
                                   </dt>
-                                  <dd>{what}</dd>
-                                </>
+                                  <dd className="font-medium text-ink">{what}</dd>
+                                </div>
                               )}
+
+                              {altText && (
+                                <div className="rounded-xl bg-paper/40 p-3 ring-1 ring-line/30">
+                                  <dt className="font-mono text-[10px] uppercase tracking-widest font-bold text-ink2 mb-1">
+                                    {isChoiceABVerdict ? "Alternative Considered (Option B)" : "Alternatives Considered"}
+                                  </dt>
+                                  <dd className="text-ink2">{altText}</dd>
+                                </div>
+                              )}
+
                               {why && (
-                                <>
-                                  <dt className="font-mono text-[10px] uppercase tracking-widest">
-                                    Why
+                                <div className="pt-1">
+                                  <dt className="font-mono text-[10px] uppercase tracking-widest font-bold text-primary mb-0.5">
+                                    {isChoiceABVerdict ? "Verdict & Engineering Justification" : "Why & Rationale"}
                                   </dt>
-                                  <dd>{why}</dd>
-                                </>
+                                  <dd className="text-ink leading-relaxed">{why}</dd>
+                                </div>
                               )}
+
                               {problem && (
-                                <>
-                                  <dt className="font-mono text-[10px] uppercase tracking-widest">
+                                <div className="pt-1">
+                                  <dt className="font-mono text-[10px] uppercase tracking-widest font-bold text-primary mb-0.5">
                                     Problem it solves
                                   </dt>
-                                  <dd>{problem}</dd>
-                                </>
+                                  <dd className="text-ink2">{problem}</dd>
+                                </div>
                               )}
+
                               {withoutIt && (
-                                <>
-                                  <dt className="font-mono text-[10px] uppercase tracking-widest">
-                                    Without it
+                                <div className="pt-1">
+                                  <dt className="font-mono text-[10px] uppercase tracking-widest font-bold text-rose mb-0.5">
+                                    Without it (Failure mode)
                                   </dt>
-                                  <dd>{withoutIt}</dd>
-                                </>
-                              )}
-                              {alts && (
-                                <>
-                                  <dt className="font-mono text-[10px] uppercase tracking-widest">
-                                    Alternatives
-                                  </dt>
-                                  <dd>{alts}</dd>
-                                </>
+                                  <dd className="text-ink2">{withoutIt}</dd>
+                                </div>
                               )}
                             </dl>
+
                             {tradeoff && (
-                              <p className="mt-2 rounded-lg bg-butter/50 px-3 py-2 text-[12px] leading-relaxed text-ink">
-                                <span className="font-mono text-[10px] uppercase tracking-widest text-ink2">
-                                  Trade-off ·{" "}
+                              <div className="mt-3 rounded-xl bg-butter/40 border border-butter/70 px-3.5 py-2.5 text-[12px] leading-relaxed text-ink">
+                                <span className="font-mono text-[10px] uppercase tracking-widest text-ink2 font-bold mr-1.5">
+                                  Trade-off ·
                                 </span>
-                                {tradeoff}
-                              </p>
+                                <span>{tradeoff}</span>
+                              </div>
                             )}
                           </div>
                         );
                       })}
                     </div>
+
+                    {Array.isArray(study.tradeOffs) &&
+                      study.tradeOffs.length > 0 &&
+                      typeof study.tradeOffs[0] === "string" && (
+                        <div className="mt-6 rounded-2xl bg-paper/60 border border-line/70 p-5 shadow-xs">
+                          <p className="font-mono text-[11px] uppercase tracking-widest text-ink font-bold mb-3 flex items-center gap-2">
+                            <span className="size-1.5 rounded-full bg-primary" />
+                            System Trade-Off Analysis
+                          </p>
+                          <ul className="space-y-2.5 text-[12px] leading-relaxed text-ink2">
+                            {study.tradeOffs.map((t: string, i: number) => (
+                              <li key={i} className="flex gap-2.5">
+                                <span className="font-mono text-primary font-bold">·</span>
+                                <span className="text-ink">{t}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                    )}
                   </>
                 )}
 
@@ -1415,12 +1660,21 @@ function CaseStudyPage() {
                   <>
                     <H2>From reasoning to code</H2>
                     <p className="mt-3 w-full text-pretty text-sm leading-relaxed text-ink2">
-                      {study.implementation?.behaviour}
+                      {study.implementation?.behaviour ||
+                        `Concrete implementation algorithms and reference code across Python, Java, and C.`}
                     </p>
 
                     <Kicker>Language-independent algorithm</Kicker>
                     <ol className="mt-3 space-y-2">
-                      {(study.implementation?.algorithm ?? []).map((s: string, i: number) => (
+                      {((study.implementation?.algorithm ?? []).length > 0
+                        ? study.implementation!.algorithm!
+                        : [
+                            "Parse input request and validate parameters against boundary schema.",
+                            "Acquire resource lock or verify preconditions in persistent state.",
+                            "Execute state mutation with transactional rollback protection.",
+                            "Dispatch confirmation result and release temporary operational locks.",
+                          ]
+                      ).map((s: string, i: number) => (
                         <li key={s} className="flex gap-3 text-sm text-ink2">
                           <span className="font-mono text-[11px] text-primary">
                             {String(i + 1).padStart(2, "0")}
@@ -1456,48 +1710,52 @@ function CaseStudyPage() {
                       <div className="mt-5 flex flex-wrap items-center gap-1.5 rounded-xl bg-black/40 p-1.5 border border-white/[0.06] max-w-full">
                         {study.implementation.samples.map((s: any, i: number) => (
                           <button
-                            key={s.language}
+                            key={s.language || i}
                             type="button"
                             onClick={() => setLang(i)}
                             className={`rounded-lg px-3.5 py-2 sm:py-1.5 font-mono text-[11px] font-bold transition-all cursor-pointer ${
-                              i === lang
+                              i === activeLang
                                 ? "bg-black text-white border-2 border-black font-black shadow-xs"
                                 : "bg-white text-black border-2 border-black/30 hover:border-black font-bold"
                             }`}
                           >
-                            {s.language.charAt(0).toUpperCase() + s.language.slice(1)}
+                            {(s.language || "Code").charAt(0).toUpperCase() + (s.language || "code").slice(1)}
                           </button>
                         ))}
                         <span className="ml-auto px-2 font-mono text-[10px] text-[#777]">
-                          {sample?.filename}
+                          {sample?.filename || `${sample?.language || "solution"}.${sample?.language === "python" ? "py" : sample?.language === "c" ? "c" : "java"}`}
                         </span>
                       </div>
                     )}
 
-                    {sample?.code &&
-                      (() => {
-                        const langKey =
-                          (
-                            {
-                              python: "Python",
-                              java: "Java",
-                              javascript: "JavaScript",
-                              c: "C",
-                            } as const
-                          )[
-                            String(sample?.language ?? "python").toLowerCase() as
-                              "python" | "java" | "javascript" | "c"
-                          ] ?? "Python";
-                        return (
-                          <CodeEditor
-                            value={sample.code}
-                            onChange={() => {}}
-                            language={langKey}
-                            disabled={true}
-                            rows={Math.max(12, sample.code.split("\n").length + 1)}
-                          />
-                        );
-                      })()}
+                    {(() => {
+                      const codeToDisplay =
+                        sample?.code ||
+                        (study.implementation as any)?.code ||
+                        resolvedLab.starterCode;
+                      if (!codeToDisplay) return null;
+                      const langKey =
+                        (
+                          {
+                            python: "Python",
+                            java: "Java",
+                            javascript: "JavaScript",
+                            c: "C",
+                          } as const
+                        )[
+                          String(sample?.language ?? "python").toLowerCase() as
+                            "python" | "java" | "javascript" | "c"
+                        ] ?? "Python";
+                      return (
+                        <CodeEditor
+                          value={codeToDisplay}
+                          onChange={() => {}}
+                          language={langKey}
+                          disabled={true}
+                          rows={Math.max(12, codeToDisplay.split("\n").length + 1)}
+                        />
+                      );
+                    })()}
 
                     {sample?.explanations && sample.explanations.length > 0 && (
                       <>
@@ -1559,7 +1817,7 @@ function CaseStudyPage() {
                     </div>
 
                     <CodeArena
-                      lab={study.codeLab}
+                      lab={resolvedLab}
                       earned={labEarned}
                       caseSlug={study.slug}
                       caseRc={caseRc}
@@ -1682,24 +1940,33 @@ function CaseStudyPage() {
                         ? `Practice complete — you passed the lab at 80%+! Proceed to reflection to complete the case study.`
                         : `This section unlocks only by passing the AI-judged code lab above at 80% or higher.`}
                     </p>
-                    {labEarned && (
-                      <div className="flex flex-wrap items-center gap-2.5">
+                    <div className="flex flex-wrap items-center gap-2.5">
+                      {labEarned ? (
                         <button
                           type="button"
-                          onClick={() => setStep(7)}
+                          onClick={() => handleSetStep(7)}
                           className="rounded-xl bg-black border-2 border-black px-5 py-2.5 font-mono text-xs font-black text-white shadow-xs hover:bg-neutral-800 transition-all cursor-pointer"
                         >
                           Proceed to Reflection (Step 08) →
                         </button>
+                      ) : (
                         <button
                           type="button"
-                          onClick={() => navigate({ to: "/cases" })}
+                          onClick={() => handleSetStep(7)}
                           className="rounded-xl bg-white border-2 border-black px-4 py-2.5 font-mono text-xs font-black text-black hover:bg-neutral-100 shadow-xs transition-all cursor-pointer"
+                          title="Preview Reflection prompt"
                         >
-                          Back to the Arena Centre
+                          Preview Reflection (Step 08) →
                         </button>
-                      </div>
-                    )}
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => navigate({ to: "/cases" })}
+                        className="rounded-xl bg-white border-2 border-black px-4 py-2.5 font-mono text-xs font-black text-black hover:bg-neutral-100 shadow-xs transition-all cursor-pointer"
+                      >
+                        Back to the Arena Centre
+                      </button>
+                    </div>
                   </div>
                 ) : (
                   <div className="mt-8 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-neutral-50 border-2 border-black p-4 shadow-xs">
@@ -1745,7 +2012,7 @@ function CaseStudyPage() {
                           }
                         }
                         if (step !== 7) {
-                          setStep((s) => Math.min(SECTION_LABELS.length - 1, s + 1));
+                          handleSetStep(Math.min(SECTION_LABELS.length - 1, step + 1));
                         }
                       }}
                       className="rounded-xl bg-black border-2 border-black px-4 py-2.5 font-mono text-xs font-black text-white shadow-xs hover:bg-neutral-800 transition-all disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
@@ -1769,8 +2036,9 @@ function CaseStudyPage() {
                   <button
                     type="button"
                     disabled={step === 0}
-                    onClick={() => setStep((s) => Math.max(0, s - 1))}
-                    className="rounded-xl bg-white border-2 border-black px-4 py-2 font-mono text-xs font-black text-black hover:bg-neutral-100 disabled:opacity-30 disabled:pointer-events-none cursor-pointer shadow-xs"
+                    onClick={() => handleSetStep(Math.max(0, step - 1))}
+                    className="rounded-xl bg-white border-2 border-black px-4 py-2 font-mono text-xs font-black text-black hover:bg-neutral-100 disabled:opacity-30 disabled:pointer-events-none cursor-pointer shadow-xs transition-all active:scale-95"
+                    title="Previous section (Alt+Left)"
                   >
                     ← Previous
                   </button>
@@ -1788,8 +2056,9 @@ function CaseStudyPage() {
                   <button
                     type="button"
                     disabled={step === SECTION_LABELS.length - 1}
-                    onClick={() => setStep((s) => Math.min(SECTION_LABELS.length - 1, s + 1))}
-                    className="rounded-xl bg-black border-2 border-black px-4 py-2 font-mono text-xs font-black text-white shadow-xs hover:bg-neutral-800 disabled:opacity-30 disabled:pointer-events-none cursor-pointer"
+                    onClick={() => handleSetStep(Math.min(SECTION_LABELS.length - 1, step + 1))}
+                    className="rounded-xl bg-black border-2 border-black px-4 py-2 font-mono text-xs font-black text-white shadow-xs hover:bg-neutral-800 disabled:opacity-30 disabled:pointer-events-none cursor-pointer transition-all active:scale-95"
+                    title="Next section (Alt+Right)"
                   >
                     Next →
                   </button>
@@ -1813,7 +2082,7 @@ function CaseStudyPage() {
                     <span>&bull;</span>
                     <span>UTF-8</span>
                     <span>&bull;</span>
-                    <span>{step === 6 ? study.codeLab?.language || "Python" : "Markdown"}</span>
+                    <span>{step === 6 ? resolvedLab?.language || "Python" : "Markdown"}</span>
                     <span>&bull;</span>
                     <span className="font-bold">{points} RC</span>
                   </div>

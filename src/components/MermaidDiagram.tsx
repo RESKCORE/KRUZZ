@@ -11,6 +11,10 @@ export function MermaidDiagram({ chart }: { chart: string }) {
   const rawId = useId();
   const id = `mmd${rawId.replace(/[^a-zA-Z0-9]/g, "")}`;
 
+  if (!chart || !chart.trim()) {
+    return null;
+  }
+
   useEffect(() => {
     let cancelled = false;
 

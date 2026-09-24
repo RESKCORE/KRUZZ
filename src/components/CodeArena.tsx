@@ -7,6 +7,7 @@ import { useAction } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import type { LabGrade } from "../../convex/ai";
 import { executeCode, type ExecutionResult } from "@/lib/codeRunner";
+import { resolveCodeLab } from "@/lib/codeLabs";
 import {
   Play,
   Terminal,
@@ -25,12 +26,18 @@ const PASS_THRESHOLD = 80;
 const LANGUAGES = ["Python", "Java", "C"] as const;
 type Lang = (typeof LANGUAGES)[number];
 
-function starterFor(lang: Lang, lab: CodeLab): string {
-  const fn = lab.functionName;
-  const hints = lab.hints ?? [];
+function starterFor(lang: Lang, lab?: CodeLab | null): string {
+  if (!lab) {
+    return "# Write your solution here\npass\n";
+  }
+  const fn = lab.functionName || "solution";
+  const hints = Array.isArray(lab.hints) ? lab.hints : [];
 
   if (lang === "Python") {
-    const sig = lab.languages?.python?.signature ?? lab.pythonSignature ?? lab.signature;
+    if (lab.starterCode && lab.starterCode.trim()) {
+      return lab.starterCode;
+    }
+    const sig = lab.languages?.python?.signature ?? lab.pythonSignature ?? lab.signature ?? `def ${fn}(*args):`;
     const hintLines = hints.map((h, i) => `    ${i + 1}. ${h}`).join("\n");
     const taskLine = lab.explanationPrompt ? `\n    Task: ${lab.explanationPrompt}\n` : "";
     return [
@@ -46,7 +53,10 @@ function starterFor(lang: Lang, lab: CodeLab): string {
   }
 
   if (lang === "Java") {
-    const sig = lab.languages?.java?.signature ?? lab.javaSignature ?? lab.signature;
+    if (lab.javaStarterCode && lab.javaStarterCode.trim()) {
+      return lab.javaStarterCode;
+    }
+    const sig = lab.languages?.java?.signature ?? lab.javaSignature ?? `public static Object ${fn}(Object... args)`;
     const hintLines = hints.map((h, i) => `        // ${i + 1}. ${h}`).join("\n");
     return [
       `// ${sig}`,
@@ -64,6 +74,9 @@ function starterFor(lang: Lang, lab: CodeLab): string {
   }
 
   // C language template
+  if (lab.cStarterCode && lab.cStarterCode.trim()) {
+    return lab.cStarterCode;
+  }
   const cSig =
     (lab as any).cSignature ??
     (lab.languages as any)?.c?.signature ??
@@ -94,15 +107,17 @@ export function CodeArena({
   isAuthenticated,
   onSolved,
 }: {
-  lab: CodeLab;
+  lab?: CodeLab | null;
   earned: boolean;
   caseSlug: string;
   caseRc?: number;
   isAuthenticated: boolean;
   onSolved: () => void;
 }) {
+  const activeLab = lab && lab.functionName ? lab : resolveCodeLab({ slug: caseSlug, codeLab: lab });
+
   const [language, setLanguage] = useState<Lang>("Python");
-  const [code, setCode] = useState(() => starterFor("Python", lab));
+  const [code, setCode] = useState(() => starterFor("Python", activeLab));
   const [explanation, setExplanation] = useState("");
   const [result, setResult] = useState<LabGrade | null>(null);
   const [hintsOpen, setHintsOpen] = useState(false);
@@ -124,7 +139,7 @@ export function CodeArena({
 
   function switchLanguage(lang: Lang) {
     setLanguage(lang);
-    setCode(starterFor(lang, lab));
+    setCode(starterFor(lang, activeLab));
     setResult(null);
     setError(null);
     setExecutionResult(null);
@@ -141,8 +156,8 @@ export function CodeArena({
       const exec = await executeCode({
         language,
         code: code.trim(),
-        functionName: lab.functionName,
-        tests: lab.tests || [],
+        functionName: activeLab.functionName || "solution",
+        tests: activeLab.tests || [],
         runAction: runDryRunAction,
       });
       setExecutionResult(exec);
@@ -170,12 +185,12 @@ export function CodeArena({
 
     try {
       const fullLabContext = [
-        lab.brief ? `Brief: ${lab.brief}` : "",
-        lab.signature ? `Function Signature: ${lab.signature}` : "",
-        lab.hints && lab.hints.length > 0
-          ? `Hints & Architecture:\n${lab.hints.map((h) => `- ${h}`).join("\n")}`
+        activeLab.brief ? `Brief: ${activeLab.brief}` : "",
+        activeLab.signature ? `Function Signature: ${activeLab.signature}` : "",
+        activeLab.hints && activeLab.hints.length > 0
+          ? `Hints & Architecture:\n${activeLab.hints.map((h) => `- ${h}`).join("\n")}`
           : "",
-        lab.explanationPrompt ? `Explanation Prompt: ${lab.explanationPrompt}` : "",
+        activeLab.explanationPrompt ? `Explanation Prompt: ${activeLab.explanationPrompt}` : "",
       ]
         .filter(Boolean)
         .join("\n\n");
@@ -185,8 +200,8 @@ export function CodeArena({
         language,
         code: code.trim(),
         explanation: explanation.trim(),
-        labTitle: lab.title,
-        labPrompt: fullLabContext || lab.explanationPrompt,
+        labTitle: activeLab.title || "Code Lab",
+        labPrompt: fullLabContext || activeLab.explanationPrompt || "Case study implementation lab",
       });
 
       setResult(grade as LabGrade);
@@ -220,7 +235,7 @@ export function CodeArena({
               Interactive Code Lab &middot; {language}
             </p>
           </div>
-          <h2 className="mt-1 text-lg font-bold tracking-tight text-black">{lab.title}</h2>
+          <h2 className="mt-1 text-lg font-bold tracking-tight text-black">{activeLab.title}</h2>
         </div>
         <span
           className={`rounded-lg px-3 py-1 font-mono text-xs font-bold ${
@@ -233,16 +248,16 @@ export function CodeArena({
         </span>
       </div>
 
-      <p className="mt-3 max-w-[68ch] text-[13px] leading-relaxed text-neutral-700">{lab.brief}</p>
+      <p className="mt-3 max-w-[68ch] text-[13px] leading-relaxed text-neutral-700">{activeLab.brief}</p>
 
       {/* Edge cases preview */}
-      {lab.tests && lab.tests.length > 0 && (
+      {activeLab.tests && activeLab.tests.length > 0 && (
         <div className="mt-4 rounded-xl bg-neutral-50 border-2 border-black p-3.5">
           <p className="mb-2 font-mono text-[10px] uppercase tracking-widest text-neutral-500">
-            Unit Test Suite Requirements ({lab.tests.length} test assertions)
+            Unit Test Suite Requirements ({activeLab.tests.length} test assertions)
           </p>
           <div className="grid gap-2 sm:grid-cols-2">
-            {lab.tests.map((t, i) => (
+            {activeLab.tests.map((t, i) => (
               <div key={i} className="flex items-start gap-2 text-[12px] text-neutral-700">
                 <span className="font-mono text-[10px] text-black font-bold">
                   [{String(i + 1).padStart(2, "0")}]
@@ -255,9 +270,9 @@ export function CodeArena({
       )}
 
       {/* Architecture diagram if present */}
-      {lab.mermaid && (
+      {activeLab.mermaid && (
         <div className="mt-4 rounded-xl bg-slate-50 p-3.5 border border-slate-200">
-          <MermaidDiagram chart={lab.mermaid} />
+          <MermaidDiagram chart={activeLab.mermaid} />
         </div>
       )}
 
@@ -265,12 +280,12 @@ export function CodeArena({
       <div className="mt-5 flex flex-wrap items-center justify-between gap-2.5">
         <p className="font-mono text-[11px] text-black font-semibold">
           {language === "Java"
-            ? (lab.javaSignature ?? lab.languages?.java?.signature ?? lab.signature)
+            ? (activeLab.javaSignature ?? activeLab.languages?.java?.signature ?? activeLab.signature)
             : language === "C"
-              ? ((lab as any).cSignature ??
-                (lab.languages as any)?.c?.signature ??
-                `bool ${lab.functionName}(...)`)
-              : (lab.pythonSignature ?? lab.languages?.python?.signature ?? lab.signature)}
+              ? ((activeLab as any).cSignature ??
+                (activeLab.languages as any)?.c?.signature ??
+                `bool ${activeLab.functionName || "solution"}(...)`)
+              : (activeLab.pythonSignature ?? activeLab.languages?.python?.signature ?? activeLab.signature)}
         </p>
         <div className="flex gap-1 rounded-lg bg-neutral-100 p-1 border-2 border-black">
           {LANGUAGES.map((l) => (
@@ -343,7 +358,7 @@ export function CodeArena({
           <button
             type="button"
             onClick={() => {
-              setCode(starterFor(language, lab));
+              setCode(starterFor(language, activeLab));
               setResult(null);
               setError(null);
               setExecutionResult(null);
@@ -360,7 +375,7 @@ export function CodeArena({
             className="inline-flex items-center gap-1.5 rounded-lg bg-white hover:bg-neutral-100 text-black px-3 py-2 font-mono text-xs font-medium border-2 border-black transition-colors cursor-pointer"
           >
             <HelpCircle className="size-3" />
-            <span>{hintsOpen ? "Hide hints" : `Hints (${lab.hints.length})`}</span>
+            <span>{hintsOpen ? "Hide hints" : `Hints (${(activeLab.hints || []).length})`}</span>
           </button>
         </div>
 
@@ -380,7 +395,7 @@ export function CodeArena({
       {/* Hints dropdown */}
       {hintsOpen && (
         <ul className="mt-3 space-y-1.5 rounded-xl bg-neutral-50 border-2 border-black p-4 text-[12px] leading-relaxed text-neutral-700">
-          {lab.hints.map((h) => (
+          {(activeLab.hints || []).map((h) => (
             <li key={h} className="flex items-start gap-2">
               <span className="text-black font-bold">&bull;</span>
               <span>{h}</span>
@@ -732,7 +747,7 @@ export function CodeArena({
         >
           Step 2: Explain your solution in your own words
         </label>
-        <p className="mt-1 text-[12px] leading-relaxed text-neutral-600">{lab.explanationPrompt}</p>
+        <p className="mt-1 text-[12px] leading-relaxed text-neutral-600">{activeLab.explanationPrompt}</p>
 
         <textarea
           id="lab-explanation"

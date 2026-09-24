@@ -199,6 +199,8 @@ export type CaseStudy = {
   };
   /** 05 — Engineering decisions */
   decisions: Decision[];
+  /** Optional system trade-offs analysis */
+  tradeOffs?: string[];
   /** 06 — Implementation */
   implementation: {
     behaviour: string;
