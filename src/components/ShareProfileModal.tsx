@@ -399,7 +399,7 @@ function drawFullCredentialBadge(
   const statsH = 88;
   const stats = [
     { label: "RC BALANCE", val: `${user.points}`, sub: "points" },
-    { label: "CASES SOLVED", val: `${user.solvedCases}`, sub: `of ${user.totalCases || 35}` },
+    { label: "CASES SOLVED", val: `${user.solvedCases}`, sub: `of ${user.totalCases || 59}` },
     { label: "DAY STREAK", val: `${user.streak}d`, sub: "streak" },
   ];
 

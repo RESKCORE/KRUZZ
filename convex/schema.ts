@@ -16,6 +16,7 @@ export default defineSchema({
     rank: v.string(),
     isPublic: v.optional(v.boolean()),
     publicProfileId: v.optional(v.string()),
+    university: v.optional(v.string()),
     createdAt: v.number(),
   })
     .index("by_token", ["tokenIdentifier"])

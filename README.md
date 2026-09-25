@@ -25,7 +25,7 @@
 <p align="center">
   <a href="https://kruzz.indevs.in"><strong>🌐 Launch Live App</strong></a> •
   <a href="public/SYSTEM_DESIGN_ROADMAP.md"><strong>📖 System Design Roadmap</strong></a> •
-  <a href="#case-study-catalog"><strong>📚 35 Case Studies</strong></a> •
+  <a href="#case-study-catalog"><strong>📚 59 Case Studies</strong></a> •
   <a href="#the-eight-section-case-study-method"><strong>The 8-Section Method</strong></a> •
   <a href="#quick-start"><strong>Quick Start</strong></a> •
   <a href="CONTRIBUTING.md"><strong>Contributing</strong></a>
@@ -99,79 +99,147 @@ flowchart LR
 
 ---
 
-## 📚 Case Study Catalog (35 Production Investigations)
+## 📚 Case Study Catalog (59 Production Investigations)
 
-KRUZZ includes **35 comprehensive case studies** across 7 curriculum tracks:
+KRUZZ includes **59 comprehensive case studies** across 10 curriculum tracks, engineered for high-impact interview preparation:
 
 ### 🟢 Track 0: Foundations (OOP System Modeling) — _Free Tier_
 
-|   #    | Case Study                   | Core Concepts                                                      |  Level   |
-| :----: | :--------------------------- | :----------------------------------------------------------------- | :------: |
-| **01** | **ATM Machine**              | Hardware-software bridge, state machine, transaction atomicity     | Beginner |
-| **02** | **Library Management**       | Relational references, resource allocation, inventory tracking     | Beginner |
-| **03** | **Banking System Transfers** | Debit/credit balance invariants, double-entry ledgers              | Beginner |
-| **04** | **Parking Lot Allocation**   | Space reservation, concurrency locks, pricing tiers                | Beginner |
-| **05** | **Vending Machine States**   | Finite State Machine (FSM), currency validation, dispense timeouts | Beginner |
-| **06** | **Seat Booking System**      | Double-booking prevention, optimistic concurrency, holds           | Beginner |
-| **07** | **Inventory Stock Tracker**  | Replenishment thresholds, atomic counters, event notification      | Beginner |
+_Designed for Machine Coding (LLD) interviews at Uber, Swiggy, Amazon, and campus placement drives:_
+
+|   #    | Case Study                   | Core Concepts                                                      |  Level   | Target Round         |
+| :----: | :--------------------------- | :----------------------------------------------------------------- | :------: | :------------------- |
+| **01** | **ATM Machine**              | Hardware-software bridge, state machine, transaction atomicity     | Beginner | Machine Coding (LLD) |
+| **02** | **Library Management**       | Relational references, resource allocation, inventory tracking     | Beginner | Machine Coding (LLD) |
+| **03** | **Banking System Transfers** | Debit/credit balance invariants, double-entry ledgers              | Beginner | Machine Coding (LLD) |
+| **04** | **Parking Lot Allocation**   | Space reservation, concurrency locks, pricing tiers                | Beginner | Machine Coding (LLD) |
+| **05** | **Vending Machine States**   | Finite State Machine (FSM), currency validation, dispense timeouts | Beginner | Machine Coding (LLD) |
+| **06** | **Seat Booking System**      | Double-booking prevention, optimistic concurrency, holds           | Beginner | Machine Coding (LLD) |
+| **07** | **Inventory Stock Tracker**  | Replenishment thresholds, atomic counters, event notification      | Beginner | Machine Coding (LLD) |
 
 ### 🌐 Track 1: Web Systems & Edge Delivery
 
-|   #    | Case Study                       | Core Concepts                                                  |    Level     |
-| :----: | :------------------------------- | :------------------------------------------------------------- | :----------: |
-| **08** | **Client & Server Architecture** | HTTP request/response lifecycles, headers, REST, status codes  | Intermediate |
-| **09** | **DNS Domain Lookup**            | Recursive resolution, authoritative name servers, TTL, Anycast | Intermediate |
-| **10** | **Image CDN Delivery**           | Edge points of presence (PoPs), cache hit ratio, origin shield | Intermediate |
-| **11** | **E-Commerce Cart & Checkout**   | Session affinity, idempotency keys, checkout reservation       | Intermediate |
-| **12** | **Search Autocomplete**          | Trie data structures, prefix indexing, debounce, edge latency  | Intermediate |
+|   #    | Case Study                       | Core Concepts                                                  |    Level     | Target Round  |
+| :----: | :------------------------------- | :------------------------------------------------------------- | :----------: | :------------ |
+| **08** | **Client & Server Architecture** | HTTP request/response lifecycles, headers, REST, status codes  | Intermediate | System Design |
+| **09** | **DNS Domain Lookup**            | Recursive resolution, authoritative name servers, TTL, Anycast | Intermediate | System Design |
+| **10** | **Image CDN Delivery**           | Edge points of presence (PoPs), cache hit ratio, origin shield | Intermediate | System Design |
+| **11** | **E-Commerce Cart & Checkout**   | Session affinity, idempotency keys, checkout reservation       | Intermediate | System Design |
+| **12** | **Search Autocomplete**          | Trie data structures, prefix indexing, debounce, edge latency  | Intermediate | System Design |
 
 ### 🔐 Track 2: Security & Cryptographic Identity
 
-|   #    | Case Study                          | Core Concepts                                                    |    Level     |
-| :----: | :---------------------------------- | :--------------------------------------------------------------- | :----------: |
-| **13** | **Authentication Fundamentals**     | Identity verification, credentials, bearer tokens, RBAC          | Intermediate |
-| **14** | **Password Hashing & Salts**        | Argon2id, bcrypt, rainbow tables, work factors, timing attacks   | Intermediate |
-| **15** | **API Keys & Secret Tokens**        | High-entropy random generation, hashed lookup, signature schemes | Intermediate |
-| **16** | **Two-Factor Authentication (OTP)** | HMAC-based (HOTP) vs. Time-based (TOTP), RFC 6238, drift windows | Intermediate |
-| **17** | **Session Tokens & Cookies**        | HttpOnly, SameSite cookies, JWT vs. stateful server sessions     | Intermediate |
+|   #    | Case Study                          | Core Concepts                                                    |    Level     | Target Round    |
+| :----: | :---------------------------------- | :--------------------------------------------------------------- | :----------: | :-------------- |
+| **13** | **Authentication Fundamentals**     | Identity verification, credentials, bearer tokens, RBAC          | Intermediate | Security & Auth |
+| **14** | **Password Hashing & Salts**        | Argon2id, bcrypt, rainbow tables, work factors, timing attacks   | Intermediate | Security & Auth |
+| **15** | **API Keys & Secret Tokens**        | High-entropy random generation, hashed lookup, signature schemes | Intermediate | Security & Auth |
+| **16** | **Two-Factor Authentication (OTP)** | HMAC-based (HOTP) vs. Time-based (TOTP), RFC 6238, drift windows | Intermediate | Security & Auth |
+| **17** | **Session Tokens & Cookies**        | HttpOnly, SameSite cookies, JWT vs. stateful server sessions     | Intermediate | Security & Auth |
 
 ### 🗄 Track 3: Distributed Data & Storage
 
-|   #    | Case Study                    | Core Concepts                                                     |    Level     |
-| :----: | :---------------------------- | :---------------------------------------------------------------- | :----------: |
-| **18** | **High-Scale URL Shortener**  | Base62 encoding, distributed SnowFlake IDs, 301 vs. 302 redirects | Intermediate |
-| **19** | **In-Memory Key-Value Cache** | LRU/LFU eviction, Redis architecture, cache stampede prevention   | Intermediate |
-| **20** | **Database Indexing**         | B+ Trees, clustered vs. non-clustered indexes, write penalty      | Intermediate |
-| **21** | **Cloud Data Deduplication**  | Content-addressable storage, cryptographic chunking (SHA-256)     | Intermediate |
+|   #    | Case Study                    | Core Concepts                                                     |    Level     | Target Round  |
+| :----: | :---------------------------- | :---------------------------------------------------------------- | :----------: | :------------ |
+| **18** | **High-Scale URL Shortener**  | Base62 encoding, distributed SnowFlake IDs, 301 vs. 302 redirects | Intermediate | System Design |
+| **19** | **In-Memory Key-Value Cache** | LRU/LFU eviction, Redis architecture, cache stampede prevention   | Intermediate | System Design |
+| **20** | **Database Indexing**         | B+ Trees, clustered vs. non-clustered indexes, write penalty      | Intermediate | System Design |
+| **21** | **Cloud Data Deduplication**  | Content-addressable storage, cryptographic chunking (SHA-256)     | Intermediate | System Design |
 
 ### ⚡️ Track 4: Realtime Systems & Streaming
 
-|   #    | Case Study                      | Core Concepts                                                   |    Level     |
-| :----: | :------------------------------ | :-------------------------------------------------------------- | :----------: |
-| **22** | **Real-Time Chat & WebSockets** | Full-duplex persistent connections, heartbeat, Pub/Sub fanout   | Intermediate |
-| **23** | **Push Notifications Service**  | APNs/FCM gateways, token management, delivery backpressure      | Intermediate |
-| **24** | **Gaming Live Leaderboard**     | Redis Sorted Sets (ZSET), skiplists, real-time rank updates     | Intermediate |
-| **25** | **Webhook Event Delivery**      | At-least-once delivery, exponential backoff, dead-letter queues | Intermediate |
+|   #    | Case Study                      | Core Concepts                                                   |    Level     | Target Round        |
+| :----: | :------------------------------ | :-------------------------------------------------------------- | :----------: | :------------------ |
+| **22** | **Real-Time Chat & WebSockets** | Full-duplex persistent connections, heartbeat, Pub/Sub fanout   | Intermediate | Concurrency & State |
+| **23** | **Push Notifications Service**  | APNs/FCM gateways, token management, delivery backpressure      | Intermediate | System Design       |
+| **24** | **Gaming Live Leaderboard**     | Redis Sorted Sets (ZSET), skiplists, real-time rank updates     | Intermediate | Concurrency & State |
+| **25** | **Webhook Event Delivery**      | At-least-once delivery, exponential backoff, dead-letter queues | Intermediate | Distributed Systems |
 
 ### 🛡 Track 5: Reliability, Resiliency & Scale
 
-|   #    | Case Study                        | Core Concepts                                                           |  Level   |
-| :----: | :-------------------------------- | :---------------------------------------------------------------------- | :------: |
-| **26** | **Distributed API Rate Limiting** | Sliding window log, Redis Lua scripts, token bucket algorithm           | Advanced |
-| **27** | **Background Job Queue**          | Delayed execution, worker pools, poison-pill retry limits               | Advanced |
-| **28** | **Circuit Breaker Pattern**       | Closed/Open/Half-Open states, failure rate trip thresholds              | Advanced |
-| **29** | **Health Checks & Failover**      | Active/passive probes, split-brain mitigation, DNS failover             | Advanced |
-| **30** | **Idempotent Payment Processing** | Mutex locks, replay attack prevention, distributed state reconciliation | Advanced |
+|   #    | Case Study                        | Core Concepts                                                           |  Level   | Target Round        |
+| :----: | :-------------------------------- | :---------------------------------------------------------------------- | :------: | :------------------ |
+| **26** | **Distributed API Rate Limiting** | Sliding window log, Redis Lua scripts, token bucket algorithm           | Advanced | Distributed Systems |
+| **27** | **Background Job Queue**          | Delayed execution, worker pools, poison-pill retry limits               | Advanced | Distributed Systems |
+| **28** | **Circuit Breaker Pattern**       | Closed/Open/Half-Open states, failure rate trip thresholds              | Advanced | Distributed Systems |
+| **29** | **Health Checks & Failover**      | Active/passive probes, split-brain mitigation, DNS failover             | Advanced | Distributed Systems |
+| **30** | **Idempotent Payment Processing** | Mutex locks, replay attack prevention, distributed state reconciliation | Advanced | Concurrency & State |
 
 ### 🪐 Track 6: Advanced Distributed Architectures & Consensus
 
-|   #    | Case Study                          | Core Concepts                                                      |  Level   |
-| :----: | :---------------------------------- | :----------------------------------------------------------------- | :------: |
-| **31** | **Two-Phase Commit (2PC)**          | Prepare/Commit phase, coordinator crash recovery, blocking locks   | Advanced |
-| **32** | **Partitioned Event Streaming Log** | Kafka-style append logs, offset semantics, partition key routing   | Advanced |
-| **33** | **Consistent Hashing Shard Ring**   | Virtual tokens, node churn handling, minimal key redistribution    | Advanced |
-| **34** | **Leader Election Consensus**       | Heartbeat leases, split-vote avoidance, Raft term numbers          | Advanced |
-| **35** | **Quorum Reads & Writes**           | Tunable consistency, $R + W > N$ math, read repair, hinted handoff | Advanced |
+|   #    | Case Study                          | Core Concepts                                                      |  Level   | Target Round        |
+| :----: | :---------------------------------- | :----------------------------------------------------------------- | :------: | :------------------ |
+| **31** | **Two-Phase Commit (2PC)**          | Prepare/Commit phase, coordinator crash recovery, blocking locks   | Advanced | Distributed Systems |
+| **32** | **Partitioned Event Streaming Log** | Kafka-style append logs, offset semantics, partition key routing   | Advanced | Distributed Systems |
+| **33** | **Consistent Hashing Shard Ring**   | Virtual tokens, node churn handling, minimal key redistribution    | Advanced | Distributed Systems |
+| **34** | **Leader Election Consensus**       | Heartbeat leases, split-vote avoidance, Raft term numbers          | Advanced | Distributed Systems |
+| **35** | **Quorum Reads & Writes**           | Tunable consistency, $R + W > N$ math, read repair, hinted handoff | Advanced | Distributed Systems |
+
+### 🏫 Track 7: Campus & Explorer LLD (Placement & Machine Coding) — _Free Tier_
+
+_Practical system modeling problems frequently asked in university coding tests and SDE 1 machine coding rounds:_
+
+|   #    | Case Study                         | Core Concepts                                                         |  Level   | Target Round         |
+| :----: | :--------------------------------- | :-------------------------------------------------------------------- | :------: | :------------------- |
+| **36** | **Attendance, Timetable & Grades** | Schedule clash detection, attendance threshold calculation, GPA math  | Beginner | Machine Coding (LLD) |
+| **37** | **Campus Placement Drive Portal**  | Eligible student filters, slot scheduling, one-offer acceptance locks | Beginner | Machine Coding (LLD) |
+| **38** | **Splitwise Expense Splitter**     | Unequal share splits, debt simplification, zero-sum balances          | Beginner | Machine Coding (LLD) |
+| **39** | **Online Chess Game Engine**       | Turn-based state transitions, checkmate checks, piece move rules      | Beginner | Machine Coding (LLD) |
+| **40** | **Support Ticket Routing Queue**   | Skill-based routing, SLA timer escalations, priority queues           | Beginner | Machine Coding (LLD) |
+
+### 🚀 Track 8: Scalable Web & Edge Platform Services
+
+|   #    | Case Study                            | Core Concepts                                                          |    Level     | Target Round        |
+| :----: | :------------------------------------ | :--------------------------------------------------------------------- | :----------: | :------------------ |
+| **41** | **Online MCQ Exam & Proctoring**      | Session heartbeats, anti-cheat tab switch flags, weighted scoring      | Intermediate | Concurrency & State |
+| **42** | **Geospatial Proximity Matchmaker**   | Geohash & S2 cells, proximity radius search, mutual swipe matchers     | Intermediate | System Design       |
+| **43** | **Slack Channels & Threads**          | Thread fan-out, parent-child message trees, unread counters            | Intermediate | Concurrency & State |
+| **44** | **Live Location Fleet Telemetry**     | Dead-reckoning Kalman filters, proximity geo-fencing, telemetry rollup | Intermediate | Concurrency & State |
+| **45** | **Anycast Global Edge Proxy**         | Anycast BGP routing, least-connection load balancing, health probes    | Intermediate | Distributed Systems |
+| **46** | **Adaptive Bot Defense & CAPTCHA**    | Client proof-of-work (PoW), sliding-window rate limits, risk scoring   | Intermediate | Security & Auth     |
+| **47** | **Feature Flags & Canary Rollout**    | MurmurHash user percentage bucketing, targeted overrides, canary roll  | Intermediate | Distributed Systems |
+| **48** | **News Aggregator & SimHash Dedup**   | 64-bit SimHash, Hamming distance bitwise match, near-duplicate pruning | Intermediate | System Design       |
+| **49** | **Smart Notification Digest Service** | Grouped social rollups, recipient timezone quiet-hours, urgent bypass  | Intermediate | System Design       |
+| **50** | **Async Video Transcoding Pipeline**  | Chunked parallel encoding, adaptive bitrate HLS manifests, worker DAGs | Intermediate | Distributed Systems |
+
+### 🤖 Track 9: Advanced Distributed AI, Ledgers & CRDTs
+
+_Cutting-edge architectures for generative AI gateways, vector retrieval, offline sync, and event sourcing:_
+
+|   #    | Case Study                            | Core Concepts                                                         |  Level   | Target Round        |
+| :----: | :------------------------------------ | :-------------------------------------------------------------------- | :------: | :------------------ |
+| **51** | **LLM Streaming Gateway**             | Server-Sent Events (SSE), sliding-window safety guardrails, PII scrub | Advanced | Distributed Systems |
+| **52** | **Distributed Vector DB & RAG**       | High-dimensional Cosine Similarity, bounded min-heap Top-K ranking    | Advanced | Distributed Systems |
+| **53** | **Collaborative Spreadsheets (CRDT)** | LWW-Element-Set CRDT, fractional indexing for row/col insertions      | Advanced | Concurrency & State |
+| **54** | **Offline-First Document Sync**       | Local SQLite journal, Vector Clock causality, Merkle tree sync        | Advanced | Concurrency & State |
+| **55** | **Distributed Tracing & APM**         | OpenTelemetry W3C trace context, span DAGs, self-time bottleneck math | Advanced | Distributed Systems |
+| **56** | **Virtual Git Monorepo**              | Merkle tree diffing in O(Changes), Projected File System (ProjFS)     | Advanced | Distributed Systems |
+| **57** | **Subscription Billing & Dunning**    | Second-precision proration math, smart retry dunning state machine    | Advanced | Concurrency & State |
+| **58** | **Distributed ETL DAG Scheduler**     | Kahn's topological sort, cycle detection, failure cascade propagation | Advanced | Distributed Systems |
+| **59** | **Event-Sourced Payment Ledger**      | Immutable append-only journal, double-entry invariant, CQRS balance   | Advanced | Concurrency & State |
+
+---
+
+## 🏷️ Company & Interview Badges on Every Case
+
+Every case study in KRUZZ is mapped to real-world hiring practices at tier-1 technology employers:
+
+- **Featured Employers**: Google, Meta, Amazon, Apple, Netflix, Microsoft, Stripe, OpenAI, Datadog, Slack, Discord, Uber, Snowflake, Bloomberg, Cloudflare, and GitHub.
+- **Round Categories**:
+  - 🧩 **Machine Coding (LLD)**: Clean object-oriented design, state patterns, and thread-safe data structures.
+  - 📐 **System Design**: Large-scale architecture, high-availability data stores, caching, and edge routing.
+  - 🪐 **Distributed Systems**: Consensus, quorum mathematics, virtual monorepos, and event pipelines.
+  - 🔐 **Security & Auth**: Zero-trust authentication, cryptographic tokens, TOTP RFC 6238, and proof-of-work defenses.
+  - 🔄 **Concurrency & State**: CRDTs, Vector Clocks, double-entry financial ledgers, and WebSocket state machines.
+- **Target Role Guidance**: Explicitly flagged for **SDE 1**, **SDE 2**, and **Senior Systems Engineers**.
+
+---
+
+## 🎓 Campus Placement Ready & University Leaderboards
+
+- **12 Free Tier Cases**: All 7 Track 0 Foundation cases and all 5 Track 7 Campus cases are **100% free** to ensure every university student can master low-level machine coding without paywalls.
+- **Campus Filter on Leaderboard**: Filter global leaderboard rankings by your university campus (e.g. IIT Bombay, Stanford, BITS Pilani, MIT, Berkeley) and compete with your peers.
+- **Interactive Multi-Language CodeArena**: Write solutions in **Python** or **Java** directly inside the browser with immediate feedback from automated test assertions.
 
 ---
 
@@ -184,12 +252,12 @@ flowchart TD
     subgraph Frontend ["🖥️ Frontend (src/) — TanStack Start + React 19"]
         A[TanStack Start SSR] --> B[8-Section Incident Workspace]
         B --> C[Progressive Mermaid Diagrams]
-        B --> D[Pyodide In-Browser Wasm Runner]
+        B --> D[Pyodide & Java CodeRunner]
         B --> E[Multi-Language CodeArena]
     end
 
     subgraph Backend ["⚙️ Backend (convex/) — Serverless Real-Time Backend"]
-        F[Convex Database] --> G[Case Studies Store — 35 Incidents]
+        F[Convex Database] --> G[Case Studies Store — 59 Incidents]
         F --> H[User Progress & Daily Streaks]
         F --> I[Multi-Provider AI Grading Engine]
         F --> J[Durable Provider Circuit Breakers]
@@ -197,7 +265,7 @@ flowchart TD
 
     subgraph Tooling ["🛠️ Tooling & Audits (scripts/)"]
         K[audit_all_sections.ts]
-        L[Multi-Language Seeders]
+        L[Multi-Language Seeders & Quality Gate]
     end
 
     B <== "Real-time subscriptions (WebSocket)" ==> F
@@ -208,12 +276,12 @@ flowchart TD
 
 1. **100% Database-Driven Content**:
    - **Zero case studies are hardcoded in the frontend codebase**.
-   - All 35 case studies, progressive Mermaid blueprints, architectural decisions, code ladders, test suites, and reflection prompts are stored exclusively in the **Convex Database** (`convex/`).
+   - All 59 case studies, progressive Mermaid blueprints, architectural decisions, code ladders, test suites, and reflection prompts are stored exclusively in the **Convex Database** (`convex/`).
    - The frontend (`src/`) acts purely as a presentation and interactive reasoning layer, querying Convex in real time.
 
 2. **Frontend (`src/`)**:
    - Built on TanStack Start (SSR) and React 19.
-   - Runs client-side Python execution via in-browser **Pyodide** WebAssembly.
+   - Runs client-side Python execution via in-browser **Pyodide** WebAssembly, alongside Java dual-language code labs.
    - Manages responsive themes, VS Code-like workspace tabs, and progressive architectural disclosure.
 
 3. **Backend (`convex/`)**:
@@ -222,7 +290,7 @@ flowchart TD
    - Multi-provider AI grading engine (`convex/ai.ts`) with durable circuit breakers (Gemini $\rightarrow$ Groq $\rightarrow$ OpenRouter).
 
 4. **Auditing & Verification (`scripts/`)**:
-   - Run `bun scripts/audit_all_sections.ts` to execute a comprehensive audit guaranteeing that all 8 sections across all 35 cases are populated, valid, and non-empty in the database.
+   - Run `bun scripts/audit_all_sections.ts` to execute a comprehensive audit guaranteeing that all 8 sections across all 59 cases are populated, valid, and non-empty in the database.
 
 ---
 

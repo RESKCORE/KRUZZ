@@ -146,6 +146,7 @@ export const getCurrentUserProfile = query({
       bannerUrl: user.bannerUrl,
       points: user.points,
       rank: user.rank,
+      university: user.university ?? "",
       isPublic: user.isPublic ?? false,
       createdAt: user.createdAt,
       streak: {
@@ -215,6 +216,20 @@ export const updateProfilePrivacy = mutation({
     const user = await getOrCreateUser(ctx, identity);
     await ctx.db.patch(user._id, { isPublic: args.isPublic });
     return { isPublic: args.isPublic };
+  },
+});
+
+export const updateUniversity = mutation({
+  args: {
+    university: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Must be signed in to update university");
+    const user = await getOrCreateUser(ctx, identity);
+    const cleaned = args.university.trim().slice(0, 80);
+    await ctx.db.patch(user._id, { university: cleaned });
+    return { university: cleaned };
   },
 });
 
@@ -421,6 +436,7 @@ export const getPublicProfile = query({
       bannerUrl: user.bannerUrl,
       points: user.points,
       rank: user.rank,
+      university: user.university ?? "",
       createdAt: user.createdAt,
       streak: {
         current: streak?.current ?? 0,

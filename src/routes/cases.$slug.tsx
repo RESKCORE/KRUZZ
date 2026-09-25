@@ -46,7 +46,11 @@ import {
   FileText,
   GitBranch,
   FolderOpen,
+  Briefcase,
+  Building2,
+  GraduationCap,
 } from "lucide-react";
+import { getCaseInterviewBadges } from "@/data/interviewBadges";
 
 export const Route = createFileRoute("/cases/$slug")({
   loader: ({ params }) => {
@@ -1094,6 +1098,45 @@ function CaseStudyPage() {
               <span className="text-black font-black">{progress}%</span>
             </div>
           </div>
+
+          {/* Company & Interview Intel Strip */}
+          {(() => {
+            const interviewMeta = getCaseInterviewBadges(study.slug || study.index);
+            return (
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b-2 border-black bg-white px-6 py-2.5 text-xs">
+                <div className="flex flex-wrap items-center gap-2.5">
+                  <span className="inline-flex items-center gap-1.5 rounded-lg bg-black text-white px-2.5 py-1 font-mono text-[10px] font-black uppercase tracking-wider shadow-xs">
+                    <Briefcase className="size-3 stroke-[2.5]" />
+                    {interviewMeta.roundType}
+                  </span>
+
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <span className="font-mono text-[11px] font-black text-black flex items-center gap-1">
+                      <Building2 className="size-3.5 text-neutral-800" />
+                      Target Employers:
+                    </span>
+                    {interviewMeta.companies.map((comp) => (
+                      <span
+                        key={comp}
+                        className="rounded-md bg-neutral-100 border border-black px-2 py-0.5 font-mono text-[10px] font-black text-black"
+                      >
+                        {comp}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 font-mono text-[10px]">
+                  <span className="rounded bg-neutral-100 border border-black/30 px-2 py-0.5 font-bold text-black">
+                    {interviewMeta.targetRole}
+                  </span>
+                  <span className="hidden xl:inline text-neutral-600 font-medium italic">
+                    &ldquo;{interviewMeta.interviewPrompt}&rdquo;
+                  </span>
+                </div>
+              </div>
+            );
+          })()}
 
           <div className="grid lg:grid-cols-[280px_1fr] xl:grid-cols-[300px_1fr] border border-slate-200 bg-white rounded-2xl overflow-hidden shadow-sm">
             {/* LEFT RAIL — VS Code Explorer Sidebar (Desktop only) */}

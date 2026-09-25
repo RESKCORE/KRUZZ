@@ -146,7 +146,7 @@ const MEMBER_NAV_ITEMS: NotchItemData[] = [
 
 const GUEST_NAV_ITEMS: NotchItemData[] = [
   { id: "home", label: "Home", icon: Home },
-  { id: "method", label: "Methodology", icon: BookOpen },
+  { id: "method", label: "How It Works", icon: BookOpen },
 ];
 
 export function AppChrome({ children }: AppChromeProps) {

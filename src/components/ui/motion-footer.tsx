@@ -399,7 +399,7 @@ export function CinematicFooter() {
                   to="/method"
                   className="footer-glass-pill px-6 py-3 rounded-full text-[#8a8a8a] font-medium text-xs md:text-sm hover:text-[#f5f5f5]"
                 >
-                  The 8-Section Method
+                  How It Works (8-Section Method)
                 </MagneticButton>
                 <MagneticButton
                   as={Link}

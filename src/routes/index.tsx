@@ -7,11 +7,22 @@ import { HeroArchitectureVisual } from "@/components/HeroArchitectureVisual";
 import { useAccount } from "@/lib/account";
 import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
-import { ArrowRight, Sparkles } from "lucide-react";
+import {
+  ArrowRight,
+  Sparkles,
+  Briefcase,
+  Building2,
+  GraduationCap,
+  CheckCircle2,
+  Terminal,
+  ShieldCheck,
+  Code2,
+} from "lucide-react";
+import { getCaseInterviewBadges, getTrack0MachineCodingCases } from "@/data/interviewBadges";
 
-const TITLE = "KRUZZ — Real-World System Architecture Case Studies";
+const TITLE = "KRUZZ — Real-World System Architecture & Machine Coding (LLD)";
 const DESCRIPTION =
-  "Read and reconstruct real software systems through progressive investigations: tracing architectural trade-offs, state flows, and production code.";
+  "Master real-world system architecture and campus placement machine coding (LLD). Reverse-engineer 59 production systems with FAANG company interview tags.";
 
 export const Route = createFileRoute("/")({
   beforeLoad: () => {
@@ -94,6 +105,8 @@ function Landing() {
     .map((difficulty) => caseStudies.find((c) => homeDifficulty(c) === difficulty))
     .filter((c): c is (typeof caseStudies)[number] => Boolean(c));
 
+  const track0Cases = getTrack0MachineCodingCases();
+
   if (isAuthenticated) {
     return (
       <AppChrome>
@@ -118,18 +131,20 @@ function Landing() {
             <div className="grid items-start gap-12 lg:grid-cols-[1.1fr_0.9fr]">
               {/* Left Column: Bold Headline & Call to Action */}
               <div>
-                <p className="font-mono text-xs uppercase tracking-widest text-black font-black">
-                  System Thinking Arena
-                </p>
+                <div className="inline-flex items-center gap-2 rounded-full bg-neutral-100 border-2 border-black px-3.5 py-1 font-mono text-[11px] uppercase tracking-wider text-black font-black mb-3">
+                  <GraduationCap className="size-3.5 stroke-[2.5]" />
+                  <span>Campus Placements & FAANG System Design</span>
+                </div>
 
-                <h1 className="mt-3 text-balance text-5xl md:text-6xl lg:text-[64px] font-extrabold leading-[1.04] tracking-tight text-black">
-                  Stop memorizing syntax. Start reading how real systems are built.
+                <h1 className="mt-2 text-balance text-5xl md:text-6xl lg:text-[64px] font-extrabold leading-[1.04] tracking-tight text-black">
+                  Stop memorizing syntax. Start building real systems.
                 </h1>
 
                 <p className="mt-5 max-w-[54ch] text-pretty text-base md:text-lg leading-relaxed text-neutral-600">
-                  KRUZZ turns real software engineering dilemmas into progressive investigations —
-                  tracing a problem through the architecture, the decisions, and the code that
-                  actually ships.
+                  KRUZZ bridges the gap between college programming and production engineering.
+                  Master <strong>Low-Level Design (Machine Coding)</strong> and{" "}
+                  <strong>Distributed Architectures</strong> through progressive investigations
+                  tagged by target employer.
                 </p>
 
                 {/* Single Primary CTA + Clean Plain Secondary Link */}
@@ -139,7 +154,7 @@ function Landing() {
                     params={{ slug: firstCase.slug }}
                     className="inline-flex items-center gap-2 rounded-xl bg-black px-6 py-3.5 text-sm font-black text-white hover:bg-neutral-800 shadow-xs transition-all hover:-translate-y-px"
                   >
-                    <span>Start Case 01: {firstCase.shortTitle}</span>
+                    <span>Start Case 01: {firstCase.shortTitle} (Free)</span>
                     <ArrowRight className="size-4 stroke-[2.5]" />
                   </Link>
 
@@ -147,17 +162,24 @@ function Landing() {
                     to="/cases"
                     className="text-sm font-bold text-neutral-600 hover:text-black hover:underline underline-offset-4 transition-colors"
                   >
-                    Browse all {caseStudies.length || 30} investigations →
+                    Browse all {caseStudies.length || 59} investigations →
+                  </Link>
+
+                  <Link
+                    to="/method"
+                    className="text-sm font-bold text-neutral-600 hover:text-black hover:underline underline-offset-4 transition-colors"
+                  >
+                    How KRUZZ Works →
                   </Link>
                 </div>
 
-                {/* Clean Inline Trust Row Separated by Thin Pipes */}
+                {/* Trust Row */}
                 <div className="mt-9 flex flex-wrap items-center gap-3.5 font-mono text-xs text-neutral-600 font-bold">
-                  <span>3 Difficulty Paths</span>
+                  <span className="text-black font-black">🎓 Campus Placement Ready</span>
                   <span className="text-black/20">|</span>
-                  <span>40 Progressive Sections</span>
+                  <span className="text-black font-black">Track 0: Machine Coding (LLD)</span>
                   <span className="text-black/20">|</span>
-                  <span>Convex Cloud Persistence</span>
+                  <span>FAANG Company Tags</span>
                   <span className="text-black/20">|</span>
                   <span>Zero Syntax Drills</span>
                 </div>
@@ -184,7 +206,6 @@ function Landing() {
                             <span className="text-sm font-black text-black">{step.label}</span>
                           </div>
 
-                          {/* Plain right-aligned muted italic label */}
                           <span className="text-xs text-neutral-600 italic font-medium">
                             {step.tag}
                           </span>
@@ -209,9 +230,105 @@ function Landing() {
               </div>
             </div>
 
-            {/* Bespoke Visual Anchor: Live Micro-Architecture Telemetry Widget */}
+            {/* Micro-Architecture Telemetry Widget */}
             <div className="mt-12">
               <HeroArchitectureVisual />
+            </div>
+          </section>
+
+          {/* ========================================================================= */}
+          {/* TRACK 0: MACHINE CODING & LOW-LEVEL DESIGN (LLD) SPOTLIGHT                */}
+          {/* ========================================================================= */}
+          <section className="mt-12 rounded-3xl border-2 border-black bg-white p-6 sm:p-10 shadow-xs">
+            <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-6 pb-6 border-b-2 border-black">
+              <div>
+                <div className="inline-flex items-center gap-2 rounded-lg bg-black text-white px-3 py-1 font-mono text-xs font-black uppercase tracking-wider mb-2">
+                  <Code2 className="size-3.5 stroke-[2.5]" />
+                  <span>Track 0: Machine Coding & Low-Level Design (LLD)</span>
+                </div>
+                <h2 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-black mt-1">
+                  Built for Campus Hiring & Live Coding Rounds
+                </h2>
+                <p className="mt-2 text-sm sm:text-base text-neutral-600 max-w-3xl leading-relaxed">
+                  Top engineering loops at <strong>Amazon</strong>, <strong>Uber</strong>,{" "}
+                  <strong>Swiggy</strong>, <strong>Bloomberg</strong>, and <strong>Google</strong>{" "}
+                  evaluate candidates with 90-minute live Object-Oriented Design problems. Track 0
+                  covers the exact 7 foundational machine coding systems from scratch—100% free.
+                </p>
+              </div>
+
+              <Link
+                to="/cases"
+                className="inline-flex items-center gap-2 rounded-xl bg-black px-5 py-3 font-mono text-xs font-black text-white hover:bg-neutral-800 transition-all shrink-0"
+              >
+                <span>Launch Track 0 (Case 01)</span>
+                <ArrowRight className="size-4" />
+              </Link>
+            </div>
+
+            {/* 7 Foundational LLD Systems Grid */}
+            <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {track0Cases.map((meta, idx) => (
+                <Link
+                  key={meta.slug}
+                  to="/cases/$slug"
+                  params={{ slug: meta.slug }}
+                  className="group rounded-2xl border-2 border-black bg-neutral-50 p-4 transition-all hover:bg-white hover:-translate-y-1 hover:shadow-xs flex flex-col justify-between"
+                >
+                  <div>
+                    <div className="flex items-center justify-between font-mono text-[10px] text-neutral-600 font-black">
+                      <span>CASE {meta.index}</span>
+                      <span className="rounded bg-black text-white px-1.5 py-0.2 uppercase text-[9px]">
+                        FREE
+                      </span>
+                    </div>
+
+                    <h3 className="mt-2 text-base font-black text-black group-hover:underline">
+                      {meta.slug
+                        .split("-")
+                        .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+                        .join(" ")}
+                    </h3>
+
+                    <p className="mt-1.5 text-xs text-neutral-600 line-clamp-2 leading-relaxed">
+                      {meta.interviewPrompt}
+                    </p>
+                  </div>
+
+                  <div className="mt-4 pt-3 border-t border-black/15 space-y-1.5">
+                    <div className="flex items-center gap-1 text-[10px] font-mono text-black font-black">
+                      <Building2 className="size-3 text-neutral-700" />
+                      <span>Asked at:</span>
+                    </div>
+                    <div className="flex flex-wrap gap-1">
+                      {meta.companies.map((comp) => (
+                        <span
+                          key={comp}
+                          className="rounded bg-white border border-black/30 px-1.5 py-0.2 font-mono text-[9px] font-bold text-black"
+                        >
+                          {comp}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </Link>
+              ))}
+
+              {/* Bonus 8th Card: Student Placement Advantage */}
+              <div className="rounded-2xl border-2 border-dashed border-black/40 bg-neutral-100 p-4 flex flex-col justify-center text-center">
+                <ShieldCheck className="mx-auto size-7 text-black stroke-[2]" />
+                <h4 className="mt-2 text-sm font-black text-black">Multi-Language CodeArena</h4>
+                <p className="mt-1 text-[11px] text-neutral-600 leading-snug">
+                  Practice in Python, Java, or C with automated unit tests and multi-provider AI
+                  reasoning review.
+                </p>
+                <Link
+                  to="/cases"
+                  className="mt-3 text-xs font-mono font-black text-black underline underline-offset-2"
+                >
+                  Explore All 59 Cases →
+                </Link>
+              </div>
             </div>
           </section>
 
@@ -226,7 +343,7 @@ function Landing() {
                 </h2>
                 <p className="mt-1.5 text-sm text-neutral-600">
                   Each investigation guides you from real dilemma through interactive code and
-                  architecture.
+                  architecture with verified interview tags.
                 </p>
               </div>
 
@@ -234,68 +351,95 @@ function Landing() {
                 to="/cases"
                 className="text-xs font-mono font-black text-black hover:underline transition-colors"
               >
-                Open Complete Case Index ({caseStudies.length}) →
+                Open Complete Case Index ({caseStudies.length || 59}) →
               </Link>
             </div>
 
             <div className="grid gap-6 md:grid-cols-3">
-              {featuredCases.map((c) => (
-                <Link
-                  key={c.slug}
-                  to="/cases/$slug"
-                  params={{ slug: c.slug }}
-                  className="group flex flex-col justify-between rounded-3xl p-6 border-2 border-black bg-white text-black shadow-xs transition-all hover:bg-neutral-50 hover:-translate-y-1"
-                >
-                  <div>
-                    <div className="flex items-center justify-between">
-                      <span className="font-mono text-[11px] text-black font-black">
-                        {homeDifficulty(c).toUpperCase()} · CASE {c.index}
-                      </span>
-                      <span className="text-xs text-neutral-600 font-bold">
-                        8 sections · {c.estimatedTime}
-                      </span>
+              {featuredCases.map((c) => {
+                const interview = getCaseInterviewBadges(c.slug || c.index);
+
+                return (
+                  <Link
+                    key={c.slug}
+                    to="/cases/$slug"
+                    params={{ slug: c.slug }}
+                    className="group flex flex-col justify-between rounded-3xl p-6 border-2 border-black bg-white text-black shadow-xs transition-all hover:bg-neutral-50 hover:-translate-y-1"
+                  >
+                    <div>
+                      <div className="flex items-center justify-between">
+                        <span className="font-mono text-[11px] text-black font-black">
+                          {homeDifficulty(c).toUpperCase()} · CASE {c.index}
+                        </span>
+                        <span className="text-xs text-neutral-600 font-bold">
+                          8 sections · {c.estimatedTime}
+                        </span>
+                      </div>
+
+                      <h3 className="mt-3 text-lg font-black tracking-tight text-black">
+                        {c.title}
+                      </h3>
+
+                      <p className="mt-2 text-xs leading-relaxed text-neutral-600">{c.summary}</p>
+
+                      {/* Company & Round Badge */}
+                      <div className="mt-3.5 rounded-xl bg-neutral-50 border border-black/20 p-2 space-y-1">
+                        <div className="flex items-center justify-between gap-1 text-[9px] font-mono">
+                          <span className="rounded bg-black text-white px-1.5 py-0.2 font-black uppercase">
+                            {interview.roundType}
+                          </span>
+                          <span className="text-neutral-500 font-bold">{interview.targetRole}</span>
+                        </div>
+                        <div className="flex flex-wrap items-center gap-1 pt-0.5">
+                          <span className="font-mono text-[9px] font-black text-black">Asked:</span>
+                          {interview.companies.slice(0, 3).map((comp) => (
+                            <span
+                              key={comp}
+                              className="rounded bg-white border border-black/30 px-1.5 py-0.2 font-mono text-[9px] font-bold text-black"
+                            >
+                              {comp}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
                     </div>
 
-                    <h3 className="mt-3 text-lg font-black tracking-tight text-black">{c.title}</h3>
-
-                    <p className="mt-2 text-xs leading-relaxed text-neutral-600">{c.summary}</p>
-                  </div>
-
-                  <div className="mt-6 pt-4 border-t-2 border-black/10 flex flex-wrap gap-1.5">
-                    <span
-                      className={`rounded-lg px-2 py-0.5 font-mono text-[10px] font-bold border-2 border-black ${
-                        DIFFICULTY_TONES[c.learnerLevel] ?? "bg-neutral-100 text-black"
-                      }`}
-                    >
-                      {c.learnerLevel}
-                    </span>
-
-                    {(c.tech ?? []).map((t: string) => (
+                    <div className="mt-6 pt-4 border-t-2 border-black/10 flex flex-wrap gap-1.5">
                       <span
-                        key={t}
-                        className="rounded-lg bg-neutral-100 border border-black/30 px-2 py-0.5 font-mono text-[10px] text-black font-medium"
+                        className={`rounded-lg px-2 py-0.5 font-mono text-[10px] font-bold border-2 border-black ${
+                          DIFFICULTY_TONES[c.learnerLevel] ?? "bg-neutral-100 text-black"
+                        }`}
                       >
-                        {t}
+                        {c.learnerLevel}
                       </span>
-                    ))}
-                  </div>
-                </Link>
-              ))}
+
+                      {(c.tech ?? []).map((t: string) => (
+                        <span
+                          key={t}
+                          className="rounded-lg bg-neutral-100 border border-black/30 px-2 py-0.5 font-mono text-[10px] text-black font-medium"
+                        >
+                          {t}
+                        </span>
+                      ))}
+                    </div>
+                  </Link>
+                );
+              })}
             </div>
           </section>
 
           {/* ========================================================================= */}
           {/* CURRICULUM PROGRESSION GRAPH                                              */}
           {/* ========================================================================= */}
-          <section className="mt-8 pb-24 border-t border-white/[0.06] pt-12">
+          <section className="mt-8 pb-24 border-t border-black/10 pt-12">
             <div className="mb-6 flex items-baseline justify-between">
               <div>
-                <h2 className="text-2xl font-bold tracking-tight text-[#f5f5f5]">
+                <h2 className="text-2xl font-black tracking-tight text-black">
                   How Each Case Builds System Thinking
                 </h2>
-                <p className="mt-1 text-xs text-[#8a8a8a]">
+                <p className="mt-1 text-xs text-neutral-600">
                   Concepts are reinforced cumulatively: early architectural decisions become
-                  dependencies later.
+                  dependencies for high-scale distributed systems.
                 </p>
               </div>
             </div>

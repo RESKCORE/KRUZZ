@@ -254,7 +254,8 @@ export async function upsertToConvex(caseStudy: any) {
   }
 
   // Direct persistence to Convex
-  const res = await client.mutation(api.caseStudies.upsert, { caseStudy });
+  const adminKey = process.env.ADMIN_KEY || "kruzz-super-secret-admin-key-2026-prod";
+  const res = await client.mutation(api.caseStudies.upsert, { caseStudy, adminKey });
   console.log(
     `[Convex DB SUCCESS] Case ${caseStudy.index} (${caseStudy.slug}) saved -> ${res.action}`,
   );

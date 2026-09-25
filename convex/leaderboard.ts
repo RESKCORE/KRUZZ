@@ -31,6 +31,7 @@ export const getTopLearners = query({
         return {
           _id: u._id,
           name: u.name || "Anonymous Investigator",
+          university: u.university ?? "",
           completedCasesCount,
           points: u.points,
           rank: u.rank,
@@ -57,7 +58,9 @@ export const getTopLearners = query({
     return results.slice(0, limit).map((u) => ({
       _id: u._id,
       name: u.name,
+      university: u.university,
       completedCasesCount: u.completedCasesCount,
+      points: u.points,
       rank: u.rank,
       imageUrl: u.imageUrl,
       publicProfileId: u.publicProfileId,

@@ -17,6 +17,7 @@ import {
   ShieldCheck,
   Star,
   User,
+  GraduationCap,
 } from "lucide-react";
 import { toast } from "sonner";
 import { ShareProfileModal } from "@/components/ShareProfileModal";
@@ -315,6 +316,12 @@ export function UserProfileCard({ className = "" }: UserProfileCardProps) {
             )}
           </div>
           <p className="font-mono text-xs text-black font-bold">@{handle}</p>
+          {Boolean((profile as any)?.university) && (
+            <p className="mt-1 inline-flex items-center gap-1 rounded bg-neutral-100 border border-black/25 px-2 py-0.5 font-mono text-[10px] font-bold text-black">
+              <GraduationCap className="size-3 text-black" />
+              <span>{(profile as any).university}</span>
+            </p>
+          )}
         </div>
 
         {/* Profile Visibility Control Bar */}
@@ -384,7 +391,7 @@ export function UserProfileCard({ className = "" }: UserProfileCardProps) {
             <div className="flex items-center justify-center gap-1 font-mono text-base font-black text-black">
               <BookOpen className="size-3.5 text-black stroke-[2.5]" />
               <span>
-                {clearedCasesCount}/{caseStudies.length || 35}
+                {clearedCasesCount}/{caseStudies.length || 59}
               </span>
             </div>
             <p className="mt-1 font-mono text-[10px] text-black font-black uppercase tracking-wider">

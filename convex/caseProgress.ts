@@ -184,6 +184,156 @@ export const CASE_STUDY_SEQUENCE: CaseMetadata[] = [
     tier: "premium",
     title: "Quorum Reads & Writes",
   },
+
+  // Track 0B: Campus Systems & Machine Coding (LLD) — free
+  {
+    slug: "campus-attendance-timetable",
+    order: 36,
+    tier: "free",
+    title: "Attendance & Grade Tracker",
+  },
+  {
+    slug: "campus-placement-drive-portal",
+    order: 37,
+    tier: "free",
+    title: "Campus Placement Drive Portal",
+  },
+  {
+    slug: "splitwise-expense-splitter",
+    order: 38,
+    tier: "free",
+    title: "Splitwise Expense Splitter",
+  },
+  {
+    slug: "online-chess-game-engine",
+    order: 39,
+    tier: "free",
+    title: "Online Chess Engine",
+  },
+  {
+    slug: "support-ticket-routing-queue",
+    order: 40,
+    tier: "free",
+    title: "Support Ticket Routing Queue",
+  },
+
+  // Track 7: Scalable Web & Edge Platform Services
+  {
+    slug: "online-mcq-proctoring-system",
+    order: 41,
+    tier: "premium",
+    title: "Online MCQ Exam & Proctoring",
+  },
+  {
+    slug: "tinder-geospatial-matchmaker",
+    order: 42,
+    tier: "premium",
+    title: "Geospatial Proximity Matchmaker",
+  },
+  {
+    slug: "slack-channels-threads",
+    order: 43,
+    tier: "premium",
+    title: "Slack Channels & Threaded Messaging",
+  },
+  {
+    slug: "realtime-live-location-fleet",
+    order: 44,
+    tier: "premium",
+    title: "Live Location Fleet Telemetry",
+  },
+  {
+    slug: "anycast-vpn-reverse-proxy",
+    order: 45,
+    tier: "premium",
+    title: "Anycast Global Edge Proxy",
+  },
+  {
+    slug: "captcha-bot-defense-engine",
+    order: 46,
+    tier: "premium",
+    title: "Bot Defense & Adaptive CAPTCHA",
+  },
+  {
+    slug: "feature-flags-canary-engine",
+    order: 47,
+    tier: "premium",
+    title: "Feature Flags & Canary Rollout",
+  },
+  {
+    slug: "news-aggregator-simhash-dedup",
+    order: 48,
+    tier: "premium",
+    title: "News Aggregator & SimHash Dedup",
+  },
+  {
+    slug: "smart-notification-digest-service",
+    order: 49,
+    tier: "premium",
+    title: "Smart Notification Digest Service",
+  },
+  {
+    slug: "async-video-transcoding-pipeline",
+    order: 50,
+    tier: "premium",
+    title: "Async Video Transcoding Pipeline",
+  },
+
+  // Track 8: Advanced Distributed AI, Ledgers & CRDTs
+  {
+    slug: "llm-chatbot-streaming-guardrails",
+    order: 51,
+    tier: "premium",
+    title: "LLM Streaming Gateway & Guardrails",
+  },
+  {
+    slug: "distributed-vector-database-rag",
+    order: 52,
+    tier: "premium",
+    title: "Distributed Vector DB & RAG Retrieval",
+  },
+  {
+    slug: "google-sheets-crdt-collaboration",
+    order: 53,
+    tier: "premium",
+    title: "Collaborative Spreadsheets (CRDT)",
+  },
+  {
+    slug: "notion-offline-first-sync",
+    order: 54,
+    tier: "premium",
+    title: "Offline-First Document Sync",
+  },
+  {
+    slug: "distributed-tracing-apm-collector",
+    order: 55,
+    tier: "premium",
+    title: "Distributed Tracing & APM Collector",
+  },
+  {
+    slug: "high-scale-git-virtual-monorepo",
+    order: 56,
+    tier: "premium",
+    title: "Virtual Git Monorepo Storage",
+  },
+  {
+    slug: "subscription-billing-dunning-engine",
+    order: 57,
+    tier: "premium",
+    title: "Subscription Billing & Dunning Engine",
+  },
+  {
+    slug: "distributed-etl-dag-scheduler",
+    order: 58,
+    tier: "premium",
+    title: "Distributed Task DAG Scheduler",
+  },
+  {
+    slug: "event-sourced-payment-ledger",
+    order: 59,
+    tier: "premium",
+    title: "Event-Sourced Payment Ledger",
+  },
 ];
 
 /**

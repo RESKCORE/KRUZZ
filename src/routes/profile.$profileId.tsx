@@ -390,7 +390,7 @@ function PublicProfilePage() {
                     to="/cases"
                     className="flex items-center justify-center py-2 font-mono text-xs font-black text-black border-2 border-black bg-white hover:bg-neutral-100 rounded-xl transition-colors shadow-xs"
                   >
-                    Browse 35 Case Studies
+                    Browse 59 Case Studies
                   </Link>
                 </div>
               </div>

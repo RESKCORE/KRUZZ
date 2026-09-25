@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppChrome } from "@/components/AppChrome";
 import {
@@ -13,11 +13,25 @@ import { useWallet } from "@/lib/account";
 import { RCWalletPanel } from "@/components/RCWallet";
 import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
-import { CheckCircle2, Sparkles, Award } from "lucide-react";
+import {
+  CheckCircle2,
+  Sparkles,
+  Award,
+  Briefcase,
+  Building2,
+  GraduationCap,
+  Filter,
+  Layers,
+} from "lucide-react";
+import {
+  getCaseInterviewBadges,
+  FEATURED_COMPANIES,
+  INTERVIEW_ROUND_CATEGORIES,
+} from "@/data/interviewBadges";
 
 const TITLE = "Arena Centre — Real-World Engineering Investigations";
 const DESCRIPTION =
-  "Browse KRUZZ's real-world engineering investigations: from client-server architecture to distributed rate limiting.";
+  "Browse KRUZZ's real-world engineering investigations: from client-server architecture to distributed rate limiting with company interview tags.";
 
 export const Route = createFileRoute("/cases/")({
   head: () => ({
@@ -38,7 +52,10 @@ const DIFFICULTY_TONES: Record<string, string> = {
 };
 
 function Library() {
-  const [active, setActive] = useState("All");
+  const [activeCategory, setActiveCategory] = useState("All");
+  const [selectedCompany, setSelectedCompany] = useState<string>("All");
+  const [selectedRound, setSelectedRound] = useState<string>("All Rounds");
+
   const { points, has, isAuthenticated, awards } = useWallet();
   const cloudProgress = useQuery(
     api.caseProgress.getAllUserProgress,
@@ -46,44 +63,151 @@ function Library() {
   );
   const unlockedCases = useQuery(api.caseProgress.getUserUnlockedCases, {});
 
-  const allDbCases = (useQuery(api.caseStudies.list, {}) ?? []) as any[];
-  const dbCases = (useQuery(api.caseStudies.list, active === "All" ? {} : { category: active }) ??
-    []) as any[];
+  const rawDbCases = useQuery(api.caseStudies.list, {});
+  const allDbCases = useMemo(() => (rawDbCases ?? []) as any[], [rawDbCases]);
 
-  const categories = [
-    "All",
-    ...Array.from(new Set(allDbCases.map((c: any) => c.category).filter(Boolean))),
-  ];
+  const categories = useMemo(() => {
+    return ["All", ...Array.from(new Set(allDbCases.map((c: any) => c.category).filter(Boolean)))];
+  }, [allDbCases]);
 
-  const shown = dbCases ?? [];
+  // Multi-dimensional filtering by Category, Company, and Interview Round
+  const shown = useMemo(() => {
+    return allDbCases.filter((c) => {
+      if (activeCategory !== "All" && c.category !== activeCategory) {
+        return false;
+      }
+      const interview = getCaseInterviewBadges(c.slug || c.index);
+      if (selectedCompany !== "All" && !interview.companies.includes(selectedCompany)) {
+        return false;
+      }
+      if (selectedRound !== "All Rounds" && interview.roundType !== selectedRound) {
+        return false;
+      }
+      return true;
+    });
+  }, [allDbCases, activeCategory, selectedCompany, selectedRound]);
 
   return (
     <AppChrome>
       <div className="mx-auto max-w-[1240px] px-4 py-8 md:px-6">
-        <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
+        {/* Header Telemetry */}
+        <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
               <span className="size-2.5 rounded-full bg-black ring-2 ring-black/20" />
               <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-black font-black">
-                Investigation Deck
+                Investigation Deck · Interview Ready
               </p>
             </div>
             <h1 className="text-balance text-3xl font-black tracking-tight text-black mt-1.5 md:text-4xl">
-              Explore the Investigations
+              Engineering Investigations & Interview Prep
             </h1>
-            <p className="mt-2 max-w-[56ch] text-pretty text-sm leading-relaxed text-black font-medium">
-              Each case runs the 8-section investigation method: problem, system, principles,
-              architecture, decisions, implementation, practice, and reflection.
+            <p className="mt-2 max-w-[62ch] text-pretty text-sm leading-relaxed text-black font-medium">
+              Every case guides you through real production dilemmas and maps directly to live
+              technical rounds: <strong>Machine Coding (LLD)</strong>,{" "}
+              <strong>System Design</strong>, and <strong>Distributed Concurrency</strong> at top
+              tech employers.
             </p>
           </div>
-          <div className="flex flex-wrap gap-2">
+
+          {/* Quick Stats Pill */}
+          <div className="flex items-center gap-2 rounded-2xl bg-white border-2 border-black p-2.5 shadow-xs">
+            <GraduationCap className="size-5 text-black" />
+            <div className="text-right">
+              <p className="font-mono text-[10px] uppercase text-neutral-600 font-bold">Catalog</p>
+              <p className="font-mono text-xs font-black text-black">
+                {shown.length} of {allDbCases.length || 59} Filtered
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Student / Interview Accelerator Banner */}
+        <div className="mb-6 rounded-3xl bg-neutral-50 border-2 border-black p-4.5 sm:p-5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-start gap-3">
+            <div className="grid size-10 place-items-center rounded-xl bg-black text-white shrink-0">
+              <Briefcase className="size-5 stroke-[2.5]" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="rounded bg-black text-white px-2 py-0.5 font-mono text-[10px] font-black uppercase tracking-wider">
+                  Campus & FAANG Kit
+                </span>
+                <span className="font-mono text-xs text-neutral-600 font-bold">
+                  Machine Coding + High-Scale Architecture
+                </span>
+              </div>
+              <p className="mt-1 text-xs text-black font-medium leading-relaxed">
+                Filter case studies by your upcoming interview round or prospective employer. Track
+                0 cases (ATM, Parking Lot, Seat Booking) are optimized for 90-minute live Machine
+                Coding campus rounds.
+              </p>
+            </div>
+          </div>
+
+          {/* Quick preset buttons */}
+          <div className="flex flex-wrap items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={() => {
+                setActiveCategory("All");
+                setSelectedCompany("All");
+                setSelectedRound("Machine Coding (LLD)");
+              }}
+              className={`rounded-xl px-3.5 py-1.5 font-mono text-xs font-black border-2 border-black transition-all ${
+                selectedRound === "Machine Coding (LLD)"
+                  ? "bg-black text-white shadow-xs"
+                  : "bg-white text-black hover:bg-neutral-100"
+              }`}
+            >
+              🎯 Machine Coding (LLD)
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setActiveCategory("All");
+                setSelectedCompany("Amazon");
+                setSelectedRound("All Rounds");
+              }}
+              className={`rounded-xl px-3.5 py-1.5 font-mono text-xs font-black border-2 border-black transition-all ${
+                selectedCompany === "Amazon"
+                  ? "bg-black text-white shadow-xs"
+                  : "bg-white text-black hover:bg-neutral-100"
+              }`}
+            >
+              Amazon Cases
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setActiveCategory("All");
+                setSelectedCompany("All");
+                setSelectedRound("All Rounds");
+              }}
+              className="rounded-xl bg-white border-2 border-black px-3 py-1.5 font-mono text-xs font-bold text-neutral-600 hover:text-black hover:bg-neutral-100 transition-all"
+            >
+              Reset Filters
+            </button>
+          </div>
+        </div>
+
+        {/* Filter Controls Row */}
+        <div className="mb-8 space-y-4">
+          {/* 1. Track / Category Filter Chips */}
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="font-mono text-xs font-black text-black flex items-center gap-1.5 mr-1">
+              <Layers className="size-3.5" />
+              Track:
+            </span>
             {categories.map((cat) => {
-              const selected = cat === active;
+              const selected = cat === activeCategory;
               return (
                 <button
                   key={cat}
                   type="button"
-                  onClick={() => setActive(cat)}
+                  onClick={() => setActiveCategory(cat)}
                   className={
                     selected
                       ? "rounded-xl bg-black px-3.5 py-1.5 font-mono text-xs font-black text-white border-2 border-black shadow-xs"
@@ -94,6 +218,59 @@ function Library() {
                 </button>
               );
             })}
+          </div>
+
+          {/* 2. Company & Interview Round Filter Row */}
+          <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-black/10">
+            {/* Company Chips */}
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span className="font-mono text-xs font-black text-black flex items-center gap-1 mr-1">
+                <Building2 className="size-3.5" />
+                Company:
+              </span>
+              {FEATURED_COMPANIES.map((comp) => {
+                const isSelected = selectedCompany === comp;
+                return (
+                  <button
+                    key={comp}
+                    type="button"
+                    onClick={() => setSelectedCompany(comp)}
+                    className={`rounded-lg px-2.5 py-1 font-mono text-[11px] font-bold border transition-all ${
+                      isSelected
+                        ? "bg-black text-white border-black font-black shadow-xs"
+                        : "bg-white text-neutral-700 border-black/25 hover:border-black hover:text-black"
+                    }`}
+                  >
+                    {comp}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Round Category Chips */}
+            <div className="flex flex-wrap items-center gap-1.5">
+              <span className="font-mono text-xs font-black text-black flex items-center gap-1 mr-1">
+                <Briefcase className="size-3.5" />
+                Round:
+              </span>
+              {INTERVIEW_ROUND_CATEGORIES.map((round) => {
+                const isSelected = selectedRound === round;
+                return (
+                  <button
+                    key={round}
+                    type="button"
+                    onClick={() => setSelectedRound(round)}
+                    className={`rounded-lg px-2.5 py-1 font-mono text-[11px] font-bold border transition-all ${
+                      isSelected
+                        ? "bg-black text-white border-black font-black shadow-xs"
+                        : "bg-white text-neutral-700 border-black/25 hover:border-black hover:text-black"
+                    }`}
+                  >
+                    {round}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         </div>
 
@@ -109,25 +286,26 @@ function Library() {
             <ul className="mt-3.5 grid gap-2.5 text-xs leading-relaxed text-black font-medium sm:grid-cols-2">
               <li className="flex items-start gap-2">
                 <span className="text-black font-black underline">+20 RC</span>
-                <span>Beginner Case complete (100% path)</span>
+                <span>Beginner / LLD Case complete (100% path)</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-black font-black underline">+30 RC</span>
-                <span>Medium Case complete (100% path)</span>
+                <span>Medium Architecture Case complete (100% path)</span>
               </li>
               <li className="flex items-start gap-2">
                 <span className="text-black font-black underline">+50 RC</span>
-                <span>Advanced Case complete (100% path)</span>
+                <span>Advanced Distributed Systems Case complete (100% path)</span>
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-black font-black underline">Path Rule</span>
-                <span>All 8 steps required (reading + lab + reflection)</span>
+                <span className="text-black font-black underline">Verification</span>
+                <span>CodeArena AI grader evaluates your implementation live</span>
               </li>
             </ul>
           </div>
           <RCWalletPanel />
         </div>
 
+        {/* Case Cards Grid */}
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {shown.map((c) => {
             const userProgressDoc = (
@@ -145,6 +323,8 @@ function Library() {
               ? 8
               : Math.min(8, viewedCount + (labAccounted ? 1 : 0));
             const progressPercent = isCompleted ? 100 : Math.round((completedCount / 8) * 100);
+
+            const interview = getCaseInterviewBadges(c.slug || c.index);
 
             const card = (
               <>
@@ -184,6 +364,34 @@ function Library() {
                 <p className="mt-2 text-pretty text-xs leading-relaxed text-black font-medium line-clamp-3">
                   {c.summary}
                 </p>
+
+                {/* Company & Interview Intel Badge Strip */}
+                <div className="mt-3 rounded-2xl bg-neutral-50 border-2 border-black/15 p-2.5 space-y-1.5">
+                  <div className="flex items-center justify-between gap-1.5">
+                    <span className="inline-flex items-center gap-1 rounded bg-black text-white px-2 py-0.5 font-mono text-[9px] font-black uppercase tracking-wider">
+                      <Briefcase className="size-2.5 stroke-[2.5]" />
+                      {interview.roundType}
+                    </span>
+                    <span className="font-mono text-[9px] text-neutral-600 font-bold uppercase">
+                      {interview.targetRole}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center gap-1.5 flex-wrap pt-0.5">
+                    <span className="font-mono text-[10px] text-black font-black flex items-center gap-1">
+                      <Building2 className="size-3 text-neutral-700" />
+                      Asked at:
+                    </span>
+                    {interview.companies.map((comp) => (
+                      <span
+                        key={comp}
+                        className="rounded-md bg-white border border-black/30 px-1.5 py-0.2 font-mono text-[10px] font-black text-black"
+                      >
+                        {comp}
+                      </span>
+                    ))}
+                  </div>
+                </div>
 
                 {/* Progress bar visual for completed & in-progress cases */}
                 {isCompleted ? (
@@ -280,6 +488,29 @@ function Library() {
             );
           })}
         </div>
+
+        {shown.length === 0 && (
+          <div className="rounded-3xl border-2 border-black bg-white p-12 text-center text-black">
+            <Filter className="mx-auto size-8 text-neutral-400" />
+            <h3 className="mt-3 text-lg font-black">
+              No investigations match the selected filters
+            </h3>
+            <p className="mt-1 text-xs text-neutral-600">
+              Try adjusting your category, company, or interview round selection.
+            </p>
+            <button
+              type="button"
+              onClick={() => {
+                setActiveCategory("All");
+                setSelectedCompany("All");
+                setSelectedRound("All Rounds");
+              }}
+              className="mt-4 inline-flex rounded-xl bg-black px-4 py-2 font-mono text-xs font-black text-white"
+            >
+              Reset All Filters
+            </button>
+          </div>
+        )}
       </div>
     </AppChrome>
   );
