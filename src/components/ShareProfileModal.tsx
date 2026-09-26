@@ -38,6 +38,7 @@ interface ShareProfileModalProps {
     avatarUrl?: string | undefined;
     bannerUrl?: string | undefined;
     isPublic?: boolean;
+    university?: string | undefined;
   };
   onTogglePrivacy?: (isPublic: boolean) => Promise<void>;
 }
@@ -317,11 +318,19 @@ function drawFullCredentialBadge(
   // Name & Handle
   ctx.fillStyle = WHITE;
   ctx.font = `bold 28px ${SANS}`;
-  ctx.fillText(user.name || "Investigator", avX + avR * 2 + 24, avY + 44);
+  ctx.fillText(user.name || "Investigator", avX + avR * 2 + 24, avY + 40);
 
   ctx.fillStyle = MUTED;
-  ctx.font = `500 16px ${MONO}`;
-  ctx.fillText(`@${user.handle}`, avX + avR * 2 + 24, avY + 74);
+  ctx.font = `500 15px ${MONO}`;
+  ctx.fillText(`@${user.handle}`, avX + avR * 2 + 24, avY + 66);
+
+  if (user.university && user.university !== "Independent / Self-Taught") {
+    ctx.fillStyle = "#a3a3a3";
+    ctx.font = `bold 13px ${MONO}`;
+    const truncatedUni =
+      user.university.length > 28 ? user.university.slice(0, 26) + "..." : user.university;
+    ctx.fillText(`🎓 ${truncatedUni}`, avX + avR * 2 + 24, avY + 90);
+  }
 
   // 5. Central Scannable QR Frame
   const qrFrameSize = 400;

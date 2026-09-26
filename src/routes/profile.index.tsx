@@ -1,12 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useState } from "react";
 import { AppChrome } from "@/components/AppChrome";
 import { UserProfileCard } from "@/components/UserProfileCard";
 import { StreakStrip } from "@/components/StreakStrip";
+import { CampusAffiliationModal } from "@/components/CampusAffiliationModal";
 import { useAccount, useWallet, useStreak } from "@/lib/account";
 import { isCaseCompleted, isLabCompleted, isStudyComplete, RANKS } from "@/lib/rc";
 import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
-import { ArrowRight, Award, ShieldCheck } from "lucide-react";
+import { ArrowRight, Award, Edit3, GraduationCap, ShieldCheck, Trophy } from "lucide-react";
 
 export const Route = createFileRoute("/profile/")({
   head: () => ({
@@ -23,9 +25,12 @@ export const Route = createFileRoute("/profile/")({
 });
 
 function ProfilePage() {
-  const { isAuthenticated } = useAccount();
+  const { user, profile, isAuthenticated } = useAccount();
   const { points, rank, awards } = useWallet();
   const { current: streakCurrent, longest: streakLongest, lastActive } = useStreak();
+  const [isCampusModalOpen, setIsCampusModalOpen] = useState(false);
+
+  const userUniversity = (profile as any)?.university || "";
 
   const cloudProgress = useQuery(
     api.caseProgress.getAllUserProgress,
@@ -296,6 +301,105 @@ function ProfilePage() {
             </div>
           </div>
         </div>
+
+        {/* =========================================================================
+            CAMPUS & UNIVERSITY AFFILIATION (INTER-CAMPUS LEADERBOARD COHORT)
+           ========================================================================= */}
+        {isAuthenticated && (
+          <div className="rounded-3xl border-2 border-black bg-white p-6 sm:p-8 shadow-xs text-black">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-5 border-b-2 border-black/10 pb-6">
+              <div className="flex items-start gap-3.5">
+                <div className="grid size-12 place-items-center rounded-2xl bg-black text-white shrink-0">
+                  <GraduationCap className="size-6 stroke-[2.5]" />
+                </div>
+                <div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="font-mono text-[10px] font-black uppercase tracking-wider text-black bg-neutral-100 border border-black/20 px-2 py-0.5 rounded">
+                      University Cup & Campus Cohort
+                    </span>
+                    <span className="font-mono text-xs font-bold text-neutral-600">
+                      {userUniversity && userUniversity !== "Independent / Self-Taught"
+                        ? `Affiliated: ${userUniversity}`
+                        : "No university affiliated"}
+                    </span>
+                  </div>
+                  <h2 className="text-xl sm:text-2xl font-black tracking-tight text-black mt-1">
+                    Campus & College Affiliation
+                  </h2>
+                  <p className="mt-1 text-xs sm:text-sm text-neutral-700 font-medium max-w-2xl leading-relaxed">
+                    Represent your university on the global Leaderboard. All{" "}
+                    <strong>{completedCases.length}</strong> of your cleared investigations
+                    contribute to your campus cohort's cumulative rank in the Inter-Campus Cup.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setIsCampusModalOpen(true)}
+                  className="inline-flex items-center gap-2 rounded-xl bg-black text-white px-5 py-2.5 font-mono text-xs font-black border-2 border-black shadow-xs hover:bg-neutral-800 transition-all cursor-pointer"
+                >
+                  <Edit3 className="size-3.5" />
+                  <span>
+                    {userUniversity && userUniversity !== "Independent / Self-Taught"
+                      ? "Change University"
+                      : "Affiliate Your University / College"}
+                  </span>
+                </button>
+
+                <Link
+                  to="/leaderboard"
+                  className="inline-flex items-center gap-2 rounded-xl bg-neutral-100 text-black px-4 py-2.5 font-mono text-xs font-black border-2 border-black/20 hover:border-black transition-all"
+                >
+                  <Trophy className="size-3.5" />
+                  <span>Campus Leaderboard</span>
+                </Link>
+              </div>
+            </div>
+
+            {/* Status Details Bar */}
+            <div className="mt-5 grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="rounded-2xl border-2 border-black/10 bg-neutral-50 p-4">
+                <p className="font-mono text-[10px] uppercase font-bold text-neutral-500">
+                  Affiliated Institution
+                </p>
+                <p className="font-black text-sm text-black mt-1 truncate">
+                  {userUniversity || "Independent / Self-Taught"}
+                </p>
+                <p className="font-mono text-[10px] text-neutral-600 mt-1">
+                  Shown on your public dossier and shareable QR card.
+                </p>
+              </div>
+
+              <div className="rounded-2xl border-2 border-black/10 bg-neutral-50 p-4">
+                <p className="font-mono text-[10px] uppercase font-bold text-neutral-500">
+                  Cohort Points Contributed
+                </p>
+                <p className="font-mono text-base font-black text-black mt-1">{points} RC Points</p>
+                <p className="font-mono text-[10px] text-neutral-600 mt-1">
+                  Pooled into {userUniversity || "independent"} standings.
+                </p>
+              </div>
+
+              <div className="rounded-2xl border-2 border-black/10 bg-neutral-50 p-4">
+                <p className="font-mono text-[10px] uppercase font-bold text-neutral-500">
+                  Campus Placement Focus
+                </p>
+                <p className="font-black text-sm text-black mt-1">Track 0 & Track 7 Free Tier</p>
+                <p className="font-mono text-[10px] text-neutral-600 mt-1">
+                  12 Machine Coding & LLD interview cases ready.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        <CampusAffiliationModal
+          isOpen={isCampusModalOpen}
+          onClose={() => setIsCampusModalOpen(false)}
+          currentUniversity={userUniversity}
+        />
       </div>
     </AppChrome>
   );

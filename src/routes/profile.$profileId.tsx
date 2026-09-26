@@ -10,6 +10,7 @@ import {
   CheckCircle2,
   ChevronRight,
   Flame,
+  GraduationCap,
   Link as LinkIcon,
   Share2,
   ShieldCheck,
@@ -19,6 +20,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { RANKS } from "@/lib/rc";
+import { CampusAffiliationModal } from "@/components/CampusAffiliationModal";
 
 export const Route = createFileRoute("/profile/$profileId")({
   loader: ({ params }) => ({ profileId: params.profileId }),
@@ -40,6 +42,7 @@ function PublicProfilePage() {
   const profileId = decodeURIComponent(rawProfileId);
   const { profile: userProfile, isAuthenticated } = useAccount();
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [isCampusModalOpen, setIsCampusModalOpen] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
 
   // Fetch the public profile from Convex using the opaque publicProfileId
@@ -106,6 +109,7 @@ function PublicProfilePage() {
     completedCases,
     createdAt,
     publicProfileId,
+    university,
   } = publicData;
 
   const isOwner = Boolean(userProfile && userProfile.publicProfileId === publicProfileId);
@@ -146,12 +150,23 @@ function PublicProfilePage() {
             </button>
 
             {isOwner && (
-              <Link
-                to="/profile"
-                className="flex items-center gap-1.5 rounded-xl border-2 border-black bg-white px-3.5 py-1.5 font-mono text-xs font-black text-black hover:bg-neutral-100 transition-all shadow-xs"
-              >
-                <span>Edit Profile</span>
-              </Link>
+              <>
+                <button
+                  type="button"
+                  onClick={() => setIsCampusModalOpen(true)}
+                  className="flex items-center gap-1.5 rounded-xl border-2 border-black bg-white px-3.5 py-1.5 font-mono text-xs font-black text-black hover:bg-neutral-100 transition-all shadow-xs cursor-pointer"
+                  title="Update your university or college"
+                >
+                  <GraduationCap className="size-3.5" />
+                  <span>{university ? "Change Campus" : "Set Campus"}</span>
+                </button>
+                <Link
+                  to="/profile"
+                  className="flex items-center gap-1.5 rounded-xl border-2 border-black bg-white px-3.5 py-1.5 font-mono text-xs font-black text-black hover:bg-neutral-100 transition-all shadow-xs"
+                >
+                  <span>Edit Profile</span>
+                </Link>
+              </>
             )}
           </div>
         </div>
@@ -198,6 +213,12 @@ function PublicProfilePage() {
                 <span className="rounded-xl border-2 border-black bg-white px-3 py-1.5 font-mono text-xs font-bold text-black shadow-xs">
                   Member since {formattedJoinedDate}
                 </span>
+                {Boolean(university && university !== "Independent / Self-Taught") && (
+                  <span className="rounded-xl border-2 border-black bg-neutral-100 px-3 py-1.5 font-mono text-xs font-black text-black shadow-xs flex items-center gap-1.5">
+                    <GraduationCap className="size-3.5 text-black" />
+                    <span>{university}</span>
+                  </span>
+                )}
               </div>
             </div>
 
@@ -430,8 +451,17 @@ function PublicProfilePage() {
           avatarUrl: imageUrl,
           bannerUrl: bannerUrl || "/Observer.jpg",
           isPublic: true,
+          university: university || "",
         }}
       />
+
+      {isOwner && (
+        <CampusAffiliationModal
+          isOpen={isCampusModalOpen}
+          onClose={() => setIsCampusModalOpen(false)}
+          currentUniversity={university || ""}
+        />
+      )}
     </AppChrome>
   );
 }

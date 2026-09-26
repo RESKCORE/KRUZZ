@@ -1,0 +1,28 @@
+export const CURATED_UNIVERSITIES = [
+  "All Campuses",
+  "UC Berkeley",
+  "Stanford University",
+  "MIT",
+  "Carnegie Mellon (CMU)",
+  "University of Waterloo",
+  "IIT Bombay",
+  "IIT Delhi",
+  "IIT Madras",
+  "BITS Pilani",
+  "IIIT Hyderabad",
+  "Georgia Tech",
+  "University of Washington",
+  "UT Austin",
+  "University of Toronto",
+  "Harvard University",
+  "UIUC",
+  "University of Michigan",
+  "NUS Singapore",
+  "Tsinghua University",
+  "Cambridge University",
+  "Oxford University",
+  "ETH Zurich",
+  "Independent / Self-Taught",
+] as const;
+
+export type CuratedUniversity = (typeof CURATED_UNIVERSITIES)[number];

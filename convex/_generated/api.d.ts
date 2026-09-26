@@ -12,6 +12,8 @@ import type * as ai from "../ai.js";
 import type * as awards from "../awards.js";
 import type * as caseProgress from "../caseProgress.js";
 import type * as caseStudies from "../caseStudies.js";
+import type * as emails from "../emails.js";
+import type * as http from "../http.js";
 import type * as leaderboard from "../leaderboard.js";
 import type * as migrations from "../migrations.js";
 import type * as rules from "../rules.js";
@@ -29,6 +31,8 @@ declare const fullApi: ApiFromModules<{
   awards: typeof awards;
   caseProgress: typeof caseProgress;
   caseStudies: typeof caseStudies;
+  emails: typeof emails;
+  http: typeof http;
   leaderboard: typeof leaderboard;
   migrations: typeof migrations;
   rules: typeof rules;
@@ -62,4 +66,6 @@ export declare const internal: FilterApi<
   FunctionReference<any, "internal">
 >;
 
-export declare const components: {};
+export declare const components: {
+  resend: import("@convex-dev/resend/_generated/component.js").ComponentApi<"resend">;
+};

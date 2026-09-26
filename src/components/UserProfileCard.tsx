@@ -18,9 +18,11 @@ import {
   Star,
   User,
   GraduationCap,
+  Pencil,
 } from "lucide-react";
 import { toast } from "sonner";
 import { ShareProfileModal } from "@/components/ShareProfileModal";
+import { CampusAffiliationModal } from "@/components/CampusAffiliationModal";
 import { SlideToContinue } from "@/components/SlideToContinue";
 
 interface UserProfileCardProps {
@@ -34,6 +36,7 @@ export function UserProfileCard({ className = "" }: UserProfileCardProps) {
   const { points, rank, awards } = useWallet();
   const { current: streakCurrent } = useStreak();
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+  const [isCampusModalOpen, setIsCampusModalOpen] = useState(false);
   const [isUpdatingPrivacy, setIsUpdatingPrivacy] = useState(false);
   const picInputRef = useRef<HTMLInputElement>(null);
   const bannerInputRef = useRef<HTMLInputElement>(null);
@@ -316,7 +319,33 @@ export function UserProfileCard({ className = "" }: UserProfileCardProps) {
             )}
           </div>
           <p className="font-mono text-xs text-black font-bold">@{handle}</p>
-          {Boolean((profile as any)?.university) && (
+          {isAuthenticated && (
+            <div className="mt-1.5 flex items-center gap-2">
+              {(profile as any)?.university ? (
+                <button
+                  type="button"
+                  onClick={() => setIsCampusModalOpen(true)}
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-neutral-100 hover:bg-neutral-200 border border-black/25 px-2.5 py-0.5 font-mono text-[10px] font-bold text-black transition-colors cursor-pointer group"
+                  title="Click to change your university/college"
+                >
+                  <GraduationCap className="size-3 text-black" />
+                  <span className="truncate max-w-[24ch]">{(profile as any).university}</span>
+                  <Pencil className="size-2.5 opacity-50 group-hover:opacity-100 transition-opacity" />
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setIsCampusModalOpen(true)}
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-white hover:bg-neutral-100 border border-dashed border-black/50 px-2.5 py-0.5 font-mono text-[10px] font-bold text-black transition-colors cursor-pointer"
+                  title="Affiliate with your college or university"
+                >
+                  <GraduationCap className="size-3 text-black" />
+                  <span>+ Add University / College</span>
+                </button>
+              )}
+            </div>
+          )}
+          {!isAuthenticated && Boolean((profile as any)?.university) && (
             <p className="mt-1 inline-flex items-center gap-1 rounded bg-neutral-100 border border-black/25 px-2 py-0.5 font-mono text-[10px] font-bold text-black">
               <GraduationCap className="size-3 text-black" />
               <span>{(profile as any).university}</span>
@@ -474,7 +503,14 @@ export function UserProfileCard({ className = "" }: UserProfileCardProps) {
           avatarUrl,
           bannerUrl,
           isPublic,
+          university: (profile as any)?.university || "",
         }}
+      />
+
+      <CampusAffiliationModal
+        isOpen={isCampusModalOpen}
+        onClose={() => setIsCampusModalOpen(false)}
+        currentUniversity={(profile as any)?.university || ""}
       />
     </div>
   );

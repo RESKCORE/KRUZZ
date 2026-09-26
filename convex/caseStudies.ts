@@ -296,7 +296,7 @@ export const updateDecisionsInternal = internalMutation({
   },
 });
 
-function timingSafeEqualStr(a: string, b: string): boolean {
+export function timingSafeEqualStr(a: string, b: string): boolean {
   if (a.length !== b.length) return false;
   let mismatch = 0;
   for (let i = 0; i < a.length; i++) {

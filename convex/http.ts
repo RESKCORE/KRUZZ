@@ -1,0 +1,13 @@
+import { httpRouter } from "convex/server";
+import { httpAction } from "./_generated/server";
+import { resend } from "./emails";
+
+const http = httpRouter();
+
+http.route({
+  path: "/resend-webhook",
+  method: "POST",
+  handler: httpAction(async (ctx, req) => resend.handleResendEventWebhook(ctx, req)),
+});
+
+export default http;

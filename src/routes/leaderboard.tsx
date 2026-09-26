@@ -49,26 +49,9 @@ function LeaderboardRoute() {
   );
 }
 
-const BATCH_SIZE = 30;
+import { CURATED_UNIVERSITIES } from "@/data/universities";
 
-const CURATED_UNIVERSITIES = [
-  "All Campuses",
-  "UC Berkeley",
-  "Stanford University",
-  "MIT",
-  "Carnegie Mellon (CMU)",
-  "University of Waterloo",
-  "IIT Bombay",
-  "IIT Delhi",
-  "Georgia Tech",
-  "UT Austin",
-  "University of Toronto",
-  "University of Washington",
-  "NUS Singapore",
-  "Tsinghua University",
-  "Cambridge University",
-  "Independent / Self-Taught",
-] as const;
+const BATCH_SIZE = 30;
 
 function LeaderboardPage() {
   const { user, profile, isAuthenticated } = useAccount();

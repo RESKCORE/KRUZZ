@@ -3,6 +3,7 @@ import { type Id } from "./_generated/dataModel";
 import { v } from "convex/values";
 import type { UserIdentity } from "convex/server";
 import { touchStreakForUser } from "./streaks";
+import { sendToUser } from "./emails";
 import {
   rankForPoints,
   validateImageSignatureBytes,
@@ -99,6 +100,14 @@ export async function getOrCreateUser(ctx: MutationCtx, identity: UserIdentity) 
 
   const created = await ctx.db.get(newUserId);
   if (!created) throw new Error("Failed to create user record");
+
+  // Never let email failure block signup.
+  await sendToUser(ctx, {
+    tokenIdentifier: identity.tokenIdentifier,
+    title: "Welcome to KRUZZ",
+    body: "<p>Your account is ready. Work through the case studies to start climbing the leaderboard.</p>",
+  }).catch((err) => console.error("[email] welcome send failed", err));
+
   return created;
 }
 
