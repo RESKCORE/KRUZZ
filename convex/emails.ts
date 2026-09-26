@@ -14,14 +14,90 @@ import { internalMutation, type MutationCtx } from "./_generated/server";
  */
 export const resend = new Resend(components.resend, { testMode: false });
 
-const FROM = "KRUZZ <noreply@kruzz.indevs.in>";
+export const FROM = "KRUZZ <noreply@kruzz.indevs.in>";
+
+const SITE_URL = "https://kruzz.indevs.in";
+
+export function buildBroadcastEmailHtml(options: {
+  title: string;
+  body: string;
+  badge?: string;
+  actionLabel?: string;
+  actionUrl?: string;
+}): string {
+  const badgeHtml = options.badge
+    ? `<div style="display:inline-block;padding:4px 10px;border-radius:6px;background:#f3f4f6;border:1px solid #d1d5db;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-size:11px;font-weight:800;letter-spacing:0.08em;text-transform:uppercase;color:#111;margin-bottom:14px;">${options.badge}</div>`
+    : "";
+
+  const actionHtml =
+    options.actionLabel && options.actionUrl
+      ? `<div style="margin:28px 0 20px 0;">
+          <a href="${options.actionUrl}" style="display:inline-block;background:#000000;color:#ffffff;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-size:13px;font-weight:800;text-decoration:none;padding:12px 24px;border-radius:10px;border:2px solid #000000;">
+            ${options.actionLabel} &rarr;
+          </a>
+        </div>`
+      : "";
+
+  return `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${options.title}</title>
+</head>
+<body style="margin:0;padding:24px 12px;background:#f8f9fa;font-family:-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#111827;line-height:1.6;">
+  <table width="100%" border="0" cellspacing="0" cellpadding="0">
+    <tr>
+      <td align="center">
+        <table width="100%" style="max-width:580px;background:#ffffff;border:2px solid #000000;border-radius:18px;overflow:hidden;box-shadow:0 6px 0 0 #000000;padding:0;" border="0" cellspacing="0" cellpadding="0">
+          <tr>
+            <td style="padding:20px 28px;background:#000000;color:#ffffff;border-bottom:2px solid #000000;">
+              <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                <tr>
+                  <td width="48" valign="middle" style="vertical-align:middle;">
+                    <img src="${SITE_URL}/email-logo.png" width="36" height="36" alt="KRUZZ" style="display:block;width:36px;height:36px;border:0;outline:none;text-decoration:none;">
+                  </td>
+                  <td valign="middle" style="vertical-align:middle;">
+                    <span style="font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-weight:900;font-size:18px;letter-spacing:0.05em;color:#ffffff;">KRUZZ</span>
+                    <span style="display:inline-block;margin-left:8px;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-size:10px;color:#a3a3a3;text-transform:uppercase;letter-spacing:0.15em;">· System Architecture</span>
+                  </td>
+                  <td align="right" valign="middle" style="vertical-align:middle;">
+                    <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#ffffff;"></span>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:32px 28px;">
+              ${badgeHtml}
+              <h1 style="margin:0 0 16px 0;font-size:24px;font-weight:900;color:#000000;line-height:1.25;letter-spacing:-0.02em;">
+                ${options.title}
+              </h1>
+
+              <div style="font-size:14px;color:#374151;line-height:1.65;">
+                ${options.body}
+              </div>
+
+              ${actionHtml}
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:20px 28px;background:#f9fafb;border-top:1px solid #e5e7eb;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-size:11px;color:#6b7280;line-height:1.5;">
+              <p style="margin:0 0 4px 0;font-weight:700;color:#111827;">KRUZZ — Real-World System Architecture Platform</p>
+              <p style="margin:0;">You are receiving this operational dispatch as a registered investigator on <a href="${SITE_URL}" style="color:#000000;font-weight:700;text-decoration:underline;">kruzz.indevs.in</a>.</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+}
 
 function layout(title: string, body: string): string {
-  return `<div style="font-family:system-ui,sans-serif;max-width:560px;margin:0 auto">
-<h1 style="font-size:20px">${title}</h1>
-${body}
-<p style="color:#888;font-size:12px">KRUZZ — sent because you have an account.</p>
-</div>`;
+  return buildBroadcastEmailHtml({ title, body });
 }
 
 /** Enqueue an email to a single user. Returns null when the user has no stored email. */

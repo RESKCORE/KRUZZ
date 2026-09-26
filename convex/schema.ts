@@ -17,6 +17,7 @@ export default defineSchema({
     isPublic: v.optional(v.boolean()),
     publicProfileId: v.optional(v.string()),
     university: v.optional(v.string()),
+    role: v.optional(v.string()),
     createdAt: v.number(),
   })
     .index("by_token", ["tokenIdentifier"])
@@ -153,4 +154,18 @@ export default defineSchema({
     lastSuccessTime: v.optional(v.number()),
     updatedAt: v.number(),
   }).index("by_provider", ["provider"]),
+
+  broadcasts: defineTable({
+    subject: v.string(),
+    title: v.string(),
+    body: v.string(),
+    type: v.string(), // "announcement" | "update" | "alert" | "challenge"
+    actionLabel: v.optional(v.string()),
+    actionUrl: v.optional(v.string()),
+    recipientCount: v.number(),
+    sentBy: v.string(),
+    sentAt: v.number(),
+    status: v.string(), // "sent" | "test" | "failed"
+    testEmail: v.optional(v.string()),
+  }).index("by_sent_at", ["sentAt"]),
 });

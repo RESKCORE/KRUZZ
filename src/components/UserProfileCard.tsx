@@ -15,6 +15,7 @@ import {
   Lock,
   Share2,
   ShieldCheck,
+  ShieldAlert,
   Star,
   User,
   GraduationCap,
@@ -45,6 +46,9 @@ export function UserProfileCard({ className = "" }: UserProfileCardProps) {
   const updateProfilePrivacy = useMutation(api.users.updateProfilePrivacy);
 
   const isPublic = Boolean(profile?.isPublic);
+  const isAdmin =
+    (profile as any)?.role === "admin" ||
+    user?.primaryEmailAddress?.emailAddress === "reddysantosh1310@gmail.com";
 
   async function handleTogglePrivacy(nextState?: boolean) {
     if (!isAuthenticated) return;
@@ -200,6 +204,12 @@ export function UserProfileCard({ className = "" }: UserProfileCardProps) {
           </span>
 
           <div className="flex items-center gap-1.5">
+            {isAdmin && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-[#ccff00] text-black border-2 border-black px-2.5 py-1 font-mono text-[10px] font-black uppercase tracking-wider shadow-xs">
+                <ShieldAlert className="size-3 text-black" />
+                Admin
+              </span>
+            )}
             {isAuthenticated && (
               <span
                 className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 font-mono text-[10px] font-black uppercase tracking-wider border-2 ${
@@ -296,6 +306,17 @@ export function UserProfileCard({ className = "" }: UserProfileCardProps) {
                   <Share2 className="size-3.5 text-black" />
                   <span>Share</span>
                 </button>
+
+                {isAdmin && (
+                  <Link
+                    to="/admin"
+                    className="neu-btn flex items-center gap-1.5 rounded-full px-4 py-1.5 font-mono text-xs font-black text-black bg-[#ccff00] hover:bg-[#b8e600] border-2 border-black active:scale-95 transition-all cursor-pointer shadow-xs"
+                    title="Open KRUZZ Admin & Email Broadcast Console"
+                  >
+                    <ShieldAlert className="size-3.5 text-black" />
+                    <span>Admin Console</span>
+                  </Link>
+                )}
               </>
             ) : (
               <Link

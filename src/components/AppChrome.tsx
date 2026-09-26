@@ -15,6 +15,7 @@ import {
   ChevronRight,
   Palette,
   Trophy,
+  ShieldAlert,
 } from "lucide-react";
 import { useAccount } from "@/lib/account";
 import { useTheme } from "@/lib/theme";
@@ -25,8 +26,13 @@ function SettingsDropdown() {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const { signOut } = useClerk();
   const { user } = useUser();
+  const { profile } = useAccount();
   const { activeThemeMeta } = useTheme();
   const router = useRouter();
+
+  const isAdmin =
+    (profile as any)?.role === "admin" ||
+    user?.primaryEmailAddress?.emailAddress === "reddysantosh1310@gmail.com";
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -114,6 +120,22 @@ function SettingsDropdown() {
                 {activeThemeMeta?.name?.split(" ")[0] ?? "Theme"}
               </span>
             </Link>
+
+            {isAdmin && (
+              <Link
+                to="/admin"
+                onClick={() => setOpen(false)}
+                className="mt-1 flex items-center justify-between rounded-xl border border-[#ccff00]/30 bg-[#ccff00]/10 px-3 py-2 text-xs font-bold text-[#ccff00] transition-colors hover:bg-[#ccff00]/20"
+              >
+                <span className="flex items-center gap-2">
+                  <ShieldAlert className="size-3.5 text-[#ccff00]" />
+                  Admin Console
+                </span>
+                <span className="font-mono text-[9px] rounded bg-[#ccff00] text-black px-1.5 py-0.5 font-black uppercase">
+                  STAFF
+                </span>
+              </Link>
+            )}
           </div>
 
           <div className="border-t border-white/[0.06] pt-1">

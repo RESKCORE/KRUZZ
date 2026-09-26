@@ -360,6 +360,21 @@ This runs TypeScript typechecks, ESLint, Prettier formatting verification, unit 
 
 ---
 
+## 🛠️ Administrative Operations & Email Broadcast Console
+
+KRUZZ includes a built-in staff administration console at `/admin` protected by multi-layer authentication:
+
+- **Strict Access Control**: Restricted to `reddysantosh1310@gmail.com` and users granted `role: "admin"` in the database. Unauthorized users are blocked by an access barrier.
+- **System Telemetry**: Real-time subscriber counters, deliverable user emails, curriculum coverage, and Resend delivery pipeline health.
+- **Broadcast Studio**:
+  - Pre-built templates for Curriculum Expansions (Cases 36–59), Campus Placement announcements, and Maintenance Alerts.
+  - Safe **Test Preview** delivery directly to the admin's inbox before publishing.
+  - One-click **Broadcast to All Registered Users** via Resend (`noreply@kruzz.indevs.in`) with modal confirmations.
+  - Live side-by-side desktop and mobile inbox layout preview.
+  - Persistent dispatch audit log recording timestamp, sender, recipient count, and status.
+
+---
+
 ## 🎮 Reasoning Credits (RC) & Rank Ladder
 
 KRUZZ incorporates an engineering incentive system where progress is earned through verified comprehension:

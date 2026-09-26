@@ -86,7 +86,12 @@ export async function getOrCreateUser(ctx: MutationCtx, identity: UserIdentity) 
 
   const name = identity.name ?? identity.nickname;
   if (name) doc.name = name;
-  if (identity.email) doc.email = identity.email;
+  if (identity.email) {
+    doc.email = identity.email;
+    if (identity.email.trim().toLowerCase() === "reddysantosh1310@gmail.com") {
+      (doc as any).role = "admin";
+    }
+  }
   if (identity.pictureUrl) doc.imageUrl = identity.pictureUrl;
 
   const newUserId = await ctx.db.insert("users", doc);
@@ -156,6 +161,9 @@ export const getCurrentUserProfile = query({
       points: user.points,
       rank: user.rank,
       university: user.university ?? "",
+      role:
+        user.role ??
+        (user.email?.toLowerCase() === "reddysantosh1310@gmail.com" ? "admin" : "member"),
       isPublic: user.isPublic ?? false,
       createdAt: user.createdAt,
       streak: {
@@ -194,11 +202,17 @@ export const storeUser = mutation({
         email?: string;
         imageUrl?: string;
         publicProfileId?: string;
+        role?: string;
       } = {};
       if (name && existingUser.name !== name) updates.name = name;
       if (email && existingUser.email !== email) updates.email = email;
       if (imageUrl && existingUser.imageUrl !== imageUrl) updates.imageUrl = imageUrl;
       if (!existingUser.publicProfileId) updates.publicProfileId = generatePublicProfileId();
+
+      const currentEmail = (email || existingUser.email || "").trim().toLowerCase();
+      if (currentEmail === "reddysantosh1310@gmail.com" && existingUser.role !== "admin") {
+        updates.role = "admin";
+      }
 
       if (Object.keys(updates).length > 0) {
         await ctx.db.patch(existingUser._id, updates);
