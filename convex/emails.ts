@@ -51,15 +51,19 @@ export function buildBroadcastEmailHtml(options: {
       <td align="center">
         <table width="100%" style="max-width:580px;background:#ffffff;border:2px solid #000000;border-radius:18px;overflow:hidden;box-shadow:0 6px 0 0 #000000;padding:0;" border="0" cellspacing="0" cellpadding="0">
           <tr>
-            <td style="padding:20px 28px;background:#000000;color:#ffffff;border-bottom:2px solid #000000;">
+            <td style="padding:18px 24px;background:#000000;color:#ffffff;border-bottom:2px solid #000000;">
               <table width="100%" border="0" cellspacing="0" cellpadding="0">
                 <tr>
-                  <td width="48" valign="middle" style="vertical-align:middle;">
-                    <img src="${SITE_URL}/email-logo.png" width="36" height="36" alt="KRUZZ" style="display:block;width:36px;height:36px;border:0;outline:none;text-decoration:none;">
+                  <td width="42" valign="middle" style="vertical-align:middle;">
+                    <a href="${SITE_URL}" style="text-decoration:none;display:block;">
+                      <img src="${SITE_URL}/logo.png" width="34" height="34" alt="KRUZZ Logo" style="display:block;width:34px;height:34px;border-radius:8px;border:1px solid #333333;outline:none;text-decoration:none;">
+                    </a>
                   </td>
-                  <td valign="middle" style="vertical-align:middle;">
-                    <span style="font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-weight:900;font-size:18px;letter-spacing:0.05em;color:#ffffff;">KRUZZ</span>
-                    <span style="display:inline-block;margin-left:8px;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-size:10px;color:#a3a3a3;text-transform:uppercase;letter-spacing:0.15em;">· System Architecture</span>
+                  <td valign="middle" style="vertical-align:middle;padding-left:10px;">
+                    <a href="${SITE_URL}" style="text-decoration:none;color:#ffffff;">
+                      <span style="font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-weight:900;font-size:17px;letter-spacing:0.06em;color:#ffffff;">KRUZZ</span>
+                      <span style="display:inline-block;margin-left:8px;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-size:10px;color:#a3a3a3;text-transform:uppercase;letter-spacing:0.15em;">· System Architecture</span>
+                    </a>
                   </td>
                   <td align="right" valign="middle" style="vertical-align:middle;">
                     <span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#ffffff;"></span>
@@ -84,8 +88,17 @@ export function buildBroadcastEmailHtml(options: {
           </tr>
           <tr>
             <td style="padding:20px 28px;background:#f9fafb;border-top:1px solid #e5e7eb;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-size:11px;color:#6b7280;line-height:1.5;">
-              <p style="margin:0 0 4px 0;font-weight:700;color:#111827;">KRUZZ — Real-World System Architecture Platform</p>
-              <p style="margin:0;">You are receiving this operational dispatch as a registered investigator on <a href="${SITE_URL}" style="color:#000000;font-weight:700;text-decoration:underline;">kruzz.indevs.in</a>.</p>
+              <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                <tr>
+                  <td width="30" valign="top" style="vertical-align:top;padding-right:10px;">
+                    <img src="${SITE_URL}/logo.png" width="22" height="22" alt="KRUZZ" style="display:block;width:22px;height:22px;border-radius:6px;opacity:0.85;">
+                  </td>
+                  <td valign="top" style="vertical-align:top;">
+                    <p style="margin:0 0 3px 0;font-weight:700;color:#111827;">KRUZZ — Real-World System Architecture Platform</p>
+                    <p style="margin:0;">You are receiving this operational dispatch as a registered investigator on <a href="${SITE_URL}" style="color:#000000;font-weight:700;text-decoration:underline;">kruzz.indevs.in</a>.</p>
+                  </td>
+                </tr>
+              </table>
             </td>
           </tr>
         </table>

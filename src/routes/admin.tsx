@@ -623,10 +623,20 @@ function AdminPage() {
                 <div className="rounded-2xl border-2 border-black bg-white overflow-hidden shadow-2xs">
                   {/* Brand Top Bar */}
                   <div className="bg-black text-white px-4 py-3 flex items-center justify-between border-b-2 border-black">
-                    <span className="font-mono font-black text-sm tracking-wider">KRUZZ</span>
-                    <span className="font-mono text-[10px] text-neutral-400 uppercase tracking-widest">
-                      · System Architecture
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <img
+                        src="/logo.png"
+                        alt="KRUZZ Logo"
+                        className="size-7 rounded-lg object-contain border border-white/20"
+                      />
+                      <span className="font-mono font-black text-sm tracking-wider text-white">
+                        KRUZZ
+                      </span>
+                      <span className="font-mono text-[10px] text-neutral-400 uppercase tracking-widest hidden sm:inline">
+                        · System Architecture
+                      </span>
+                    </div>
+                    <span className="size-2 rounded-full bg-white ring-2 ring-white/30" />
                   </div>
 
                   {/* Body Content */}
@@ -658,10 +668,17 @@ function AdminPage() {
                   </div>
 
                   {/* Email Footer */}
-                  <div className="bg-neutral-50 border-t border-black/10 p-3 font-mono text-[9px] text-neutral-500 leading-normal">
-                    <p className="font-bold text-black">
-                      KRUZZ — Real-World System Architecture Platform
-                    </p>
+                  <div className="bg-neutral-50 border-t border-black/10 p-3.5 font-mono text-[10px] text-neutral-500 leading-normal">
+                    <div className="flex items-center gap-2 mb-1">
+                      <img
+                        src="/logo.png"
+                        alt="KRUZZ Logo"
+                        className="size-4.5 rounded object-contain opacity-90 border border-black/20"
+                      />
+                      <p className="font-bold text-black text-[11px]">
+                        KRUZZ — Real-World System Architecture Platform
+                      </p>
+                    </div>
                     <p>Sent to registered investigators on kruzz.indevs.in.</p>
                   </div>
                 </div>
