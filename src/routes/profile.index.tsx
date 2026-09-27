@@ -40,11 +40,11 @@ function ProfilePage() {
   const caseStudies = (useQuery(api.caseStudies.list, {}) ?? []) as any[];
   const totalCases = caseStudies.length;
   const completedCases = caseStudies.filter((c) => {
-    const progressDoc = cloudProgress?.find((p) => p.caseSlug === c.slug);
+    const progressDoc = cloudProgress?.find((p: any) => p.caseSlug === c.slug);
     return isStudyComplete(awards, progressDoc, c.slug);
   });
   const completedLabs = caseStudies.filter((c) => {
-    const progressDoc = cloudProgress?.find((p) => p.caseSlug === c.slug);
+    const progressDoc = cloudProgress?.find((p: any) => p.caseSlug === c.slug);
     return isLabCompleted(awards, c.slug) || Boolean(progressDoc?.passed);
   });
 

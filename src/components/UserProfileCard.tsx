@@ -175,7 +175,7 @@ export function UserProfileCard({ className = "" }: UserProfileCardProps) {
 
   const initials = displayName
     .split(" ")
-    .map((n) => n[0])
+    .map((n: string) => n[0])
     .filter(Boolean)
     .slice(0, 2)
     .join("")

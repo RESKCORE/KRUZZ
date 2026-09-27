@@ -275,7 +275,7 @@ function PublicProfilePage() {
 
             {completedCases.length > 0 ? (
               <div className="grid grid-cols-1 gap-3">
-                {completedCases.map((c, i) => (
+                {completedCases.map((c: any, i: number) => (
                   <div
                     key={c.caseSlug}
                     className="group rounded-2xl border-2 border-black bg-white p-4 transition-all hover:bg-neutral-50 shadow-xs"

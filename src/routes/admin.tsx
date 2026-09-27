@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
 import { AppChrome } from "@/components/AppChrome";
 import { useAccount } from "@/lib/account";
-import { useQuery, useMutation } from "convex/react";
+import { useQuery, useMutation, useAction } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import {
   AlertTriangle,
@@ -10,6 +10,7 @@ import {
   Bell,
   CheckCircle2,
   Clock,
+  ExternalLink,
   Eye,
   FileText,
   GraduationCap,
@@ -95,7 +96,7 @@ function AdminPage() {
   const adminCheck = useQuery(api.admin.checkIsAdmin, isAuthenticated ? {} : "skip");
   const stats = useQuery(api.admin.getAdminStats, adminCheck?.isAdmin ? {} : "skip");
   const broadcasts = useQuery(api.admin.listBroadcasts, adminCheck?.isAdmin ? {} : "skip");
-  const sendBroadcastMutation = useMutation(api.admin.sendBroadcastEmail);
+  const sendBroadcastAction = useAction(api.admin.sendBroadcastEmail);
 
   const [activeTab, setActiveTab] = useState<"broadcast" | "history" | "users">("broadcast");
 
@@ -192,7 +193,7 @@ function AdminPage() {
 
     setIsSendingTest(true);
     try {
-      const res = await sendBroadcastMutation({
+      const res = await sendBroadcastAction({
         subject,
         title,
         body,
@@ -205,7 +206,7 @@ function AdminPage() {
       });
 
       toast.success(
-        `Test preview sent successfully to ${res.targetEmail}! Check your inbox in a moment.`,
+        `Test preview delivered to ${res.targetEmail}! Check your inbox or Resend monitor.`,
       );
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Failed to dispatch test email");
@@ -220,7 +221,7 @@ function AdminPage() {
     setIsSendingBroadcast(true);
 
     try {
-      const res = await sendBroadcastMutation({
+      const res = await sendBroadcastAction({
         subject,
         title,
         body,
@@ -231,9 +232,13 @@ function AdminPage() {
         isTest: false,
       });
 
-      toast.success(
-        `🚀 Broadcast successfully dispatched to all ${res.recipientCount} registered investigators!`,
-      );
+      if (res.deliveredCount > 0) {
+        toast.success(
+          `🚀 Dispatched to ${res.deliveredCount} recipients! (${res.failedCount || 0} failed). Check Resend Dashboard for live delivery events.`,
+        );
+      } else {
+        toast.error("Broadcast failed to deliver to recipients.");
+      }
       setActiveTab("history");
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Broadcast failed to send");
@@ -264,6 +269,16 @@ function AdminPage() {
           </div>
 
           <div className="flex items-center gap-2">
+            <a
+              href="https://resend.com/emails"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="rounded-xl border-2 border-black bg-white hover:bg-neutral-100 px-3.5 py-1.5 font-mono text-xs font-black text-black shadow-xs flex items-center gap-1.5 transition-all"
+              title="Open Live Resend Email Dashboard"
+            >
+              <ExternalLink className="size-3.5" />
+              <span>Resend Monitor ↗</span>
+            </a>
             <span className="rounded-xl border-2 border-black bg-black px-3.5 py-1.5 font-mono text-xs font-black text-white shadow-xs flex items-center gap-1.5">
               <Shield className="size-3.5" />
               <span>Admin: reddysantosh1310</span>
@@ -692,16 +707,27 @@ function AdminPage() {
            ========================================================================= */}
         {activeTab === "history" && (
           <div className="rounded-3xl border-2 border-black bg-white p-6 shadow-xs space-y-5">
-            <div className="flex items-center justify-between border-b-2 border-black/10 pb-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b-2 border-black/10 pb-4">
               <div>
                 <h3 className="text-lg font-black text-black">Historical Broadcast Audit Log</h3>
                 <p className="text-xs text-neutral-600 font-medium">
                   Verified log of all production broadcasts and test preview dispatches.
                 </p>
               </div>
-              <span className="font-mono text-xs text-black font-bold">
-                {broadcasts?.length ?? 0} Records Found
-              </span>
+              <div className="flex items-center gap-3">
+                <a
+                  href="https://resend.com/emails"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="rounded-xl border-2 border-black bg-neutral-100 hover:bg-neutral-200 px-3 py-1 font-mono text-[11px] font-black text-black flex items-center gap-1.5 shadow-xs"
+                >
+                  <ExternalLink className="size-3" />
+                  <span>Open Resend Logs ↗</span>
+                </a>
+                <span className="font-mono text-xs text-black font-bold">
+                  {broadcasts?.length ?? 0} Records Found
+                </span>
+              </div>
             </div>
 
             {!broadcasts || broadcasts.length === 0 ? (
@@ -711,7 +737,7 @@ function AdminPage() {
               </div>
             ) : (
               <div className="divide-y-2 divide-black/10">
-                {broadcasts.map((b) => (
+                {broadcasts.map((b: any) => (
                   <div
                     key={b._id}
                     className="py-4 flex flex-col md:flex-row md:items-center justify-between gap-4"
@@ -720,12 +746,22 @@ function AdminPage() {
                       <div className="flex items-center gap-2">
                         <span
                           className={`font-mono text-[10px] font-black uppercase px-2 py-0.5 rounded border ${
-                            b.status === "sent"
+                            b.status === "delivered" || b.status === "sent"
                               ? "bg-emerald-100 text-emerald-950 border-emerald-900"
-                              : "bg-neutral-100 text-neutral-800 border-black/30"
+                              : b.status === "partial"
+                                ? "bg-amber-100 text-amber-950 border-amber-900"
+                                : b.status === "failed"
+                                  ? "bg-red-100 text-red-950 border-red-900"
+                                  : "bg-neutral-100 text-neutral-800 border-black/30"
                           }`}
                         >
-                          {b.status === "sent" ? "PRODUCTION DISPATCH" : "TEST PREVIEW"}
+                          {b.status === "delivered" || b.status === "sent"
+                            ? "DELIVERED"
+                            : b.status === "partial"
+                              ? "PARTIAL DELIVERY"
+                              : b.status === "failed"
+                                ? "FAILED"
+                                : "TEST PREVIEW"}
                         </span>
                         <span className="font-mono text-xs font-bold text-neutral-500">
                           {new Date(b.sentAt).toLocaleString("en-US", {
@@ -742,10 +778,12 @@ function AdminPage() {
                       </p>
                     </div>
 
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-4">
                       <div className="text-right">
                         <p className="font-mono text-xs font-black text-black">
-                          {b.recipientCount} {b.recipientCount === 1 ? "Recipient" : "Recipients"}
+                          {b.deliveredCount !== undefined
+                            ? `${b.deliveredCount} / ${b.recipientCount} Delivered`
+                            : `${b.recipientCount} ${b.recipientCount === 1 ? "Recipient" : "Recipients"}`}
                         </p>
                         {b.testEmail && (
                           <p className="font-mono text-[10px] text-neutral-500 truncate max-w-[20ch]">
@@ -753,6 +791,15 @@ function AdminPage() {
                           </p>
                         )}
                       </div>
+                      <a
+                        href="https://resend.com/emails"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="rounded-lg border border-black/20 hover:border-black bg-neutral-50 hover:bg-white p-1.5 text-neutral-700 hover:text-black transition-colors"
+                        title="View live delivery events in Resend"
+                      >
+                        <ExternalLink className="size-3.5" />
+                      </a>
                     </div>
                   </div>
                 ))}
@@ -790,7 +837,7 @@ function AdminPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-black/10">
-                  {stats?.recentUsers?.map((u) => (
+                  {stats?.recentUsers?.map((u: any) => (
                     <tr key={u._id} className="hover:bg-neutral-50 transition-colors">
                       <td className="py-3 px-3 font-black text-black flex items-center gap-2">
                         <span>{u.name}</span>

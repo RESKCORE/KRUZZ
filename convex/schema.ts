@@ -163,9 +163,13 @@ export default defineSchema({
     actionLabel: v.optional(v.string()),
     actionUrl: v.optional(v.string()),
     recipientCount: v.number(),
+    deliveredCount: v.optional(v.number()),
+    failedCount: v.optional(v.number()),
     sentBy: v.string(),
     sentAt: v.number(),
-    status: v.string(), // "sent" | "test" | "failed"
+    status: v.string(), // "sent" | "delivered" | "test" | "failed" | "partial"
     testEmail: v.optional(v.string()),
+    resendIds: v.optional(v.array(v.string())),
+    errorSummary: v.optional(v.string()),
   }).index("by_sent_at", ["sentAt"]),
 });

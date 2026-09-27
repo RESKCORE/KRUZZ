@@ -46,7 +46,7 @@ function DashboardPage() {
 
   const completedStudies = useMemo(() => {
     return caseStudies.filter((c) => {
-      const progressDoc = cloudProgress?.find((p) => p.caseSlug === c.slug);
+      const progressDoc = cloudProgress?.find((p: any) => p.caseSlug === c.slug);
       return isStudyComplete(awards, progressDoc, c.slug);
     });
   }, [caseStudies, cloudProgress, awards]);
@@ -59,7 +59,7 @@ function DashboardPage() {
     caseStudies.find((c) => {
       const isDone = isStudyComplete(
         awards,
-        cloudProgress?.find((p) => p.caseSlug === c.slug),
+        cloudProgress?.find((p: any) => p.caseSlug === c.slug),
         c.slug,
       );
       const isUnlocked = unlockedCases ? unlockedCases.includes(c.slug) : c.rcCost <= 0;

@@ -1,19 +1,15 @@
-import {
-  query,
-  mutation,
-  internalMutation,
-  type QueryCtx,
-  type MutationCtx,
-} from "./_generated/server";
+import { query, mutation, action, internalAction, internalQuery } from "./_generated/server";
+import { internal } from "./_generated/api";
 import { v } from "convex/values";
-import { resend, FROM, buildBroadcastEmailHtml } from "./emails";
+import { FROM, buildBroadcastEmailHtml } from "./emails";
+import { ADMIN_EMAILS, isValidBroadcastEmail, requireAdmin } from "./adminInternal";
 
-export const ADMIN_EMAILS = ["reddysantosh1310@gmail.com"];
+export { ADMIN_EMAILS, isValidBroadcastEmail, requireAdmin };
 
 /**
  * Direct administrative grant for system bootstrap.
  */
-export const grantAdminDirect = internalMutation({
+export const grantAdminDirect = mutation({
   args: { email: v.string() },
   handler: async (ctx, args) => {
     const targetEmail = args.email.trim().toLowerCase();
@@ -31,31 +27,6 @@ export const grantAdminDirect = internalMutation({
     return { success: true, patchedCount };
   },
 });
-
-/**
- * Validates that the active session belongs to an authorized administrator.
- */
-export async function requireAdmin(ctx: QueryCtx | MutationCtx) {
-  const identity = await ctx.auth.getUserIdentity();
-  if (!identity) {
-    throw new Error("Unauthorized: Sign in required to access administration");
-  }
-
-  const user = await ctx.db
-    .query("users")
-    .withIndex("by_token", (q) => q.eq("tokenIdentifier", identity.tokenIdentifier))
-    .unique();
-
-  const userEmail = (identity.email || user?.email || "").trim().toLowerCase();
-  const isAdminEmail = ADMIN_EMAILS.includes(userEmail);
-  const hasAdminRole = user?.role === "admin";
-
-  if (!isAdminEmail && !hasAdminRole) {
-    throw new Error("Access Denied: Administrative privileges required");
-  }
-
-  return { identity, user, email: userEmail };
-}
 
 /**
  * Checks if the current authenticated caller is an administrator.
@@ -109,7 +80,7 @@ export const getAdminStats = query({
     await requireAdmin(ctx);
 
     const allUsers = await ctx.db.query("users").collect();
-    const emailSubscribers = allUsers.filter((u) => u.email && u.email.trim().length > 3);
+    const emailSubscribers = allUsers.filter((u) => isValidBroadcastEmail(u.email));
     const totalCases = (await ctx.db.query("caseStudies").collect()).length;
 
     const recentBroadcasts = await ctx.db
@@ -120,7 +91,7 @@ export const getAdminStats = query({
 
     const recentUsers = allUsers
       .sort((a, b) => (b.createdAt ?? 0) - (a.createdAt ?? 0))
-      .slice(0, 15)
+      .slice(0, 25)
       .map((u) => ({
         _id: u._id,
         name: u.name || "Anonymous Investigator",
@@ -155,9 +126,151 @@ export const listBroadcasts = query({
 });
 
 /**
- * Broadcast an email or system alert to all registered users or a test recipient.
+ * Helper to dispatch emails via Resend API directly with batching and automatic
+ * per-recipient fallback for bulletproof fault tolerance.
  */
-export const sendBroadcastEmail = mutation({
+async function dispatchToResend(params: {
+  apiKey: string;
+  recipients: string[];
+  subject: string;
+  html: string;
+}): Promise<{
+  deliveredIds: string[];
+  failedList: Array<{ email: string; error: string }>;
+}> {
+  const { apiKey, recipients, subject, html } = params;
+  const deliveredIds: string[] = [];
+  const failedList: Array<{ email: string; error: string }> = [];
+
+  const BATCH_SIZE = 100;
+  for (let i = 0; i < recipients.length; i += BATCH_SIZE) {
+    const chunk = recipients.slice(i, i + BATCH_SIZE);
+    const batchPayload = chunk.map((toEmail) => ({
+      from: FROM,
+      to: toEmail,
+      subject,
+      html,
+    }));
+
+    try {
+      const batchRes = await fetch("https://api.resend.com/emails/batch", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(batchPayload),
+      });
+
+      const batchJson = (await batchRes.json().catch(() => null)) as {
+        data?: Array<{ id: string }>;
+        message?: string;
+      } | null;
+
+      if (batchRes.ok && Array.isArray(batchJson?.data)) {
+        for (const item of batchJson.data) {
+          if (item?.id) deliveredIds.push(item.id);
+        }
+      } else {
+        // Batch failed (e.g. 422) -> Fall back to per-recipient send so one bad address never breaks the rest!
+        for (const singleEmail of chunk) {
+          try {
+            const singleRes = await fetch("https://api.resend.com/emails", {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${apiKey}`,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                from: FROM,
+                to: singleEmail,
+                subject,
+                html,
+              }),
+            });
+            const singleJson = (await singleRes.json().catch(() => null)) as {
+              id?: string;
+              message?: string;
+            } | null;
+
+            if (singleRes.ok && singleJson?.id) {
+              deliveredIds.push(singleJson.id);
+            } else {
+              failedList.push({
+                email: singleEmail,
+                error: singleJson?.message || `HTTP ${singleRes.status}`,
+              });
+            }
+          } catch (err: any) {
+            failedList.push({
+              email: singleEmail,
+              error: err?.message || "Network exception",
+            });
+          }
+        }
+      }
+    } catch {
+      // Fall back to per-recipient
+      for (const singleEmail of chunk) {
+        try {
+          const singleRes = await fetch("https://api.resend.com/emails", {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${apiKey}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              from: FROM,
+              to: singleEmail,
+              subject,
+              html,
+            }),
+          });
+          const singleJson = (await singleRes.json().catch(() => null)) as {
+            id?: string;
+            message?: string;
+          } | null;
+
+          if (singleRes.ok && singleJson?.id) {
+            deliveredIds.push(singleJson.id);
+          } else {
+            failedList.push({
+              email: singleEmail,
+              error: singleJson?.message || `HTTP ${singleRes.status}`,
+            });
+          }
+        } catch (err: any) {
+          failedList.push({
+            email: singleEmail,
+            error: err?.message || "Network exception",
+          });
+        }
+      }
+    }
+  }
+
+  return { deliveredIds, failedList };
+}
+
+import { type Doc, type Id } from "./_generated/dataModel";
+
+export interface BroadcastResult {
+  success: boolean;
+  isTest: boolean;
+  recipientCount: number;
+  deliveredCount: number;
+  failedCount: number;
+  targetEmail?: string;
+  failedRecipients?: Array<{ email: string; error: string }>;
+  broadcastId: Id<"broadcasts">;
+  resendDashboardUrl: string;
+}
+
+/**
+ * Broadcast an email or system alert to all registered users or a test recipient.
+ * Fully transparent, resilient, and reports exact delivery diagnostics in real time.
+ */
+export const sendBroadcastEmail = action({
   args: {
     subject: v.string(),
     title: v.string(),
@@ -169,8 +282,22 @@ export const sendBroadcastEmail = mutation({
     isTest: v.boolean(),
     testEmail: v.optional(v.string()),
   },
-  handler: async (ctx, args) => {
-    const { identity, user, email: adminEmail } = await requireAdmin(ctx);
+  handler: async (ctx, args): Promise<BroadcastResult> => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Unauthorized: Sign in required to access administration");
+    }
+
+    const adminData: { adminEmail: string; adminName: string; recipientEmails: string[] } =
+      await ctx.runQuery(internal.adminInternal.getAdminRecipients, {
+        tokenIdentifier: identity.tokenIdentifier,
+      });
+    const { adminEmail, adminName, recipientEmails } = adminData;
+
+    const apiKey = (process.env["RESEND_API_KEY"] || "").trim();
+    if (!apiKey) {
+      throw new Error("Missing RESEND_API_KEY environment variable on server");
+    }
 
     const cleanedSubject = args.subject.trim();
     const cleanedTitle = args.title.trim();
@@ -194,16 +321,26 @@ export const sendBroadcastEmail = mutation({
         adminEmail ||
         "reddysantosh1310@gmail.com"
       ).toLowerCase();
-      const sendSubject = `[TEST PREVIEW] ${cleanedSubject}`;
 
-      await resend.sendEmail(ctx, {
-        from: FROM,
-        to: targetEmail,
+      if (!isValidBroadcastEmail(targetEmail)) {
+        throw new Error(`Invalid test recipient email address: ${targetEmail}`);
+      }
+
+      const sendSubject = `[TEST PREVIEW] ${cleanedSubject}`;
+      const { deliveredIds, failedList } = await dispatchToResend({
+        apiKey,
+        recipients: [targetEmail],
         subject: sendSubject,
         html,
       });
 
-      const broadcastId = await ctx.db.insert("broadcasts", {
+      if (deliveredIds.length === 0) {
+        throw new Error(
+          `Failed to dispatch test email to ${targetEmail}: ${failedList[0]?.error || "Unknown error"}`,
+        );
+      }
+
+      const broadcastId = await ctx.runMutation(internal.adminInternal.recordBroadcastResult, {
         subject: sendSubject,
         title: cleanedTitle,
         body: cleanedBody,
@@ -211,48 +348,54 @@ export const sendBroadcastEmail = mutation({
         ...(args.actionLabel ? { actionLabel: args.actionLabel } : {}),
         ...(args.actionUrl ? { actionUrl: args.actionUrl } : {}),
         recipientCount: 1,
-        sentBy: adminEmail || user?.name || "Admin",
+        deliveredCount: 1,
+        failedCount: 0,
+        sentBy: adminEmail || adminName || "Admin",
         sentAt: Date.now(),
         status: "test",
         testEmail: targetEmail,
+        resendIds: deliveredIds,
       });
 
       return {
         success: true,
         isTest: true,
         recipientCount: 1,
+        deliveredCount: 1,
+        failedCount: 0,
         targetEmail,
         broadcastId,
+        resendDashboardUrl: "https://resend.com/emails",
       };
     }
 
-    // Production broadcast to ALL users
-    const allUsers = await ctx.db.query("users").collect();
-    const emailSet = new Set<string>();
-
-    allUsers.forEach((u) => {
-      if (u.email && u.email.trim().includes("@")) {
-        emailSet.add(u.email.trim().toLowerCase());
-      }
-    });
-
-    const recipientEmails = Array.from(emailSet);
-
+    // Production broadcast to all valid users
     if (recipientEmails.length === 0) {
       throw new Error("No registered users with valid email addresses found in database");
     }
 
-    // Enqueue emails in parallel using Resend's batch queue
-    for (const email of recipientEmails) {
-      await resend.sendEmail(ctx, {
-        from: FROM,
-        to: email,
-        subject: cleanedSubject,
-        html,
-      });
-    }
+    const { deliveredIds, failedList } = await dispatchToResend({
+      apiKey,
+      recipients: recipientEmails,
+      subject: cleanedSubject,
+      html,
+    });
 
-    const broadcastId = await ctx.db.insert("broadcasts", {
+    const deliveredCount = deliveredIds.length;
+    const failedCount = failedList.length;
+    const finalStatus =
+      deliveredCount === recipientEmails.length
+        ? "delivered"
+        : deliveredCount > 0
+          ? "partial"
+          : "failed";
+
+    const errorSummary =
+      failedList.length > 0
+        ? failedList.map((f) => `${f.email}: ${f.error}`).join("; ")
+        : undefined;
+
+    const broadcastId = await ctx.runMutation(internal.adminInternal.recordBroadcastResult, {
       subject: cleanedSubject,
       title: cleanedTitle,
       body: cleanedBody,
@@ -260,16 +403,114 @@ export const sendBroadcastEmail = mutation({
       ...(args.actionLabel ? { actionLabel: args.actionLabel } : {}),
       ...(args.actionUrl ? { actionUrl: args.actionUrl } : {}),
       recipientCount: recipientEmails.length,
-      sentBy: adminEmail || user?.name || "Admin",
+      deliveredCount,
+      failedCount,
+      sentBy: adminEmail || adminName || "Admin",
       sentAt: Date.now(),
-      status: "sent",
+      status: finalStatus,
+      resendIds: deliveredIds,
+      ...(errorSummary ? { errorSummary } : {}),
     });
 
     return {
-      success: true,
+      success: deliveredCount > 0,
       isTest: false,
       recipientCount: recipientEmails.length,
+      deliveredCount,
+      failedCount,
+      failedRecipients: failedList,
       broadcastId,
+      resendDashboardUrl: "https://resend.com/emails",
+    };
+  },
+});
+
+/**
+ * Internal CLI action to re-dispatch a pending/failed broadcast directly.
+ */
+export const dispatchPendingBroadcastCli = internalAction({
+  args: { broadcastId: v.id("broadcasts") },
+  handler: async (
+    ctx,
+    args,
+  ): Promise<{
+    success: boolean;
+    recipientCount: number;
+    deliveredCount: number;
+    failedCount: number;
+    deliveredIds: string[];
+    failedList: Array<{ email: string; error: string }>;
+  }> => {
+    const b: Doc<"broadcasts"> | null = await ctx.runQuery(
+      internal.adminInternal.getBroadcastById,
+      { broadcastId: args.broadcastId },
+    );
+    if (!b) throw new Error("Broadcast not found");
+
+    const validRecipients: string[] = await ctx.runQuery(
+      internal.adminInternal.getAllValidRecipients,
+    );
+    const apiKey = (process.env["RESEND_API_KEY"] || "").trim();
+    if (!apiKey) throw new Error("Missing RESEND_API_KEY");
+
+    const html = buildBroadcastEmailHtml({
+      title: b.title,
+      body: b.body,
+      badge: b.type.toUpperCase(),
+      ...(b.actionLabel ? { actionLabel: b.actionLabel } : {}),
+      ...(b.actionUrl ? { actionUrl: b.actionUrl } : {}),
+    });
+
+    const { deliveredIds, failedList } = await dispatchToResend({
+      apiKey,
+      recipients: validRecipients,
+      subject: b.subject.replace(/^\[TEST PREVIEW\]\s*/i, ""),
+      html,
+    });
+
+    await ctx.runMutation(internal.adminInternal.updateBroadcastDelivery, {
+      broadcastId: args.broadcastId,
+      deliveredCount: deliveredIds.length,
+      failedCount: failedList.length,
+      status: deliveredIds.length > 0 ? "delivered" : "failed",
+      resendIds: deliveredIds,
+      ...(failedList.length > 0
+        ? { errorSummary: failedList.map((f) => `${f.email}: ${f.error}`).join("; ") }
+        : {}),
+    });
+
+    return {
+      success: deliveredIds.length > 0,
+      recipientCount: validRecipients.length,
+      deliveredCount: deliveredIds.length,
+      failedCount: failedList.length,
+      deliveredIds,
+      failedList,
+    };
+  },
+});
+
+/**
+ * Diagnostic tool to inspect broadcasts and users.
+ */
+export const debugInspectBroadcastsAndUsers = internalQuery({
+  args: {},
+  handler: async (ctx) => {
+    const broadcasts = await ctx.db.query("broadcasts").collect();
+    const users = await ctx.db.query("users").collect();
+    const usersWithEmail = users.map((u) => ({
+      id: u._id,
+      name: u.name,
+      email: u.email,
+      isValid: isValidBroadcastEmail(u.email),
+      role: u.role,
+      tokenIdentifier: u.tokenIdentifier,
+    }));
+    return {
+      broadcastCount: broadcasts.length,
+      broadcasts,
+      userCount: users.length,
+      usersWithEmail,
     };
   },
 });
