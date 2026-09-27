@@ -197,33 +197,29 @@ export function UserProfileCard({ className = "" }: UserProfileCardProps) {
         <div className="absolute inset-0 bg-gradient-to-b from-black/45 via-black/20 to-black/80 pointer-events-none" />
 
         {/* Top Badges */}
-        <div className="relative z-10 flex items-center justify-between">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-white text-black px-3 py-1 font-mono text-[10px] font-black uppercase tracking-wider border-2 border-black shadow-xs">
+        <div className="relative z-10 flex items-center justify-between gap-2">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-white text-black px-3 py-1 font-mono text-[10px] font-black uppercase tracking-wider border-2 border-black shadow-xs shrink-0">
             <span className="size-2 rounded-full bg-black ring-1 ring-black/20" />
             {rank.name}
           </span>
 
-          <div className="flex items-center gap-1.5">
-            {isAdmin && (
+          <div className="flex items-center gap-1.5 shrink-0">
+            {isAdmin ? (
               <span className="inline-flex items-center gap-1 rounded-full bg-[#ccff00] text-black border-2 border-black px-2.5 py-1 font-mono text-[10px] font-black uppercase tracking-wider shadow-xs">
                 <ShieldAlert className="size-3 text-black" />
                 Admin
               </span>
-            )}
-            {isAuthenticated && (
-              <span
-                className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 font-mono text-[10px] font-black uppercase tracking-wider border-2 ${
-                  isPublic ? "bg-white border-black text-black" : "bg-white border-black text-black"
-                }`}
-              >
+            ) : isAuthenticated ? (
+              <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 font-mono text-[10px] font-black uppercase tracking-wider border-2 bg-white border-black text-black shadow-xs">
                 <span
                   className={`size-1.5 rounded-full ${isPublic ? "bg-black animate-pulse" : "bg-black"}`}
                 />
                 {isPublic ? "Public" : "Private"}
               </span>
-            )}
-            <span className="rounded-full bg-white px-2.5 py-1 font-mono text-[10px] font-black text-black border-2 border-black">
-              {isAuthenticated ? `UID: #${handle.slice(0, 7)}` : "GUEST SEAT"}
+            ) : null}
+
+            <span className="rounded-full bg-white px-2.5 py-1 font-mono text-[10px] font-black text-black border-2 border-black shadow-xs">
+              {isAuthenticated ? `#${handle.slice(0, 7)}` : "GUEST"}
             </span>
           </div>
         </div>
@@ -244,9 +240,9 @@ export function UserProfileCard({ className = "" }: UserProfileCardProps) {
 
       {/* 2. Overlapping Avatar & Action Row */}
       <div className="relative -mt-10 px-2">
-        <div className="flex items-end justify-between">
+        <div className="flex items-end justify-between gap-3">
           {/* Avatar with refined ring */}
-          <div className="relative">
+          <div className="relative shrink-0">
             <div className="size-20 rounded-full border-[3.5px] border-black bg-white overflow-hidden shadow-xs">
               {avatarUrl ? (
                 <img src={avatarUrl} alt={displayName} className="size-full object-cover" />
@@ -273,35 +269,13 @@ export function UserProfileCard({ className = "" }: UserProfileCardProps) {
           </div>
 
           {/* Action Buttons */}
-          <div className="flex items-center gap-2 mb-1">
+          <div className="flex items-center gap-2 mb-1 shrink-0">
             {isAuthenticated ? (
               <>
-                {/* Quick Privacy Toggle Pill Button */}
-                <button
-                  type="button"
-                  onClick={() => handleTogglePrivacy()}
-                  disabled={isUpdatingPrivacy}
-                  title={
-                    isPublic
-                      ? "Profile is Public. Click to switch to Private."
-                      : "Profile is Private. Click to switch to Public."
-                  }
-                  className="flex items-center gap-1.5 rounded-full px-3.5 py-1.5 font-mono text-xs font-black transition-all cursor-pointer border-2 border-black bg-white text-black hover:bg-neutral-100"
-                >
-                  {isUpdatingPrivacy ? (
-                    <Loader2 className="size-3.5 animate-spin text-black" />
-                  ) : isPublic ? (
-                    <Globe className="size-3.5 text-black" />
-                  ) : (
-                    <Lock className="size-3.5 text-black" />
-                  )}
-                  <span>{isPublic ? "Public" : "Private"}</span>
-                </button>
-
                 <button
                   type="button"
                   onClick={() => setIsShareModalOpen(true)}
-                  className="neu-btn flex items-center gap-1.5 rounded-full px-4 py-1.5 font-mono text-xs font-black text-black border-2 border-black hover:bg-neutral-100 active:scale-95 transition-all cursor-pointer"
+                  className="neu-btn flex items-center gap-1.5 rounded-full px-3.5 py-1.5 font-mono text-xs font-black text-black border-2 border-black bg-white hover:bg-neutral-100 active:scale-95 transition-all cursor-pointer shadow-xs"
                 >
                   <Share2 className="size-3.5 text-black" />
                   <span>Share</span>
@@ -310,11 +284,11 @@ export function UserProfileCard({ className = "" }: UserProfileCardProps) {
                 {isAdmin && (
                   <Link
                     to="/admin"
-                    className="neu-btn flex items-center gap-1.5 rounded-full px-4 py-1.5 font-mono text-xs font-black text-black bg-[#ccff00] hover:bg-[#b8e600] border-2 border-black active:scale-95 transition-all cursor-pointer shadow-xs"
-                    title="Open KRUZZ Admin & Email Broadcast Console"
+                    className="neu-btn flex items-center gap-1.5 rounded-full px-3.5 py-1.5 font-mono text-xs font-black text-black bg-[#ccff00] hover:bg-[#b8e600] border-2 border-black active:scale-95 transition-all cursor-pointer shadow-xs"
+                    title="Open KRUZZ Operations & Email Broadcast Console"
                   >
                     <ShieldAlert className="size-3.5 text-black" />
-                    <span>Admin Console</span>
+                    <span>Admin</span>
                   </Link>
                 )}
               </>
@@ -332,35 +306,35 @@ export function UserProfileCard({ className = "" }: UserProfileCardProps) {
         {/* Name & Handle */}
         <div className="mt-3">
           <div className="flex items-center gap-1.5">
-            <h3 className="text-lg font-black tracking-tight text-black">{displayName}</h3>
+            <h3 className="text-lg font-black tracking-tight text-black truncate">{displayName}</h3>
             {isAuthenticated && (
-              <span className="text-black text-xs font-bold" title="Verified Investigator">
+              <span className="text-black text-xs font-bold shrink-0" title="Verified Investigator">
                 <ShieldCheck className="size-4 inline text-black" />
               </span>
             )}
           </div>
-          <p className="font-mono text-xs text-black font-bold">@{handle}</p>
+          <p className="font-mono text-xs text-black font-bold truncate">@{handle}</p>
           {isAuthenticated && (
             <div className="mt-1.5 flex items-center gap-2">
               {(profile as any)?.university ? (
                 <button
                   type="button"
                   onClick={() => setIsCampusModalOpen(true)}
-                  className="inline-flex items-center gap-1.5 rounded-lg bg-neutral-100 hover:bg-neutral-200 border border-black/25 px-2.5 py-0.5 font-mono text-[10px] font-bold text-black transition-colors cursor-pointer group"
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-neutral-100 hover:bg-neutral-200 border border-black/25 px-2.5 py-1 font-mono text-[10px] font-bold text-black transition-colors cursor-pointer group"
                   title="Click to change your university/college"
                 >
-                  <GraduationCap className="size-3 text-black" />
-                  <span className="truncate max-w-[24ch]">{(profile as any).university}</span>
-                  <Pencil className="size-2.5 opacity-50 group-hover:opacity-100 transition-opacity" />
+                  <GraduationCap className="size-3 text-black shrink-0" />
+                  <span className="truncate max-w-[22ch]">{(profile as any).university}</span>
+                  <Pencil className="size-2.5 opacity-50 group-hover:opacity-100 transition-opacity shrink-0" />
                 </button>
               ) : (
                 <button
                   type="button"
                   onClick={() => setIsCampusModalOpen(true)}
-                  className="inline-flex items-center gap-1.5 rounded-lg bg-white hover:bg-neutral-100 border border-dashed border-black/50 px-2.5 py-0.5 font-mono text-[10px] font-bold text-black transition-colors cursor-pointer"
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-white hover:bg-neutral-100 border border-dashed border-black/50 px-2.5 py-1 font-mono text-[10px] font-bold text-black transition-colors cursor-pointer"
                   title="Affiliate with your college or university"
                 >
-                  <GraduationCap className="size-3 text-black" />
+                  <GraduationCap className="size-3 text-black shrink-0" />
                   <span>+ Add University / College</span>
                 </button>
               )}
@@ -376,23 +350,23 @@ export function UserProfileCard({ className = "" }: UserProfileCardProps) {
 
         {/* Profile Visibility Control Bar */}
         {isAuthenticated && (
-          <div className="mt-3 flex items-center justify-between rounded-2xl bg-neutral-50 border-2 border-black p-2.5 px-3">
-            <div className="flex items-center gap-2.5">
-              <div className="p-1.5 rounded-xl border border-black bg-white text-black">
+          <div className="mt-3.5 flex items-center justify-between gap-2 rounded-2xl bg-neutral-50 border-2 border-black p-2.5 px-3">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="p-1.5 rounded-xl border border-black bg-white text-black shrink-0">
                 {isPublic ? (
                   <Globe className="size-3.5 text-black" />
                 ) : (
                   <Lock className="size-3.5 text-black" />
                 )}
               </div>
-              <div>
+              <div className="min-w-0">
                 <div className="flex items-center gap-1.5">
-                  <span className="font-mono text-xs font-black text-black">
+                  <span className="font-mono text-xs font-black text-black whitespace-nowrap">
                     {isPublic ? "Public Profile" : "Private Profile"}
                   </span>
-                  <span className="size-1.5 rounded-full bg-black animate-pulse" />
+                  <span className="size-1.5 rounded-full bg-black animate-pulse shrink-0" />
                 </div>
-                <p className="font-mono text-[10px] text-black font-semibold">
+                <p className="font-mono text-[10px] text-black font-semibold truncate">
                   {isPublic
                     ? "Visible to anyone via link or QR code"
                     : "Hidden from public · QR disabled"}
@@ -404,7 +378,7 @@ export function UserProfileCard({ className = "" }: UserProfileCardProps) {
               type="button"
               onClick={() => handleTogglePrivacy()}
               disabled={isUpdatingPrivacy}
-              className={`flex items-center gap-1 rounded-xl px-2.5 py-1 font-mono text-[11px] font-black transition-all cursor-pointer border-2 border-black ${
+              className={`shrink-0 flex items-center gap-1 rounded-xl px-2.5 py-1.5 font-mono text-[10px] font-black transition-all cursor-pointer border-2 border-black ${
                 isPublic
                   ? "bg-white text-black hover:bg-neutral-100"
                   : "bg-black text-white hover:bg-neutral-800"
