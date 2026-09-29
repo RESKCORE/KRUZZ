@@ -431,22 +431,104 @@ function Landing() {
           {/* ========================================================================= */}
           {/* CURRICULUM PROGRESSION GRAPH                                              */}
           {/* ========================================================================= */}
-          <section className="mt-8 pb-24 border-t border-black/10 pt-12">
-            <div className="mb-6 flex items-baseline justify-between">
+          <section className="mt-8 pb-12 border-t border-black/10 pt-12">
+            <div className="mb-8 flex flex-col md:flex-row md:items-baseline justify-between gap-4">
               <div>
-                <h2 className="text-2xl font-black tracking-tight text-black">
+                <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-black">
                   How Each Case Builds System Thinking
                 </h2>
-                <p className="mt-1 text-xs text-neutral-600">
+                <p className="mt-1.5 text-xs sm:text-sm text-neutral-600 max-w-2xl leading-relaxed">
                   Concepts are reinforced cumulatively: early architectural decisions become
                   dependencies for high-scale distributed systems.
                 </p>
+              </div>
+
+              <Link
+                to="/method"
+                className="text-xs font-mono font-black text-black hover:underline transition-colors shrink-0"
+              >
+                Deep-Dive into 8-Section Method →
+              </Link>
+            </div>
+
+            {/* 3-Tier Cumulative Progression Roadmap */}
+            <div className="grid gap-5 md:grid-cols-3">
+              <div className="rounded-2xl border-2 border-black bg-white p-5 shadow-xs flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between font-mono text-[10px] text-neutral-600 font-black">
+                    <span>TIER 01</span>
+                    <span className="rounded bg-black text-white px-1.5 py-0.2 uppercase">
+                      CASES 01–07
+                    </span>
+                  </div>
+                  <h3 className="mt-2 text-base font-black text-black">
+                    Machine Coding & LLD Foundation
+                  </h3>
+                  <p className="mt-1.5 text-xs text-neutral-600 leading-relaxed">
+                    Master thread-safe in-memory state machines, Strategy & Factory patterns, and
+                    deterministic test harnesses.
+                  </p>
+                </div>
+                <div className="mt-4 pt-3 border-t border-black/15 font-mono text-[11px] text-black font-bold flex items-center justify-between">
+                  <span className="text-neutral-500">Live Coding:</span>
+                  <span className="bg-neutral-100 px-2 py-0.5 rounded border border-black/20">
+                    90-Min Machine Coding
+                  </span>
+                </div>
+              </div>
+
+              <div className="rounded-2xl border-2 border-black bg-white p-5 shadow-xs flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between font-mono text-[10px] text-neutral-600 font-black">
+                    <span>TIER 02</span>
+                    <span className="rounded bg-black text-white px-1.5 py-0.2 uppercase">
+                      CASES 08–18
+                    </span>
+                  </div>
+                  <h3 className="mt-2 text-base font-black text-black">
+                    Distributed Primitives & Locks
+                  </h3>
+                  <p className="mt-1.5 text-xs text-neutral-600 leading-relaxed">
+                    Tackle consistent hashing, distributed rate limiters, write-ahead logs, and
+                    idempotent scheduled background workers.
+                  </p>
+                </div>
+                <div className="mt-4 pt-3 border-t border-black/15 font-mono text-[11px] text-black font-bold flex items-center justify-between">
+                  <span className="text-neutral-500">System Design:</span>
+                  <span className="bg-neutral-100 px-2 py-0.5 rounded border border-black/20">
+                    Component Scaling
+                  </span>
+                </div>
+              </div>
+
+              <div className="rounded-2xl border-2 border-black bg-white p-5 shadow-xs flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center justify-between font-mono text-[10px] text-neutral-600 font-black">
+                    <span>TIER 03</span>
+                    <span className="rounded bg-black text-white px-1.5 py-0.2 uppercase">
+                      CASES 19–59
+                    </span>
+                  </div>
+                  <h3 className="mt-2 text-base font-black text-black">
+                    High-Scale Event Architectures
+                  </h3>
+                  <p className="mt-1.5 text-xs text-neutral-600 leading-relaxed">
+                    Scale multi-region distributed databases, collaborative CRDT editors, financial
+                    ledgers, and AI inference gateways.
+                  </p>
+                </div>
+                <div className="mt-4 pt-3 border-t border-black/15 font-mono text-[11px] text-black font-bold flex items-center justify-between">
+                  <span className="text-neutral-500">FAANG Loops:</span>
+                  <span className="bg-neutral-100 px-2 py-0.5 rounded border border-black/20">
+                    High-Scale HLD
+                  </span>
+                </div>
               </div>
             </div>
           </section>
         </main>
 
-        {/* Cinematic Curtain-Reveal Footer */}
+        {/* High-Contrast Cohesive Footer */}
         <CinematicFooter />
       </div>
     </AppChrome>

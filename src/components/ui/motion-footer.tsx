@@ -3,145 +3,51 @@
 import * as React from "react";
 import { useEffect, useRef } from "react";
 import { gsap } from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { cn } from "@/lib/utils";
 import { Link } from "@tanstack/react-router";
-import { Compass, LayoutDashboard } from "lucide-react";
-
-// Register ScrollTrigger safely for React
-if (typeof window !== "undefined") {
-  gsap.registerPlugin(ScrollTrigger);
-}
+import {
+  Compass,
+  LayoutDashboard,
+  ArrowRight,
+  ArrowUp,
+  Terminal,
+  Code2,
+  ShieldCheck,
+  Sparkles,
+} from "lucide-react";
 
 // -------------------------------------------------------------------------
-// 1. THEME-ADAPTIVE INLINE STYLES
+// 1. INLINE KEYFRAME ANIMATIONS FOR TICKER & BADGES
 // -------------------------------------------------------------------------
-const STYLES = `
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800;900&display=swap');
-
-.cinematic-footer-wrapper {
-  font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  
-  /* Dynamic Variables using standard shadcn/tailwind tokens */
-  --pill-bg-1: color-mix(in oklch, var(--foreground, #f5f5f5) 3%, transparent);
-  --pill-bg-2: color-mix(in oklch, var(--foreground, #f5f5f5) 1%, transparent);
-  --pill-shadow: color-mix(in oklch, var(--background, #0d0d0d) 50%, transparent);
-  --pill-highlight: color-mix(in oklch, var(--foreground, #f5f5f5) 10%, transparent);
-  --pill-inset-shadow: color-mix(in oklch, var(--background, #0d0d0d) 80%, transparent);
-  --pill-border: color-mix(in oklch, var(--foreground, #f5f5f5) 8%, transparent);
-  
-  --pill-bg-1-hover: color-mix(in oklch, #ffffff 15%, transparent);
-  --pill-bg-2-hover: color-mix(in oklch, #ffffff 5%, transparent);
-  --pill-border-hover: color-mix(in oklch, #ffffff 40%, transparent);
-  --pill-shadow-hover: color-mix(in oklch, #ffffff 25%, transparent);
-  --pill-highlight-hover: color-mix(in oklch, var(--foreground, #f5f5f5) 20%, transparent);
-}
-
-@keyframes footer-breathe {
-  0% { transform: translate(-50%, -50%) scale(1); opacity: 0.6; }
-  100% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
-}
-
-@keyframes footer-scroll-marquee {
+const FOOTER_STYLES = `
+@keyframes marquee-scroll {
   from { transform: translateX(0); }
   to { transform: translateX(-50%); }
 }
 
-@keyframes footer-heartbeat {
-  0%, 100% { transform: scale(1); filter: drop-shadow(0 0 5px color-mix(in oklch, #ffffff 50%, transparent)); }
-  15%, 45% { transform: scale(1.2); filter: drop-shadow(0 0 10px color-mix(in oklch, #ffffff 80%, transparent)); }
-  30% { transform: scale(1); }
+.animate-marquee-infinite {
+  display: flex;
+  width: max-content;
+  animation: marquee-scroll 35s linear infinite;
 }
 
-.animate-footer-breathe {
-  animation: footer-breathe 8s ease-in-out infinite alternate;
-}
-
-.animate-footer-scroll-marquee {
-  animation: footer-scroll-marquee 40s linear infinite;
-}
-
-.animate-footer-scroll-marquee:hover {
+.animate-marquee-infinite:hover {
   animation-play-state: paused;
 }
 
-.animate-footer-heartbeat {
-  animation: footer-heartbeat 2.4s ease-in-out infinite;
+@keyframes footer-heart-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.25); }
 }
 
-/* Perspective Floor / Infinite Grid with Depth Fade */
-.footer-perspective-container {
-  perspective: 900px;
-}
-
-.footer-infinite-grid {
-  transform: rotateX(65deg) translateY(-20px);
-  background-image: 
-    linear-gradient(to right, color-mix(in oklch, var(--foreground, #f5f5f5) 5%, transparent) 1px, transparent 1px),
-    linear-gradient(to bottom, color-mix(in oklch, var(--foreground, #f5f5f5) 5%, transparent) 1px, transparent 1px);
-  background-size: 50px 50px;
-  mask-image: linear-gradient(to bottom, transparent, black 30%, black 70%, transparent);
-  -webkit-mask-image: linear-gradient(to bottom, transparent, black 30%, black 70%, transparent);
-}
-
-/* Theme-adaptive Aurora Glow (Clean Monochrome) */
-.footer-aurora {
-  background: radial-gradient(
-    circle at 50% 50%,
-    color-mix(in oklch, #ffffff 14%, transparent) 0%,
-    color-mix(in oklch, #ffffff 7%, transparent) 40%,
-    transparent 70%
-  );
-}
-
-/* Glass Pill Theming */
-.footer-glass-pill {
-  background: linear-gradient(145deg, var(--pill-bg-1) 0%, var(--pill-bg-2) 100%);
-  box-shadow: 
-      0 10px 30px -10px var(--pill-shadow), 
-      inset 0 1px 1px var(--pill-highlight), 
-      inset 0 -1px 2px var(--pill-inset-shadow);
-  border: 1px solid var(--pill-border);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.footer-glass-pill:hover {
-  background: linear-gradient(145deg, var(--pill-bg-1-hover) 0%, var(--pill-bg-2-hover) 100%);
-  border-color: var(--pill-border-hover);
-  box-shadow: 
-      0 20px 40px -10px var(--pill-shadow-hover), 
-      inset 0 1px 1px var(--pill-highlight-hover);
-  color: #f5f5f5;
-}
-
-/* Giant Background Text Masking */
-.footer-giant-bg-text {
-  font-size: 26vw;
-  line-height: 0.75;
-  font-weight: 900;
-  letter-spacing: -0.05em;
-  color: transparent;
-  -webkit-text-stroke: 1px color-mix(in oklch, var(--foreground, #f5f5f5) 5%, transparent);
-  background: linear-gradient(180deg, color-mix(in oklch, #ffffff 15%, transparent) 0%, transparent 60%);
-  -webkit-background-clip: text;
-  background-clip: text;
-}
-
-/* Metallic Text Glow */
-.footer-text-glow {
-  background: linear-gradient(180deg, #ffffff 0%, color-mix(in oklch, var(--foreground, #f5f5f5) 40%, transparent) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  filter: drop-shadow(0px 0px 20px color-mix(in oklch, #ffffff 20%, transparent));
+.animate-footer-heart {
+  display: inline-block;
+  animation: footer-heart-pulse 1.8s ease-in-out infinite;
 }
 `;
 
 // -------------------------------------------------------------------------
-// 2. MAGNETIC BUTTON PRIMITIVE (Zero Dependency)
+// 2. MAGNETIC BUTTON PRIMITIVE (GSAP Physics)
 // -------------------------------------------------------------------------
 export interface MagneticButtonProps {
   as?: React.ElementType;
@@ -150,7 +56,7 @@ export interface MagneticButtonProps {
   [key: string]: unknown;
 }
 
-const MagneticButton = React.forwardRef<HTMLElement, MagneticButtonProps>(
+export const MagneticButton = React.forwardRef<HTMLElement, MagneticButtonProps>(
   ({ className, children, as = "button", ...props }, forwardedRef) => {
     const Component = as as React.ElementType;
     const localRef = useRef<HTMLElement>(null);
@@ -169,13 +75,11 @@ const MagneticButton = React.forwardRef<HTMLElement, MagneticButtonProps>(
           const y = e.clientY - rect.top - w;
 
           gsap.to(element, {
-            x: x * 0.4,
-            y: y * 0.4,
-            rotationX: -y * 0.15,
-            rotationY: x * 0.15,
-            scale: 1.05,
+            x: x * 0.25,
+            y: y * 0.25,
+            scale: 1.03,
             ease: "power2.out",
-            duration: 0.4,
+            duration: 0.3,
           });
         };
 
@@ -183,11 +87,9 @@ const MagneticButton = React.forwardRef<HTMLElement, MagneticButtonProps>(
           gsap.to(element, {
             x: 0,
             y: 0,
-            rotationX: 0,
-            rotationY: 0,
             scale: 1,
-            ease: "elastic.out(1, 0.3)",
-            duration: 1.2,
+            ease: "elastic.out(1, 0.4)",
+            duration: 0.8,
           });
         };
 
@@ -223,15 +125,24 @@ const MagneticButton = React.forwardRef<HTMLElement, MagneticButtonProps>(
 MagneticButton.displayName = "MagneticButton";
 
 // -------------------------------------------------------------------------
-// 3. MARQUEE TICKER ITEM
+// 3. TELEMETRY MARQUEE ITEM
 // -------------------------------------------------------------------------
-const MarqueeItem = () => (
-  <div className="flex items-center space-x-12 px-6">
-    <span>System Architecture Decoded</span> <span className="text-white/80">✦</span>
-    <span>Convex Cloud Persistence</span> <span className="text-white/80">✦</span>
-    <span>8-Section Progressive Method</span> <span className="text-white/80">✦</span>
-    <span>Interactive Code Sandbox</span> <span className="text-white/80">✦</span>
-    <span>Zero Syntax Trivia</span> <span className="text-white/80">✦</span>
+const MarqueeContent = () => (
+  <div className="flex items-center gap-8 px-4 font-mono text-xs font-black tracking-widest text-black uppercase">
+    <span>System Architecture Decoded</span>
+    <span className="text-black/30 font-normal">✦</span>
+    <span>Convex Cloud Persistence</span>
+    <span className="text-black/30 font-normal">✦</span>
+    <span>8-Section Progressive Method</span>
+    <span className="text-black/30 font-normal">✦</span>
+    <span>Multi-Language CodeSandbox (Python · Java · C)</span>
+    <span className="text-black/30 font-normal">✦</span>
+    <span>59 FAANG-Tagged Case Studies</span>
+    <span className="text-black/30 font-normal">✦</span>
+    <span>Track 0: Machine Coding (LLD)</span>
+    <span className="text-black/30 font-normal">✦</span>
+    <span>Zero Syntax Trivia</span>
+    <span className="text-black/30 font-normal">✦</span>
   </div>
 );
 
@@ -239,61 +150,6 @@ const MarqueeItem = () => (
 // 4. MAIN CINEMATIC FOOTER COMPONENT
 // -------------------------------------------------------------------------
 export function CinematicFooter() {
-  const wrapperRef = useRef<HTMLDivElement>(null);
-  const giantTextRef = useRef<HTMLDivElement>(null);
-  const headingRef = useRef<HTMLHeadingElement>(null);
-  const linksRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    if (!wrapperRef.current) return;
-
-    // React strict mode compatible GSAP context cleanup
-    const ctx = gsap.context(() => {
-      const scroller = document.getElementById("notch-nav-scroll-container") || window;
-
-      // Background Parallax
-      gsap.fromTo(
-        giantTextRef.current,
-        { y: "10vh", scale: 0.8, opacity: 0 },
-        {
-          y: "0vh",
-          scale: 1,
-          opacity: 1,
-          ease: "power1.out",
-          scrollTrigger: {
-            trigger: wrapperRef.current,
-            scroller,
-            start: "top 80%",
-            end: "bottom bottom",
-            scrub: 1,
-          },
-        },
-      );
-
-      // Staggered Content Reveal
-      gsap.fromTo(
-        [headingRef.current, linksRef.current],
-        { y: 50, opacity: 0 },
-        {
-          y: 0,
-          opacity: 1,
-          stagger: 0.15,
-          ease: "power3.out",
-          scrollTrigger: {
-            trigger: wrapperRef.current,
-            scroller,
-            start: "top 70%",
-            end: "bottom bottom",
-            scrub: 1,
-          },
-        },
-      );
-    }, wrapperRef);
-
-    return () => ctx.revert();
-  }, []);
-
   const scrollToTop = (e?: React.MouseEvent) => {
     e?.preventDefault();
     e?.stopPropagation();
@@ -305,7 +161,7 @@ export function CinematicFooter() {
     }
 
     // 2. Target any parent element with overflow-y-auto
-    const anyScrollParent = wrapperRef.current?.closest(".overflow-y-auto");
+    const anyScrollParent = notchScroller?.closest(".overflow-y-auto");
     if (anyScrollParent && anyScrollParent !== notchScroller) {
       anyScrollParent.scrollTo({ top: 0, behavior: "smooth" });
     }
@@ -318,154 +174,355 @@ export function CinematicFooter() {
 
   return (
     <>
-      <style dangerouslySetInnerHTML={{ __html: STYLES }} />
+      <style dangerouslySetInnerHTML={{ __html: FOOTER_STYLES }} />
 
-      {/* 
-        The "Curtain Reveal" Wrapper:
-        It sits in standard flow. Because it has clip-path, its contents
-        are ONLY visible within its bounding box. 
-      */}
-      <div
-        ref={wrapperRef}
-        className="relative h-screen w-full"
-        style={{ clipPath: "polygon(0% 0, 100% 0%, 100% 100%, 0 100%)" }}
-      >
-        {/* The actual footer stays fixed to the viewport underneath everything */}
-        <footer className="fixed bottom-0 left-0 flex h-screen w-full flex-col justify-between overflow-hidden bg-[#0a0a0a] text-[#f5f5f5] cinematic-footer-wrapper">
-          {/* Ambient Light & Grid Background */}
-          <div className="footer-aurora absolute left-1/2 top-1/2 h-[60vh] w-[80vw] -translate-x-1/2 -translate-y-1/2 animate-footer-breathe rounded-[50%] blur-[80px] pointer-events-none z-0" />
-          <div className="footer-bg-grid absolute inset-0 z-0 pointer-events-none" />
-
-          {/* Giant background text */}
-          <div
-            ref={giantTextRef}
-            className="footer-giant-bg-text absolute -bottom-[5vh] left-1/2 -translate-x-1/2 whitespace-nowrap z-0 pointer-events-none select-none"
-          >
-            KRUZZ
+      <footer className="w-full relative mt-16 text-black">
+        {/* ========================================================================= */}
+        {/* A. FULL-WIDTH HORIZONTAL MARQUEE STRIP (Border to Border)                 */}
+        {/* ========================================================================= */}
+        <div className="w-full border-y-2 border-black bg-neutral-100 py-3 overflow-hidden select-none">
+          <div className="animate-marquee-infinite">
+            <MarqueeContent />
+            <MarqueeContent />
           </div>
+        </div>
 
-          {/* 1. Diagonal Sleek Marquee (Top of footer) */}
-          <div className="absolute top-12 left-0 w-full overflow-hidden border-y border-white/[0.08] bg-[#0d0d0d]/70 backdrop-blur-md py-4 z-10 -rotate-2 scale-110 shadow-2xl">
-            <div className="flex w-max animate-footer-scroll-marquee text-xs md:text-sm font-bold tracking-[0.3em] text-[#8a8a8a] uppercase">
-              <MarqueeItem />
-              <MarqueeItem />
+        {/* ========================================================================= */}
+        {/* B. MAIN FOOTER CONTENT CONTAINER                                          */}
+        {/* ========================================================================= */}
+        <div className="mx-auto max-w-[1240px] px-5 sm:px-6 pt-10 pb-12">
+          {/* ======================================================================= */}
+          {/* 1. HERO CALL-TO-ACTION CARD ("Ready to investigate?")                   */}
+          {/* ======================================================================= */}
+          <section className="kruzz-dark-preserve relative rounded-3xl border-2 border-black bg-black text-white p-8 sm:p-12 lg:p-16 overflow-hidden shadow-xs text-center">
+            {/* Subtle Engineering Dot Grid */}
+            <div
+              className="absolute inset-0 pointer-events-none opacity-25 select-none"
+              style={{
+                backgroundImage: "radial-gradient(rgba(255, 255, 255, 0.2) 1px, transparent 1px)",
+                backgroundSize: "28px 28px",
+              }}
+            />
+
+            {/* Giant Full-Card Watermark (Centered directly behind the main text area) */}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none overflow-hidden z-0">
+              <span
+                className="font-mono font-black text-[24vw] md:text-[20vw] lg:text-[17vw] tracking-tighter uppercase leading-none whitespace-nowrap select-none"
+                style={{
+                  color: "rgba(255, 255, 255, 0.045)",
+                  WebkitTextStroke: "1px rgba(255, 255, 255, 0.03)",
+                }}
+              >
+                KRUZZ
+              </span>
             </div>
-          </div>
 
-          {/* 2. Main Center Content */}
-          <div className="relative z-10 flex flex-1 flex-col items-center justify-center px-6 mt-20 w-full max-w-5xl mx-auto">
-            <h2
-              ref={headingRef}
-              className="text-5xl md:text-7xl lg:text-8xl font-black footer-text-glow tracking-tighter mb-10 text-center"
-            >
-              Ready to investigate?
-            </h2>
+            <div className="relative z-10 max-w-3xl mx-auto flex flex-col items-center">
+              {/* Clearance Badge */}
+              <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 font-mono text-[11px] font-bold text-white mb-6">
+                <Terminal className="size-3.5 stroke-[2.5]" />
+                <span>Campus Placement & Production Engineering Loop</span>
+              </div>
 
-            {/* Interactive Magnetic Pills Layout */}
-            <div ref={linksRef} className="flex flex-col items-center gap-6 w-full">
-              {/* Primary Action Buttons */}
-              <div className="flex flex-wrap justify-center gap-4 w-full">
+              {/* Bold High-Contrast Headline */}
+              <h2 className="text-4xl sm:text-5xl lg:text-6xl font-black tracking-tight text-white leading-[1.08]">
+                Ready to investigate?
+              </h2>
+
+              <p className="mt-4 text-sm sm:text-base text-neutral-300 max-w-[58ch] leading-relaxed font-normal">
+                Stop memorizing syntax drills. Step into the arena and master machine coding and
+                distributed systems through reverse-engineering real FAANG production architectures.
+              </p>
+
+              {/* Primary & Secondary Action Buttons */}
+              <div className="mt-8 flex flex-wrap items-center justify-center gap-4 w-full">
                 <MagneticButton
                   as={Link}
                   to="/cases"
-                  className="footer-glass-pill px-8 py-4.5 rounded-full text-white font-bold text-sm md:text-base flex items-center gap-3 border border-white/20 hover:border-white/60 group hover:scale-105 transition-all shadow-[0_0_20px_rgba(255,255,255,0.15)]"
+                  className="inline-flex items-center justify-center gap-2.5 rounded-xl bg-white text-black px-7 py-3.5 text-sm font-black hover:bg-neutral-200 transition-all hover:-translate-y-0.5 shadow-sm group"
                 >
-                  <Compass className="size-5 text-white group-hover:rotate-45 transition-transform" />
-                  <span className="text-white font-bold tracking-tight">Enter Arena Centre</span>
+                  <Compass className="size-4 stroke-[2.5] text-black group-hover:rotate-45 transition-transform" />
+                  <span>Enter Arena Centre</span>
+                  <ArrowRight className="size-4 stroke-[2.5] transition-transform group-hover:translate-x-0.5" />
                 </MagneticButton>
 
                 <MagneticButton
                   as={Link}
                   to="/dashboard"
-                  className="footer-glass-pill px-8 py-4.5 rounded-full text-[#f5f5f5] font-bold text-sm md:text-base flex items-center gap-3 border border-white/10 hover:border-white/30 group hover:scale-105 transition-all"
+                  className="inline-flex items-center justify-center gap-2.5 rounded-xl border-2 border-white/30 bg-white/10 text-white hover:bg-white/20 px-6 py-3.5 text-sm font-bold transition-all hover:-translate-y-0.5"
                 >
-                  <LayoutDashboard className="size-5 text-[#8a8a8a] group-hover:text-white transition-colors" />
+                  <LayoutDashboard className="size-4 stroke-[2]" />
                   <span>Open Dashboard</span>
                 </MagneticButton>
               </div>
 
-              {/* Secondary Navigation Links */}
-              <div className="flex flex-wrap justify-center gap-3 md:gap-6 w-full mt-2">
-                <MagneticButton
-                  as={Link}
+              {/* Quick Jump Pills Row */}
+              <div className="mt-8 pt-6 border-t border-white/10 flex flex-wrap items-center justify-center gap-2 sm:gap-3 w-full">
+                <Link
                   to="/cases/$slug"
                   params={{ slug: "atm-machine" }}
-                  className="footer-glass-pill px-6 py-3 rounded-full text-[#8a8a8a] font-medium text-xs md:text-sm hover:text-[#f5f5f5]"
+                  className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/5 hover:bg-white/15 px-3.5 py-1.5 font-mono text-[11px] font-bold text-white transition-all hover:scale-105"
                 >
-                  Case 01 · ATM Machine
-                </MagneticButton>
-                <MagneticButton
-                  as={Link}
+                  <span className="rounded bg-white text-black px-1.5 py-0.2 text-[9px] font-black uppercase">
+                    Free
+                  </span>
+                  <span>Case 01 · ATM Machine</span>
+                </Link>
+
+                <Link
+                  to="/cases"
+                  className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/5 hover:bg-white/15 px-3.5 py-1.5 font-mono text-[11px] font-bold text-white transition-all hover:scale-105"
+                >
+                  <span>Track 0: Machine Coding (LLD)</span>
+                </Link>
+
+                <Link
                   to="/method"
-                  className="footer-glass-pill px-6 py-3 rounded-full text-[#8a8a8a] font-medium text-xs md:text-sm hover:text-[#f5f5f5]"
+                  className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/5 hover:bg-white/15 px-3.5 py-1.5 font-mono text-[11px] font-bold text-white transition-all hover:scale-105"
                 >
-                  How It Works (8-Section Method)
-                </MagneticButton>
-                <MagneticButton
-                  as={Link}
+                  <span>How It Works (8-Section Method)</span>
+                </Link>
+
+                <Link
                   to="/store"
-                  className="footer-glass-pill px-6 py-3 rounded-full text-[#8a8a8a] font-medium text-xs md:text-sm hover:text-[#f5f5f5]"
+                  className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/5 hover:bg-white/15 px-3.5 py-1.5 font-mono text-[11px] font-bold text-white transition-all hover:scale-105"
                 >
-                  RC Rewards Store
-                </MagneticButton>
-                <MagneticButton
-                  as={Link}
+                  <span>RC Rewards Store</span>
+                </Link>
+
+                <Link
                   to="/profile"
-                  className="footer-glass-pill px-6 py-3 rounded-full text-[#8a8a8a] font-medium text-xs md:text-sm hover:text-[#f5f5f5]"
+                  className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/5 hover:bg-white/15 px-3.5 py-1.5 font-mono text-[11px] font-bold text-white transition-all hover:scale-105"
                 >
-                  Investigator Profile
-                </MagneticButton>
+                  <span>Investigator Profile</span>
+                </Link>
               </div>
+            </div>
+          </section>
+
+          {/* ======================================================================= */}
+          {/* 2. STRUCTURED MULTI-COLUMN FOOTER DIRECTORY                             */}
+          {/* ======================================================================= */}
+          <div className="mt-14 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 lg:gap-10 pb-10 border-b-2 border-black/10">
+            {/* Column 1 & 2: Brand, Mission & Telemetry */}
+            <div className="lg:col-span-2 space-y-4">
+              <Link to="/" className="inline-flex items-center gap-2.5 group">
+                <img
+                  src="/logo.png"
+                  alt="KRUZZ Logo"
+                  className="size-8 rounded-lg object-contain transition-transform group-hover:scale-105"
+                />
+                <span className="font-mono text-base font-black tracking-widest text-black">
+                  KRUZZ
+                </span>
+              </Link>
+
+              <p className="text-xs sm:text-sm text-neutral-600 leading-relaxed max-w-sm">
+                Master <strong>Low-Level Design (Machine Coding)</strong> and{" "}
+                <strong>Real-World Distributed Architectures</strong>. 59 production systems
+                reverse-engineered for campus placement & FAANG technical rounds.
+              </p>
+
+              {/* Live Telemetry Status Pill */}
+              <div className="inline-flex items-center gap-2 rounded-xl border border-black/20 bg-neutral-100 px-3 py-1.5 font-mono text-xs text-black font-bold">
+                <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
+                <span>59 Case Dossiers Active · DB Persisted</span>
+              </div>
+
+              {/* Tech Stack Chips */}
+              <div className="flex flex-wrap items-center gap-1.5 pt-2">
+                {["TypeScript", "Python", "Java", "C", "Convex Cloud", "TanStack Start"].map(
+                  (tech) => (
+                    <span
+                      key={tech}
+                      className="rounded-md border border-black/20 bg-white px-2 py-0.5 font-mono text-[10px] font-bold text-neutral-700"
+                    >
+                      {tech}
+                    </span>
+                  ),
+                )}
+              </div>
+            </div>
+
+            {/* Column 3: Machine Coding (Track 0) */}
+            <div className="space-y-3">
+              <h3 className="font-mono text-xs font-black uppercase tracking-wider text-black flex items-center gap-2">
+                <Code2 className="size-3.5 stroke-[2.5]" />
+                <span>Machine Coding (LLD)</span>
+              </h3>
+              <ul className="space-y-2 text-xs font-bold text-neutral-600">
+                <li>
+                  <Link
+                    to="/cases/$slug"
+                    params={{ slug: "atm-machine" }}
+                    className="hover:text-black hover:underline transition-colors flex items-center justify-between"
+                  >
+                    <span>Case 01 · ATM Machine</span>
+                    <span className="text-[9px] font-mono px-1 rounded bg-black text-white">
+                      FREE
+                    </span>
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/cases/$slug"
+                    params={{ slug: "parking-lot-system" }}
+                    className="hover:text-black hover:underline transition-colors"
+                  >
+                    Case 02 · Parking Lot System
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/cases/$slug"
+                    params={{ slug: "api-rate-limiter" }}
+                    className="hover:text-black hover:underline transition-colors"
+                  >
+                    Case 03 · Rate Limiter
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/cases/$slug"
+                    params={{ slug: "snake-and-ladder-game" }}
+                    className="hover:text-black hover:underline transition-colors"
+                  >
+                    Case 04 · Snake & Ladder
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/cases/$slug"
+                    params={{ slug: "elevator-system" }}
+                    className="hover:text-black hover:underline transition-colors"
+                  >
+                    Case 05 · Elevator System
+                  </Link>
+                </li>
+                <li className="pt-1">
+                  <Link
+                    to="/cases"
+                    className="text-black font-black underline underline-offset-4 hover:text-neutral-700"
+                  >
+                    View All 59 Cases →
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
+            {/* Column 4: Curriculum & Method */}
+            <div className="space-y-3">
+              <h3 className="font-mono text-xs font-black uppercase tracking-wider text-black flex items-center gap-2">
+                <ShieldCheck className="size-3.5 stroke-[2.5]" />
+                <span>Curriculum & Method</span>
+              </h3>
+              <ul className="space-y-2 text-xs font-bold text-neutral-600">
+                <li>
+                  <Link to="/method" className="hover:text-black hover:underline transition-colors">
+                    The 8-Section Method
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/method" className="hover:text-black hover:underline transition-colors">
+                    5-Stage Reasoning Chain
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/cases" className="hover:text-black hover:underline transition-colors">
+                    Campus Placement Prep
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/cases" className="hover:text-black hover:underline transition-colors">
+                    FAANG Interview Loops
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/cases" className="hover:text-black hover:underline transition-colors">
+                    Interactive Code Sandbox
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
+            {/* Column 5: Investigator Clearance */}
+            <div className="space-y-3">
+              <h3 className="font-mono text-xs font-black uppercase tracking-wider text-black flex items-center gap-2">
+                <Sparkles className="size-3.5 stroke-[2.5]" />
+                <span>Clearance & Platform</span>
+              </h3>
+              <ul className="space-y-2 text-xs font-bold text-neutral-600">
+                <li>
+                  <Link to="/cases" className="hover:text-black hover:underline transition-colors">
+                    Arena Centre
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/dashboard"
+                    className="hover:text-black hover:underline transition-colors"
+                  >
+                    Personal Dashboard
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/leaderboard"
+                    className="hover:text-black hover:underline transition-colors"
+                  >
+                    Campus Leaderboard
+                  </Link>
+                </li>
+                <li>
+                  <Link to="/store" className="hover:text-black hover:underline transition-colors">
+                    RC Rewards Store
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/profile"
+                    className="hover:text-black hover:underline transition-colors"
+                  >
+                    Investigator Profile
+                  </Link>
+                </li>
+              </ul>
             </div>
           </div>
 
-          {/* 3. Bottom Bar / Credits */}
-          <div className="relative z-20 w-full pb-8 px-6 md:px-12 flex flex-col md:flex-row items-center justify-between gap-6">
+          {/* ======================================================================= */}
+          {/* 3. BOTTOM UTILITY, COPYRIGHT & BACK TO TOP BAR                          */}
+          {/* ======================================================================= */}
+          <div className="pt-8 flex flex-col md:flex-row items-center justify-between gap-4 font-mono text-xs">
             {/* Copyright */}
-            <div className="text-[#8a8a8a] text-[10px] md:text-xs font-semibold tracking-widest uppercase order-2 md:order-1">
-              © 2026 KRUZZ. All rights reserved.
+            <div className="text-neutral-500 font-bold tracking-tight text-center md:text-left order-2 md:order-1">
+              © 2026 KRUZZ. All rights reserved. Zero syntax memorization.
             </div>
 
-            {/* "Made with Love" Badge */}
-            <div className="footer-glass-pill px-6 py-3 rounded-full flex items-center gap-2 order-1 md:order-2 cursor-default border-white/[0.08]">
-              <span className="text-[#8a8a8a] text-[10px] md:text-xs font-bold uppercase tracking-widest">
-                Crafted with
-              </span>
-              <span className="animate-footer-heartbeat text-sm md:text-base text-white">❤</span>
-              <span className="text-[#8a8a8a] text-[10px] md:text-xs font-bold uppercase tracking-widest">
-                by
-              </span>
-              <span className="text-[#f5f5f5] font-black text-xs md:text-sm tracking-normal ml-1">
-                KRUZZ
-              </span>
+            {/* "Crafted With Love" Badge */}
+            <div className="inline-flex items-center gap-2 rounded-full border border-black/20 bg-neutral-100 px-4 py-1.5 font-mono text-xs font-bold text-black order-1 md:order-2">
+              <span>Crafted with</span>
+              <span className="animate-footer-heart text-red-500 text-sm">❤</span>
+              <span>by</span>
+              <span className="font-black text-black">KRUZZ</span>
+              <span className="text-neutral-500 font-medium">for campus engineers</span>
             </div>
 
-            {/* Back to top with GSAP magnetic physics */}
+            {/* Back to top magnetic button */}
             <MagneticButton
               as="button"
               type="button"
               onClick={scrollToTop}
-              className="size-12 rounded-full footer-glass-pill flex items-center justify-center text-[#8a8a8a] hover:text-white hover:border-white/50 group order-3 cursor-pointer"
+              className="inline-flex items-center gap-2 rounded-xl border-2 border-black bg-white px-3.5 py-1.5 font-mono text-xs font-black text-black hover:bg-black hover:text-white transition-all cursor-pointer shadow-xs group order-3"
               title="Back to top"
               aria-label="Back to top"
             >
-              <svg
-                className="size-5 transform group-hover:-translate-y-1.5 transition-transform duration-300"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M5 10l7-7m0 0l7 7m-7-7v18"
-                />
-              </svg>
+              <span>Back to top</span>
+              <ArrowUp className="size-3.5 stroke-[2.5] group-hover:-translate-y-0.5 transition-transform" />
             </MagneticButton>
           </div>
-        </footer>
-      </div>
+        </div>
+      </footer>
     </>
   );
 }

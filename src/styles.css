@@ -160,6 +160,27 @@ body {
   scrollbar-width: none !important;
   -ms-overflow-style: none !important;
   overflow-x: hidden;
+  cursor:
+    url("/cat-paw-cursor.svg") 8 4,
+    auto;
+}
+
+#notch-nav-scroll-container {
+  cursor:
+    url("/cat-paw-cursor.svg") 8 4,
+    auto;
+}
+
+a,
+button,
+[role="button"],
+input[type="submit"],
+input[type="button"],
+.cursor-pointer,
+[class*="cursor-pointer"] {
+  cursor:
+    url("/cat-paw-pointer.svg") 8 2,
+    pointer;
 }
 
 body::-webkit-scrollbar {
@@ -562,4 +583,74 @@ body::-webkit-scrollbar {
 #notch-nav-scroll-container [class*="text-[#080808]"],
 #notch-nav-scroll-container [class*="text-[#0a0a0a]"] {
   color: #000000 !important;
+}
+
+/* =========================================================================
+   EXPLICIT DARK PRESERVATION SCOPE
+   Shields intentional dark containers (e.g. Footer CTA Card, Method Hero)
+   from blanket light-theme overrides.
+   ========================================================================= */
+#notch-nav-scroll-container .kruzz-dark-preserve {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+  border-color: #000000 !important;
+}
+
+#notch-nav-scroll-container .kruzz-dark-preserve h1,
+#notch-nav-scroll-container .kruzz-dark-preserve h2,
+#notch-nav-scroll-container .kruzz-dark-preserve h3,
+#notch-nav-scroll-container .kruzz-dark-preserve h4,
+#notch-nav-scroll-container .kruzz-dark-preserve h5,
+#notch-nav-scroll-container .kruzz-dark-preserve h6 {
+  color: #ffffff !important;
+}
+
+#notch-nav-scroll-container .kruzz-dark-preserve p {
+  color: #d4d4d8 !important;
+}
+
+#notch-nav-scroll-container .kruzz-dark-preserve .text-white {
+  color: #ffffff !important;
+}
+
+#notch-nav-scroll-container .kruzz-dark-preserve .text-neutral-300 {
+  color: #d4d4d8 !important;
+}
+
+#notch-nav-scroll-container .kruzz-dark-preserve .text-neutral-400 {
+  color: #a1a1aa !important;
+}
+
+#notch-nav-scroll-container .kruzz-dark-preserve .text-black {
+  color: #000000 !important;
+}
+
+#notch-nav-scroll-container .kruzz-dark-preserve .bg-white {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+}
+
+#notch-nav-scroll-container .kruzz-dark-preserve .bg-white:hover {
+  background-color: #f4f4f5 !important;
+  color: #000000 !important;
+}
+
+#notch-nav-scroll-container .kruzz-dark-preserve .bg-white\/10 {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  color: #ffffff !important;
+}
+
+#notch-nav-scroll-container .kruzz-dark-preserve .bg-white\/5 {
+  background-color: rgba(255, 255, 255, 0.05) !important;
+  color: #ffffff !important;
+}
+
+#notch-nav-scroll-container .kruzz-dark-preserve .bg-white\/15,
+#notch-nav-scroll-container .kruzz-dark-preserve .bg-white\/20 {
+  background-color: rgba(255, 255, 255, 0.18) !important;
+  color: #ffffff !important;
+}
+
+#notch-nav-scroll-container .kruzz-dark-preserve [class*="border-white"] {
+  border-color: rgba(255, 255, 255, 0.2) !important;
 }
